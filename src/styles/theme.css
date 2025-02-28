@@ -2,8 +2,10 @@
     :root {
       --primary: #1777ff;
       --baseText: #000;
-      --baseBorder: #d9d9d9;
+      --baseBorder: #383838;
       --baseBackground: #fff;
+      --btnPrimary:#3F00E8;
+      --btnTextColor:#fff;
     }
     :root[data-theme='light'] {
       --baseText: #000;
@@ -12,6 +14,8 @@
     :root[data-theme='dark'] {
       --baseText: #fff;
       --baseBackground: #000;
+      --baseBorder: #ffffff;
+      --btnPrimary:#7549ee;
     }
 }
   

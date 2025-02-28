@@ -3,7 +3,9 @@ const COLORS = {
   primary: 'var(--primary)',
   baseBackground: 'var(--baseBackground)',
   baseText: 'var(--baseText)',
-  baseBorder: 'var(--baseBorder)'
+  baseBorder: 'var(--baseBorder)',
+  btnPrimary: 'var(--btnPrimary)',
+  btnTextColor: 'var(--btnTextColor)',
 }
 
 export default {

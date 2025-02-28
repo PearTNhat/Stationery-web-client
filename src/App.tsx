@@ -1,14 +1,21 @@
-// import Navbar from '~/sections/Navbar'
-
-import ThemeToggle from './components/Theme'
+import { Route, Routes } from 'react-router-dom'
+import { paths } from './constance/paths'
+import PublicLayout from './pages/public/home/PublicLayout'
+import Home from './pages/public/home/home/Home'
+import Login from './pages/public/auth/Login'
+import Register from './pages/public/auth/Register'
 
 // import Hero from '~/sections/Hero'
 function App() {
   return (
-    <div className='flex flex-col items-center justify-center h-screen bg-baseBackground'>
-      <ThemeToggle />
-      <h1 className='text-baseText'>hhi</h1>
-      <button className='btn d-btn-primary mt-4 text-primary'>Test Button</button>
+    <div className='bg-baseBackground h-screen text-baseText'>
+      <Routes>
+        <Route path={paths.PUBLIC} element={<PublicLayout />}>
+          <Route index element={<Home />} />
+          <Route path={paths.LOGIN} element={<Login />} />
+          <Route path={paths.REGISTER} element={<Register />} />
+        </Route>
+      </Routes>
     </div>
   )
 }
