@@ -12,7 +12,28 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
-      colors: COLORS,
+      colors: {
+        ...COLORS,
+        brand: {
+          500: '#465fff',
+          50: '#ecf3ff'
+        }
+      },
+      animation: {
+        'modal-enter': 'modalEnter 300ms ease-out forwards',
+      },
+      keyframes: {
+        modalEnter: {
+          '0%': {
+            opacity: '0',
+            transform: 'scale(0.95)',
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'scale(1)',
+          },
+        },
+      },
     },
   },
   daisyui: {

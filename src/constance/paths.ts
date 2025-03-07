@@ -10,7 +10,14 @@ const pulictPath = {
 const userPath = {
   PROFILE: '/user/profile'
 }
+const adminPath = {
+  ADMIN: '/admin',
+  USER: '/admin/users',
+  PRODUCT: '/admin/products',
+  DEPARTMENT: '/admin/departments'
+}
 export const paths = {
   ...pulictPath,
-  ...userPath
+  ...userPath,
+  ...adminPath
 }
