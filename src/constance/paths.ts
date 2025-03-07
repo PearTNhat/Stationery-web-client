@@ -5,7 +5,9 @@ const pulictPath = {
 
   DASHBOARD: '/dashboard',
   PROFILE: '/profile',
-  NOT_FOUND: '/not-found'
+  NOT_FOUND: '/not-found',
+  PRODUCT: '/product',
+  CONTACT: '/contact'
 }
 const userPath = {
   PROFILE: '/user/profile'

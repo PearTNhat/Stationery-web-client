@@ -13,6 +13,9 @@ export default {
   theme: {
     extend: {
       colors: COLORS,
+      width:{
+        'main':'1220px'
+      }
     },
   },
   daisyui: {
