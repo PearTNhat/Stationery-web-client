@@ -1,4 +1,4 @@
-const pulictPath = {
+export const pulictPath = {
   PUBLIC: '/',
   LOGIN: '/login',
   REGISTER: '/register',
@@ -9,14 +9,15 @@ const pulictPath = {
   PRODUCT: '/product',
   CONTACT: '/contact'
 }
-const userPath = {
+export const userPath = {
   PROFILE: '/user/profile'
 }
-const adminPath = {
+export const adminPath = {
   ADMIN: '/admin',
   USER: '/admin/users',
   PRODUCT: '/admin/products',
-  DEPARTMENT: '/admin/departments'
+  DEPARTMENT: '/admin/departments',
+  VOUCHER: '/admin/vouchers'
 }
 export const paths = {
   ...pulictPath,

@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 import { useAppSelector } from './hooks/redux'
-import { paths } from './constance/paths'
+import { adminPath, pulictPath } from './constance/paths'
 import PublicLayout from './pages/public/home/PublicLayout'
 import Home from './pages/public/home/home/Home'
 import Login from './pages/public/auth/Login'
@@ -24,21 +24,22 @@ function App() {
     <div className='bg-baseBackground h-screen text-baseText'>
       <Modal isOpen={isOpenModal}>{childrenModal}</Modal>
       <Routes>
-        <Route path={paths.PUBLIC} element={<PublicLayout />}>
+        <Route path={pulictPath.PUBLIC} element={<PublicLayout />}>
           <Route path='/auth' element={<AuthPage />} />
-          <Route path={paths.LOGIN} element={<Login />} />
-          <Route path={paths.REGISTER} element={<Register />} />
+          <Route path={pulictPath.LOGIN} element={<Login />} />
+          <Route path={pulictPath.REGISTER} element={<Register />} />
           <Route index element={<Home />} />
-          <Route path={paths.PRODUCT} element={<ProductPage />} />
+          <Route path={pulictPath.PRODUCT} element={<ProductPage />} />
           <Route path='/product/:id' element={<ProductDetail />} />
           <Route path='/products/payment/:id' element={<PaymentConfirmation />} />
-          <Route path={paths.CONTACT} element={<Contact />} />
+          <Route path={pulictPath.CONTACT} element={<Contact />} />
         </Route>
-        <Route path={paths.ADMIN} element={<AdminLayout />}>
+        <Route path={adminPath.ADMIN} element={<AdminLayout />}>
           <Route index element={<DashBoard />} />
-          <Route path={paths.USER} element={<UserManagement />} />
-          <Route path={paths.PRODUCT} element={<ProductsManagement />} />
-          <Route path={paths.DEPARTMENT} element={<ManageDepartments />} />
+          <Route path={adminPath.USER} element={<UserManagement />} />
+          <Route path={adminPath.PRODUCT} element={<ProductsManagement />} />
+          <Route path={adminPath.DEPARTMENT} element={<ManageDepartments />} />
+          <Route path={adminPath.DEPARTMENT} element={<ManageDepartments />} />
         </Route>
       </Routes>
     </div>
