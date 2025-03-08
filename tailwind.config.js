@@ -22,6 +22,9 @@ export default {
       animation: {
         'modal-enter': 'modalEnter 300ms ease-out forwards',
       },
+      maxWidth: {
+        'main': '1200px',
+      },
       keyframes: {
         modalEnter: {
           '0%': {
@@ -34,6 +37,7 @@ export default {
           },
         },
       },
+
     },
   },
   daisyui: {
