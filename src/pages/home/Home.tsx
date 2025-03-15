@@ -2,7 +2,6 @@ import { useState } from "react";
 import Card from "~/components/card/Card";
 import Banner from "./Banner";
 import ProductCategories from "./ProductCategories";
-import Commit from "./Commit";
 import Faq from "./Faq";
 
 // Định nghĩa kiểu dữ liệu cho sản phẩm
@@ -141,7 +140,6 @@ const Home: React.FC = () => {
       <ProductCategories />
       <ProductSection title="New Products" products={sampleProducts} />
       <ProductSection title="Featured Products" products={sampleProducts} />
-      <Commit />
       <Faq />
     </div>
   );

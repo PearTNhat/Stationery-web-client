@@ -1,5 +1,7 @@
 import { MapPin, Mail, Phone } from "lucide-react";
 import { FaFacebookF, FaTiktok, FaInstagram } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { publicPath } from "~/constance/paths";
 const Footer = () => {
   return (
     <footer className="bg-gray-800 text-white py-8">
@@ -22,15 +24,26 @@ const Footer = () => {
           <span>0969 895 549</span>
         </div>
       </div>
-        <div>
-            <h3 className="font-bold text-lg mb-2">Quick Links</h3>
-            <ul>
-                <li><a href="#" className="hover:text-blue-400">Home</a></li>
-                <li><a href="#" className="hover:text-blue-400">Shop</a></li>
-                <li><a href="#" className="hover:text-blue-400">Blog</a></li>
-                <li><a href="#" className="hover:text-blue-400">Contract</a></li>
-            </ul>
+      <div>
+        <h3 className="font-bold text-lg mb-2">Quick Links</h3>
+        <div className="flex flex-col space-y-2">
+            <Link to={publicPath.PUBLIC} className="hover:text-blue-500 transition">
+                Home
+            </Link>
+            <Link to={publicPath.ABOUT} className="hover:text-blue-500 transition">
+                About
+            </Link>
+            <Link to={publicPath.PRODUCT} className="hover:text-blue-500 transition">
+                Product
+            </Link>
+            <Link to={publicPath.SERVICE} className="hover:text-blue-500 transition">
+                Service
+            </Link>
+            <Link to={publicPath.CONTACT} className="hover:text-blue-500 transition">
+                Contact
+            </Link>
         </div>
+    </div>
         <div>
             <h3 className="font-bold text-lg mb-2">Featured Products</h3>
             <ul>
