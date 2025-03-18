@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { ShoppingCart, Search, Menu, X } from 'lucide-react'
-import { NavLink, useNavigate } from 'react-router-dom'
-import { publicPaths } from '../../../../constance/paths'
+import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import { publicPaths } from '~/constance/paths'
 
 function Header() {
   const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'light')
@@ -26,46 +27,21 @@ function Header() {
 
       {/* Menu trên màn hình lớn */}
       <div className='hidden md:flex space-x-6 text-gray-700'>
-        <NavLink
-          to={publicPaths.PUBLIC}
-          className={({ isActive }) => {
-            return `${isActive && 'text-blue-500 '} hover:text-blue-500 transition`
-          }}
-        >
+        <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
           Home
-        </NavLink>
-        <NavLink
-          to={publicPaths.PRODUCT}
-          className={({ isActive }) => {
-            return `${isActive && 'text-blue-500 '} hover:text-blue-500 transition`
-          }}
-        >
+        </Link>
+        <Link to={publicPaths.PRODUCT} className='hover:text-blue-500 transition'>
           Product
-        </NavLink>
-        <NavLink
-          to={publicPaths.PUBLIC}
-          className={({ isActive }) => {
-            return `${isActive && 'text-blue-500 '} hover:text-blue-500 transition`
-          }}
-        >
+        </Link>
+        <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
           Service
-        </NavLink>
-        <NavLink
-          to={publicPaths.PUBLIC}
-          className={({ isActive }) => {
-            return `${isActive && 'text-blue-500 '} hover:text-blue-500 transition`
-          }}
-        >
+        </Link>
+        <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
           About
-        </NavLink>
-        <NavLink
-          to={publicPaths.CONTACT}
-          className={({ isActive }) => {
-            return `${isActive && 'text-blue-500 '} hover:text-blue-500 transition`
-          }}
-        >
+        </Link>
+        <Link to={publicPaths.CONTACT} className='hover:text-blue-500 transition'>
           Contact
-        </NavLink>
+        </Link>
       </div>
 
       {/* Thanh tìm kiếm */}
@@ -117,46 +93,21 @@ function Header() {
       {isMenuOpen && (
         <div className='absolute top-16 left-0 w-full bg-white shadow-md md:hidden'>
           <div className='flex flex-col space-y-4 p-4 text-gray-700'>
-            <NavLink
-              to={publicPaths.PUBLIC}
-              className={({ isActive }) => {
-                return `${isActive && 'text-blue-500 '} hover:text-blue-500 transition`
-              }}
-            >
+            <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
               Home
-            </NavLink>
-            <NavLink
-              to={publicPaths.PUBLIC}
-              className={({ isActive }) => {
-                return `${isActive && 'text-blue-500 '} hover:text-blue-500 transition`
-              }}
-            >
+            </Link>
+            <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
               Product
-            </NavLink>
-            <NavLink
-              to={publicPaths.PUBLIC}
-              className={({ isActive }) => {
-                return `${isActive && 'text-blue-500 '} hover:text-blue-500 transition`
-              }}
-            >
+            </Link>
+            <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
               Service
-            </NavLink>
-            <NavLink
-              to={publicPaths.PUBLIC}
-              className={({ isActive }) => {
-                return `${isActive && 'text-blue-500 '} hover:text-blue-500 transition`
-              }}
-            >
+            </Link>
+            <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
               About
-            </NavLink>
-            <NavLink
-              to={publicPaths.PUBLIC}
-              className={({ isActive }) => {
-                return `${isActive && 'text-blue-500 '} hover:text-blue-500 transition`
-              }}
-            >
+            </Link>
+            <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
               Contact
-            </NavLink>
+            </Link>
             <div className='flex items-center space-x-4 border-t pt-4'>
               <ShoppingCart size={24} />
               <button onClick={toggleTheme} className='p-2 rounded-full bg-gray-200'>
