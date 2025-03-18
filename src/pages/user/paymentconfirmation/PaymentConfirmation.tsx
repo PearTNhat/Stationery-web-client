@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "@inertiajs/react";
 import { RadioGroup } from "@headlessui/react";
-import Button from "~/components/button/Button";
-import Voucher from "./Voucher";
 import { PencilIcon, CheckIcon } from "@heroicons/react/24/solid";
+import Voucher from "~/components/voucher/Voucher";
+import Button from "~/components/button/Button";
 
 type OrderItem = {
   id: number;
