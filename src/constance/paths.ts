@@ -1,4 +1,4 @@
-export const pulictPath = {
+export const publicPaths = {
   PUBLIC: '/',
   LOGIN: '/login',
   REGISTER: '/register',
@@ -9,18 +9,13 @@ export const pulictPath = {
   PRODUCT: '/product',
   CONTACT: '/contact'
 }
-export const userPath = {
+export const userPaths = {
   PROFILE: '/user/profile'
 }
-export const adminPath = {
+export const adminPaths = {
   ADMIN: '/admin',
   USER: '/admin/users',
   PRODUCT: '/admin/products',
   DEPARTMENT: '/admin/departments',
   VOUCHER: '/admin/vouchers'
-}
-export const paths = {
-  ...pulictPath,
-  ...userPath,
-  ...adminPath
 }

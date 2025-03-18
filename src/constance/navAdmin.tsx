@@ -3,6 +3,7 @@ import { MdDashboard } from 'react-icons/md'
 import { FaUsers } from 'react-icons/fa'
 import { TbBuildingWarehouse } from 'react-icons/tb'
 import { RiProductHuntLine } from 'react-icons/ri'
+import { adminPaths } from './paths'
 const navItems: NavItem[] = [
   {
     icon: <MdDashboard />,
@@ -23,6 +24,11 @@ const navItems: NavItem[] = [
     icon: <TbBuildingWarehouse />,
     name: 'Departments',
     path: '/admin/departments'
+  },
+  {
+    icon: <TbBuildingWarehouse />,
+    name: 'Vouchers',
+    path: adminPaths.VOUCHER
   }
 ]
 export { navItems }
