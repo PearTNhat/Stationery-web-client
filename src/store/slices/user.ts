@@ -5,14 +5,15 @@ interface UserState {
   userData: object | null
   accessToken: string | null
   isLoggedIn: boolean
-  //   isLoading: false
-  //   isAdmin: false
-  //   isError: false
+  isLoading: false
+  isError: false
 }
 const initialState: UserState = {
   userData: null,
   accessToken: null,
-  isLoggedIn: false
+  isLoggedIn: false,
+  isLoading: false,
+  isError: false
 }
 const userSlice = createSlice({
   name: 'user',

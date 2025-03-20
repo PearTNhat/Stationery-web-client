@@ -38,14 +38,12 @@ const Modal: React.FC<ModalProps> = ({ children, isOpen }) => {
       />
 
       {/* Modal Content */}
-      <div className='relative z-[999] bg-red min-h-screen flex items-center justify-center p-4'>
-        <div
-          className='relative bg-white rounded-xl shadow-2xl transform transition-all duration-300 ease-in-out 
-            scale-95 opacity-0 animate-modal-enter max-w-lg w-full'
-        >
-          {/* Content */}
-          <div className='p-6'>{children}</div>
-        </div>
+      <div
+        className='z-[999] min-h-screen relative transform transition-all duration-300 ease-in-out 
+            scale-95 opacity-0 animate-modal-enter flex justify-center items-center'
+      >
+        {/* Content */}
+        {children}
       </div>
     </div>
   )
