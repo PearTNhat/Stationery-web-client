@@ -4,35 +4,52 @@ import { FormLogin } from '~/types/auth'
 
 interface InputFormProps extends InputHTMLAttributes<HTMLInputElement> {
   cssParents?: string
+  cssInput?: string
   id: string
+  iconLeft?: React.ReactNode
+  iconRight?: React.ReactNode
   validate?: object
   iconRequire?: boolean
-  label?: string
+  label?: string | null
   register: UseFormRegister<any>
   error?: FieldErrors<FormLogin>
 }
 
-function InputForm({ cssParents, id, validate, iconRequire, label, register, error, ...rest }: InputFormProps) {
+function InputForm({
+  cssParents,
+  cssInput,
+  id,
+  validate,
+  iconRequire,
+  label,
+  iconLeft,
+  iconRight,
+  register,
+  error,
+  ...rest
+}: InputFormProps) {
   return (
-    <div className={cssParents + ' mt-1'}>
+    <div className={cssParents + ' mt-1 relative'}>
       {label && (
         <label htmlFor={id}>
           {iconRequire && <span className='text-red-500'>*</span>}
           {label}
         </label>
       )}
+      {iconLeft}
       <input
         type='text'
         id={id}
         {...register(id, validate)}
         className={`${
           error && error[id as keyof FormLogin] ? '!border-red-500' : ''
-        } placeholder:text-dark-light border-[1px] border-text-dark-gray rounded-md p-2 w-full outline-none focus:border-primary`}
+        } ${cssInput} placeholder:text-dark-light border-[1px] border-text-dark-gray rounded-md p-2 w-full outline-none focus:border-primary`}
         {...rest}
       />
-      <div className='h-[18px]'>
+      {iconRight}
+      <div className='h-[19px] flex items-center '>
         {error && error[id as keyof FormLogin] ? (
-          <small className='text-red-500'>{error[id as keyof FormLogin]?.message}</small>
+          <small className='text-red-500 text-sm'>{error[id as keyof FormLogin]?.message}</small>
         ) : (
           ''
         )}

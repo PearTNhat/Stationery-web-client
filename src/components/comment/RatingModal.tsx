@@ -1,6 +1,8 @@
 import { memo, useState } from 'react'
 import { IoClose } from 'react-icons/io5'
 import { FaStar } from 'react-icons/fa'
+import { useAppDispatch } from '~/hooks/redux'
+import { modalActions } from '~/store/slices/modal'
 
 const startText = ['Rất tệ', 'Tệ', 'Bình thường', 'Tốt', 'Tuyệt']
 
@@ -19,6 +21,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
   content = '',
   confirmText = 'Submit'
 }) => {
+  const dispatch = useAppDispatch()
   const [hover, setHover] = useState<number | null>(null)
   const [payload, setPayload] = useState<{ rating: number; content: string }>({ rating, content })
 
@@ -31,7 +34,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
         <p className='font-bold text-xl pl-2'>Đánh giá và nhận xét</p>
         <IoClose
           className='absolute top-1/2 -translate-y-1/2 right-0 pr-2 text-4xl cursor-pointer'
-          //   onClick={() => dispatch(appActions.toggleModal({ isShowModal: false, childrenModal: null }))}
+          onClick={() => dispatch(modalActions.toggleModal({ isOpenModal: false, childrenModal: null }))}
         />
       </div>
       <div className='px-2'>
@@ -74,7 +77,9 @@ const RatingModal: React.FC<RatingModalProps> = ({
           className='w-full border border-gray-300 rounded-sm p-1 focus:outline-none mt-4'
           rows={4}
         ></textarea>
-        <button className='d-btn d-btn-primary'>{confirmText}</button>
+        <div className='flex justify-center'>
+          <button className='d-btn d-btn-primary mb-2'>{confirmText}</button>
+        </div>
       </div>
     </div>
   )
