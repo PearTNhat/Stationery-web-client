@@ -28,9 +28,9 @@ const About: React.FC = () => {
     <div>
       <Banner imageUrl="https://vanphongpham247.vn/wp-content/uploads/2022/03/van-phong-pham-247.jpg" altText="Banner về chúng tôi" />
       <Introduction
-        imageUrl="/path/to/intro-image.jpg"
+        imageUrl="/public/images/logo_stationery.svg"
         title="Giới thiệu về shop"
-        description="Chúng tôi là cửa hàng văn phòng phẩm uy tín, cung cấp sản phẩm chất lượng cao cho sinh viên và doanh nghiệp."
+        description="Chúng tôi là cửa hàng văn phòng phẩm uy tín, tự hào mang đến những sản phẩm chất lượng cao, đa dạng và đáng tin cậy, đáp ứng mọi nhu cầu của sinh viên, giáo viên, nhân viên văn phòng và doanh nghiệp. Với danh mục sản phẩm phong phú bao gồm bút viết, sổ tay, giấy in, dụng cụ học tập, thiết bị văn phòng và nhiều phụ kiện khác, chúng tôi cam kết cung cấp hàng hóa chính hãng từ các thương hiệu nổi tiếng, đảm bảo độ bền và tính ứng dụng cao. Đội ngũ nhân viên nhiệt tình, giàu kinh nghiệm luôn sẵn sàng tư vấn để khách hàng tìm được giải pháp tối ưu nhất. Bên cạnh đó, chúng tôi còn cung cấp dịch vụ giao hàng nhanh chóng, giá cả cạnh tranh và chính sách hậu mãi chu đáo, nhằm mang lại trải nghiệm mua sắm tiện lợi và hài lòng nhất cho bạn."
       />
       <Partners partners={partnersData} />
       <Timeline items={timelineData} />

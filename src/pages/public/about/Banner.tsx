@@ -14,7 +14,7 @@ const Banner: React.FC<BannerProps> = ({ imageUrl, altText }) => {
         className="w-full h-full object-cover"
       />
       <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-        <h1 className="text-white text-4xl font-bold">Về chúng tôi</h1>
+        <h1 className="text-white text-5xl md:text-6xl font-extrabold mb-6 animate-fade-in-down">Về chúng tôi</h1>
       </div>
     </section>
   );

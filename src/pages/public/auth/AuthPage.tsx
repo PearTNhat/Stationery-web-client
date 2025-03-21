@@ -15,7 +15,7 @@ export default function AuthPage() {
         backgroundSize: 'cover'
       }}
     >
-      <div className='relative w-[850px] h-[500px] bg-white shadow-lg rounded-lg overflow-hidden flex'>
+      <div className='relative w-[850px] h-[650px] bg-white shadow-lg rounded-lg overflow-hidden flex'>
         {isRegister ? <RegisterForm /> : <LoginForm />}
 
         {/* Hiệu ứng Overlay */}

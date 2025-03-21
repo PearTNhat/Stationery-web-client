@@ -1,20 +1,11 @@
-import React from "react";
+import { useState } from "react";
 
-type CustomerInfoProps = {
-  customerName: string;
-  customerPhone: string;
-  customerEmail: string;
-  customerNote: string;
-  setCustomerNote: (note: string) => void;
-};
+export default function CustomerInfo() {
+  const [customerName] = useState("Nguyễn Văn A");
+  const [customerPhone] = useState("0123456789");
+  const [customerEmail] = useState("example@email.com");
+  const [customerNote, setCustomerNote] = useState("");
 
-export const CustomerInfo: React.FC<CustomerInfoProps> = ({
-  customerName,
-  customerPhone,
-  customerEmail,
-  customerNote,
-  setCustomerNote,
-}) => {
   return (
     <div className="mt-6 bg-gray-100 p-4 rounded-lg">
       <h2 className="text-lg font-semibold text-gray-800 mb-4">Thông tin khách hàng</h2>
@@ -38,4 +29,4 @@ export const CustomerInfo: React.FC<CustomerInfoProps> = ({
       />
     </div>
   );
-};
+}
