@@ -6,6 +6,7 @@ import { publicPaths } from '~/constance/paths'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { userActions } from '~/store/slices/user'
 import { showToastSuccess } from '~/utils/alert'
+import { dropDownProfile } from '~/constance/dropdown'
 
 function Header() {
   const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'light')
@@ -13,7 +14,7 @@ function Header() {
   const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { isLoggedIn, userData } = useAppSelector((state) => state.user)
-
+  console.log(userData)
   useEffect(() => {
     if (theme) {
       localStorage.setItem('theme', theme)
@@ -23,6 +24,11 @@ function Header() {
 
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'))
+  }
+  const handleLogout = () => {
+    dispatch(userActions.logout())
+    showToastSuccess('Logout successfully')
+    navigate('/')
   }
 
   useEffect(() => {
@@ -77,14 +83,30 @@ function Header() {
 
         {/* Đăng Nhập & Đăng Ký */}
         {isLoggedIn ? (
-          <div
-            className='w-10 rounded-full overflow-hidden'
-            onClick={() => {
-              dispatch(userActions.logout())
-              showToastSuccess('Logout successfully')
-            }}
-          >
-            <img src='https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp' />
+          <div className=' d-dropdown d-dropdown-hover  d-dropdown-end '>
+            <div tabIndex={0} className='w-10 rounded-full overflow-hidden'>
+              <img src={userData?.avatar} alt={userData.last_name} />
+            </div>
+            <ul tabIndex={0} className='d-dropdown-content d-menu bg-base-100 rounded-md z-10 w-52 p-2 shadow-md'>
+              {dropDownProfile.map((item) => {
+                let Comp: React.ElementType = 'button'
+                if (item.to) {
+                  Comp = Link
+                }
+                return (
+                  <li key={item.id} className={`${item.styleParent ? item.styleParent : ''}`}>
+                    <Comp
+                      {...(item.to ? { to: item.to } : {})}
+                      onClick={item?.onClick ? handleLogout : undefined}
+                      className={`flex items-center w-full px-4 py-2 ${item.style ? item.style : ' text-gray-700 hover:bg-gray-100 transition'}`}
+                    >
+                      {item.icon}
+                      {item.name}
+                    </Comp>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
         ) : (
           <div className='hidden md:flex space-x-3'>
