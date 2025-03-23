@@ -37,7 +37,7 @@ const commitments: Commitment[] = [
 const Commit: React.FC = () => {
   return (
     <section id="commit" className="container mx-auto bg-white p-8 rounded-lg shadow-lg transition-all mb-4">
-      <h2 className="text-4xl font-bold text-center mb-16 text-gray-800 animate-fade-in">Cam Kết Của Chúng Tôi</h2>
+      <h2 className="text-4xl font-bold text-center mb-16 text-gray-800 animate-fade-in">Our Commit</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {commitments.map(({ id, image, alt, title, description }) => (
           <div key={id} className="flex flex-col items-center text-center">

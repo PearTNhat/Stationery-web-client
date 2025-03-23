@@ -32,7 +32,7 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product }) => {
       </div>
       <div className='p-6'>
         {activeTab === 'description' && (
-          <div className='text-2xl'>
+          <div>
             <p>Em như làn gió mát trong,</p>
             <p>Lướt qua một chút mà lòng ngẩn ngơ.</p>
             <p>Nụ cười tỏa nắng say mơ,</p>

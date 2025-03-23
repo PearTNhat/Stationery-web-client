@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { ShoppingCart, Search, Menu, X } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { Link } from 'react-router-dom'
+import { useNavigate, NavLink } from 'react-router-dom'
 import { publicPaths } from '~/constance/paths'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { userActions } from '~/store/slices/user'
 import { showToastSuccess } from '~/utils/alert'
+import Cart from '~/pages/public/cart/Cart'
 
 function Header() {
   const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'light')
@@ -13,6 +13,28 @@ function Header() {
   const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { isLoggedIn, userData } = useAppSelector((state) => state.user)
+  const [isCartOpen, setIsCartOpen] = useState(false); 
+
+  const sampleCartItems = [
+    {
+      id: 1,
+      name: "Product 1",
+      price: 20.0,
+      quantity: 2,
+      image: "https://stbcuulong.edu.vn/wp-content/uploads/2023/06/L4_KNTT_TiengViet4.1-scaled.jpg",
+    },
+    {
+      id: 2,
+      name: "Product 2",
+      price: 15.0,
+      quantity: 1,
+      image: "https://stbcuulong.edu.vn/wp-content/uploads/2023/06/L4_KNTT_TiengViet4.1-scaled.jpg",
+    },
+  ];
+
+  const handleCartToggle = () => {
+    setIsCartOpen(!isCartOpen); // Mở hoặc đóng giỏ hàng
+  };
 
   useEffect(() => {
     if (theme) {
@@ -29,27 +51,27 @@ function Header() {
     console.log('isLoggedIn', isLoggedIn)
   }, [isLoggedIn])
   return (
-    <nav className='shadow-md px-6 py-3 flex items-center justify-between md:px-10'>
+    <nav className='fixed top-0 left-0 right-0 z-50 shadow-md bg-white px-6 py-3 flex items-center justify-between md:px-10'>
       {/* Logo */}
-      <div className='text-2xl font-bold text-blue-600 cursor-pointer'>Stationery's X</div>
+      <div className='text-2xl font-bold text-blue-600 cursor-pointer'>Stationery's P</div>
 
       {/* Menu trên màn hình lớn */}
       <div className='hidden md:flex space-x-6 text-gray-700'>
-        <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
+        <NavLink to={publicPaths.PUBLIC} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
           Home
-        </Link>
-        <Link to={publicPaths.PRODUCT} className='hover:text-blue-500 transition'>
-          Product
-        </Link>
-        <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
-          Service
-        </Link>
-        <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
+        </NavLink>
+        <NavLink to={publicPaths.ABOUT} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
           About
-        </Link>
-        <Link to={publicPaths.CONTACT} className='hover:text-blue-500 transition'>
+        </NavLink>
+        <NavLink to={publicPaths.PRODUCT} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
+          Product
+        </NavLink>
+        <NavLink to={publicPaths.SERVICE} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
+          Service
+        </NavLink>
+        <NavLink to={publicPaths.CONTACT} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
           Contact
-        </Link>
+        </NavLink>
       </div>
 
       {/* Thanh tìm kiếm */}
@@ -65,9 +87,9 @@ function Header() {
       {/* Biểu tượng giỏ hàng & đổi giao diện & Đăng nhập */}
       <div className='flex items-center space-x-4'>
         {/* Giỏ hàng */}
-        <div className='relative cursor-pointer'>
+        <div className='relative cursor-pointer' onClick={handleCartToggle}>
           <ShoppingCart size={24} className='text-gray-700 hover:text-blue-500 transition' />
-          <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>3</span>
+          <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>{sampleCartItems.length}</span>
         </div>
 
         {/* Chuyển đổi chế độ sáng/tối */}
@@ -113,21 +135,21 @@ function Header() {
       {isMenuOpen && (
         <div className='absolute top-16 left-0 w-full bg-white shadow-md md:hidden z-[999999]'>
           <div className='flex flex-col space-y-4 p-4 text-gray-700'>
-            <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
+            <NavLink to={publicPaths.PUBLIC} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
               Home
-            </Link>
-            <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
-              Product
-            </Link>
-            <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
-              Service
-            </Link>
-            <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
+            </NavLink>
+            <NavLink to={publicPaths.ABOUT} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
               About
-            </Link>
-            <Link to={publicPaths.PUBLIC} className='hover:text-blue-500 transition'>
+            </NavLink>
+            <NavLink to={publicPaths.PRODUCT} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
+              Product
+            </NavLink>
+            <NavLink to={publicPaths.SERVICE} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
+              Service
+            </NavLink>
+            <NavLink to={publicPaths.CONTACT} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
               Contact
-            </Link>
+            </NavLink>
             <div className='flex items-center space-x-4 border-t pt-4'>
               <ShoppingCart size={24} />
               <button onClick={toggleTheme} className='p-2 rounded-full bg-gray-200'>
@@ -150,6 +172,12 @@ function Header() {
           </div>
         </div>
       )}
+            {/* Giỏ hàng Modal */}
+            <Cart
+        isOpen={isCartOpen}
+        onClose={handleCartToggle}
+        cartItems={sampleCartItems} // Truyền dữ liệu mẫu vào modal giỏ hàng
+      />
     </nav>
   )
 }

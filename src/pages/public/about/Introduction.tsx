@@ -18,7 +18,7 @@ const Introduction: React.FC<IntroductionProps> = ({ imageUrl, title, descriptio
           />
         </div>
         <div className="w-full md:w-1/2">
-          <h2 className="text-3xl font-semibold mb-4">{title}</h2>
+          <h2 className="text-3xl font-semibold mb-4 text-blue-800">{title}</h2>
           <p className="text-gray-600 leading-relaxed">{description}</p>
         </div>
       </div>

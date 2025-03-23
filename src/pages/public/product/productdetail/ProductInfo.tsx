@@ -2,6 +2,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Button from "~/components/button/Button";
+import ColorSelector from "~/components/product_attributes/ColorSelector";
+import QuantitySelector from "~/components/product_attributes/QuantitySelector";
+import SizeSelector from "~/components/product_attributes/SizeSelector";
 import { Product } from "~/constance/seed/product";
 
 type ProductInfoProps = {
@@ -12,7 +15,7 @@ type ProductInfoProps = {
 export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart }) => {
   const [size, setSize] = useState("Medium");
   const [quantity, setQuantity] = useState(1);
-  const [selectedColor, setSelectedColor] = useState("Red");
+  const [selectedColor, setSelectedColor] = useState("");
   const colors = [
     { name: "Red", hex: "#EF4444" },
     { name: "Blue", hex: "#3B82F6" },
@@ -40,54 +43,13 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart }
         </span>
       </p>
 
-      <div className="mt-4">
-        <label className="block text-gray-700 font-semibold">Choose size:</label>
-        <div className="flex gap-2 mt-2">
-          {["Small", "Medium", "Large"].map((s) => (
-            <button
-              key={s}
-              onClick={() => setSize(s)}
-              className={`px-4 py-2 border rounded-lg ${size === s ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-4">
-        <label className="block text-gray-700 font-semibold">Choose color:</label>
-        <div className="flex gap-3 mt-2">
-          {colors.map((color) => (
-            <button
-              key={color.name}
-              onClick={() => setSelectedColor(color.name)}
-              className={`w-10 h-10 rounded-full border-2 transition-all ${
-                selectedColor === color.name
-                  ? "border-black scale-110 ring-2 ring-offset-2 ring-black"
-                  : "border-transparent"
-              }`}
-              style={{ backgroundColor: color.hex }}
-            ></button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-4 flex items-center gap-2">
-        <button
-          onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-          className="px-3 py-2 bg-gray-300 rounded-lg"
-        >
-          -
-        </button>
-        <span className="px-4 py-2 bg-gray-100">{quantity}</span>
-        <button
-          onClick={() => setQuantity((q) => q + 1)}
-          className="px-3 py-2 bg-gray-300 rounded-lg"
-        >
-          +
-        </button>
-      </div>
+      <SizeSelector selectedSize={size} onSizeChange={setSize} />
+      <ColorSelector
+        colors={colors}
+        selectedColor={selectedColor}
+        onColorSelect={setSelectedColor}
+      />
+      <QuantitySelector quantity={quantity} onQuantityChange={setQuantity} />
 
       <div className="mt-4 flex gap-4">
         <Button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg w-1/2">
@@ -103,3 +65,5 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product, onAddToCart }
     </div>
   );
 };
+
+export default ProductInfo;

@@ -8,7 +8,7 @@ export default function AuthPage() {
 
   return (
     <div
-      className='flex justify-center items-center h-screen bg-center'
+      className='flex justify-center items-center h-screen bg-center mt-8'
       style={{
         backgroundImage: "url('/images/backgroud-login.svg')",
         backgroundRepeat: 'no-repeat',

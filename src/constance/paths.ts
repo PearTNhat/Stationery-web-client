@@ -8,7 +8,11 @@ const publicPaths = {
   PRODUCT: '/product',
   ABOUT: '/about',
   SERVICE: '/service',
-  CONTACT: '/contact'
+  CONTACT: '/contact',
+  SUPPORT_PURCHASE_GUIDE: '/support/shopping-ordering-guide',
+  SUPPORT_WARRANTY_POLICY: '/support/warranty-policy',
+  RETURN_EXCHANGE_POLICY: '/support/return-exchange-policy',
+  SHIPPING_POLICY: '/support/shipping-policy'
 }
 const userPaths = {
   PROFILE: '/user/profile'

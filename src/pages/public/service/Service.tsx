@@ -7,7 +7,7 @@ import Commit from './Commit';
 
 const Service: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white overflow-hidden mt-16">
       <ServiceHeader />
       <ServiceList />
       <Commit />

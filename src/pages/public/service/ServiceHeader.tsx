@@ -7,8 +7,12 @@ const ServiceHeader: React.FC = () => {
         <div className="w-full h-full bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')]"></div>
       </div>
       <div className="container mx-auto px-4 relative z-10">
-        <h1 className="text-5xl md:text-6xl font-extrabold mb-6 animate-fade-in-down">Dịch Vụ Văn Phòng Phẩm Cao Cấp</h1>
-        <p className="text-2xl max-w-3xl mx-auto leading-relaxed animate-fade-in-up">Giải pháp toàn diện, chuyên nghiệp cho mọi nhu cầu của bạn với chất lượng vượt trội.</p>
+        <h1 className="text-5xl md:text-6xl font-extrabold mb-6 animate-fade-in-down">
+          Premium Office Supplies Service
+        </h1>
+        <p className="text-2xl max-w-3xl mx-auto leading-relaxed animate-fade-in-up">
+          A comprehensive, professional solution for all your needs with superior quality.
+        </p>
       </div>
     </section>
   );
