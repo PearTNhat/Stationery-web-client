@@ -8,14 +8,14 @@ export default function AuthPage() {
 
   return (
     <div
-      className='flex justify-center items-center h-screen bg-center'
+      className='flex justify-center items-center h-screen bg-center mt-8'
       style={{
         backgroundImage: "url('/images/backgroud-login.svg')",
         backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover'
       }}
     >
-      <div className='relative w-[850px] h-[500px] bg-white shadow-lg rounded-lg overflow-hidden flex'>
+      <div className='relative w-[850px] h-[650px] bg-white shadow-lg rounded-lg overflow-hidden flex'>
         {isRegister ? <RegisterForm /> : <LoginForm />}
 
         {/* Hiệu ứng Overlay */}

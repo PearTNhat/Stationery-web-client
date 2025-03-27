@@ -10,35 +10,37 @@ interface Service {
 const ServiceList: React.FC = () => {
   const services: Service[] = [
     {
-      title: 'Cung cấp vật phẩm cho trường học',
-      description: 'Sách, vở, bút và dụng cụ học tập chất lượng cao cho các cơ sở giáo dục.',
+      title: 'School Supplies',
+      description: 'High-quality books, notebooks, pens, and study tools for educational institutions.',
       icon: '🎓',
       image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b'
     },
     {
-      title: 'Văn phòng phẩm doanh nghiệp',
-      description: 'Giải pháp toàn diện cho văn phòng với giao hàng tận nơi nhanh chóng.',
+      title: 'Corporate Office Supplies',
+      description: 'Comprehensive office supply solutions with fast doorstep delivery.',
       icon: '🏢',
       image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d'
     },
     {
-      title: 'Thiết kế & in ấn theo yêu cầu',
-      description: 'Danh thiếp, catalogue, biểu mẫu với thiết kế sáng tạo, chất lượng cao.',
+      title: 'Custom Design & Printing',
+      description: 'Business cards, catalogs, and forms with creative, high-quality designs.',
       icon: '🎨',
-      image: 'https://images.unsplash.com/photo-1545239351-ef4e1e9a07b1'
+      image: 'https://assets.grok.com/users/67be45c7-8635-4103-8055-fdb39a404ca0/Y6B6DxpUSfXAo3lQ-generated_image.jpg'
     },
     {
-      title: 'Dịch vụ đóng gói quà tặng',
-      description: 'Đóng gói quà tặng tinh tế, chuyên nghiệp cho mọi dịp đặc biệt.',
+      title: 'Gift Wrapping Services',
+      description: 'Elegant and professional gift packaging for every special occasion.',
       icon: '🎁',
-      image: 'https://images.unsplash.com/photo-1510087142098-4f1a321b0c5b'
+      image: 'https://assets.grok.com/users/67be45c7-8635-4103-8055-fdb39a404ca0/aoK6ptxUXoDOB30Q-generated_image.jpg'
     }
   ];
 
   return (
     <section className="py-20 relative">
       <div className="container mx-auto px-4">
-        <h2 className="text-4xl font-bold text-center mb-16 text-gray-800 animate-fade-in">Dịch Vụ Đẳng Cấp</h2>
+        <h2 className="text-4xl font-bold text-center mb-16 text-gray-800 animate-fade-in">
+          Premium Services
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {services.map((service, index) => (
             <div 

@@ -55,7 +55,7 @@ const ProductPage: React.FC = () => {
   ];
 
   return (
-    <section className="mx-auto p-10 flex gap-10">
+    <section className="mx-auto p-10 flex gap-10 mt-16">
       <Filters
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}

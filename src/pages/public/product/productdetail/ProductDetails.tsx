@@ -23,7 +23,7 @@ export default function ProductDetail() {
     }, 400)
   }, [])
   return (
-    <div className='max-w-7xl mx-auto p-8 bg-white rounded-lg shadow-lg mt-8'>
+    <div className='max-w-7xl mx-auto p-8 bg-white rounded-lg shadow-lg mt-16'>
       <div className='flex flex-col md:flex-row gap-6'>
         <ProductImages product={product} />
         <ProductInfo product={product} onAddToCart={handleAddToCart} />

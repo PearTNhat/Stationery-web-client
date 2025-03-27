@@ -19,7 +19,7 @@ const Contact: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8">
+    <div className="min-h-screen flex items-center justify-center p-8 mt-16">
       <div className="w-full max-w-5xl bg-white shadow-xl rounded-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-6 px-8 text-center">
@@ -58,7 +58,7 @@ const Contact: React.FC = () => {
             {/* Hình ảnh bên dưới Contact Info */}
             <div className="mt-4 flex justify-center">
                 <img
-                    src="https://arena.fpt.edu.vn/wp-content/uploads/2022/10/banner-thoi-trang.jpg"
+                    src="https://media.timeout.com/images/100434709/image.jpg"
                     alt="Contact"
                     className="rounded-lg shadow-md w-full"
                 />

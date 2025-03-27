@@ -4,12 +4,14 @@ const TestimonialSection: React.FC = () => {
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
-        <h2 className="text-4xl font-bold text-center mb-16 text-gray-800 animate-fade-in">Ý Kiến Khách Hàng</h2>
+        <h2 className="text-4xl font-bold text-center mb-16 text-gray-800 animate-fade-in">
+          Customer Testimonials
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {[
-            { quote: 'Dịch vụ tuyệt vời, sản phẩm chất lượng cao!', name: 'Nguyễn Văn A', role: 'Hiệu trưởng' },
-            { quote: 'Giao hàng nhanh, nhân viên nhiệt tình.', name: 'Trần Thị B', role: 'Quản lý' },
-            { quote: 'Giá cả hợp lý, đáng để hợp tác lâu dài.', name: 'Lê Văn C', role: 'Doanh nghiệp' }
+            { quote: 'Excellent service, high-quality products!', name: 'Mr.Alexander', role: 'Principal' },
+            { quote: 'Fast delivery, friendly staff.', name: 'Mrs.Isabella', role: 'Manager' },
+            { quote: 'Reasonable prices, great for long-term cooperation.', name: 'Mr.Ethan', role: 'Business Owner' }
           ].map((item, index) => (
             <div 
               key={index}

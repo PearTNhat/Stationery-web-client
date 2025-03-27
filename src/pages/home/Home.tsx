@@ -3,6 +3,7 @@ import Card from "~/components/card/Card";
 import Banner from "./Banner";
 import ProductCategories from "./ProductCategories";
 import Faq from "./Faq";
+import ZaloFloatingButton from "~/components/zalo/ZaloFloatingButton";
 
 // Định nghĩa kiểu dữ liệu cho sản phẩm
 type Product = {
@@ -141,6 +142,7 @@ const Home: React.FC = () => {
       <ProductSection title="New Products" products={sampleProducts} />
       <ProductSection title="Featured Products" products={sampleProducts} />
       <Faq />
+      <ZaloFloatingButton/>
     </div>
   );
 };

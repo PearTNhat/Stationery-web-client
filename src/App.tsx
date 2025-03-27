@@ -27,6 +27,12 @@ import { departmentPath } from './constance/paths'
 import DepartmentLayout from './pages/department/DepartmentLayout'
 import Dashboard from './pages/department/dashboard/Dashboard'
 import Product from './pages/department/product/Product'
+import PurchaseGuidePage from './pages/public/support/PurchaseGuidePage'
+import WarrantyPolicyPage from './pages/public/support/WarrantyPolicyPage'
+import ScrollToTop from './components/scroll/ScrollToTop'
+import NotFound from './pages/public/notfound/NotFound'
+import ReturnExchangePolicy from './pages/public/support/ReturnExchangePolicy'
+import ShippingPolicyPage from './pages/public/support/ShippingPolicyPage'
 
 function App() {
   const { childrenModal, isOpenModal } = useAppSelector((state) => state.modal)
@@ -34,6 +40,7 @@ function App() {
     <div className='bg-baseBackground h-screen text-baseText'>
       <Modal isOpen={isOpenModal}>{childrenModal}</Modal>
       <Routes>
+      <Route element={<ScrollToTop />} />
         <Route path={publicPaths.PUBLIC} element={<PublicLayout />}>
           <Route path='/auth' element={<AuthPage />} />
           <Route path={publicPaths.LOGIN} element={<Login />} />
@@ -47,6 +54,10 @@ function App() {
           <Route path={publicPaths.SERVICE} element={<Service />} />
           <Route path={publicPaths.ABOUT} element={<About />} />
           <Route path={'/comment'} element={<CommentContainer />} />
+          <Route path={publicPaths.SUPPORT_PURCHASE_GUIDE} element={<PurchaseGuidePage />} />
+          <Route path={publicPaths.SUPPORT_WARRANTY_POLICY} element={<WarrantyPolicyPage />} />
+          <Route path={publicPaths.RETURN_EXCHANGE_POLICY} element={<ReturnExchangePolicy />} />
+          <Route path={publicPaths.SHIPPING_POLICY} element={<ShippingPolicyPage />} />
         </Route>
         <Route path={departmentPath.DASHBOARD} element={<DepartmentLayout />}>
           <Route index element={<Dashboard />} />
@@ -59,7 +70,7 @@ function App() {
           <Route path={adminPaths.DEPARTMENT} element={<ManageDepartments />} />
           <Route path={adminPaths.VOUCHER} element={<VoucherManagement />} />
         </Route>
-        <Route path='*' element={<h1>Not Found</h1>} />
+        <Route path='*' element={<NotFound/>} />
       </Routes>
     </div>
   )
