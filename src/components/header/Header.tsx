@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { ShoppingCart, Search, Menu, X } from 'lucide-react'
-import { useNavigate, NavLink } from 'react-router-dom'
+import { useNavigate, NavLink, Link } from 'react-router-dom'
 import { publicPaths } from '~/constance/paths'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { userActions } from '~/store/slices/user'
 import { showToastError, showToastSuccess } from '~/utils/alert'
+import { dropDownProfile } from '~/constance/dropdown'
 import Cart from '~/pages/public/cart/Cart'
 import { apiLogout } from '~/api/authenticate'
 
@@ -19,23 +20,23 @@ function Header() {
   const sampleCartItems = [
     {
       id: 1,
-      name: "Product 1",
+      name: 'Product 1',
       price: 20.0,
       quantity: 2,
-      image: "https://stbcuulong.edu.vn/wp-content/uploads/2023/06/L4_KNTT_TiengViet4.1-scaled.jpg",
+      image: 'https://stbcuulong.edu.vn/wp-content/uploads/2023/06/L4_KNTT_TiengViet4.1-scaled.jpg'
     },
     {
       id: 2,
-      name: "Product 2",
+      name: 'Product 2',
       price: 15.0,
       quantity: 1,
-      image: "https://stbcuulong.edu.vn/wp-content/uploads/2023/06/L4_KNTT_TiengViet4.1-scaled.jpg",
-    },
-  ];
+      image: 'https://stbcuulong.edu.vn/wp-content/uploads/2023/06/L4_KNTT_TiengViet4.1-scaled.jpg'
+    }
+  ]
 
   const handleCartToggle = () => {
-    setIsCartOpen(!isCartOpen); // Mở hoặc đóng giỏ hàng
-  };
+    setIsCartOpen(!isCartOpen) // Mở hoặc đóng giỏ hàng
+  }
 
   useEffect(() => {
     if (theme) {
@@ -77,19 +78,44 @@ function Header() {
 
       {/* Menu trên màn hình lớn */}
       <div className='hidden md:flex space-x-6 text-gray-700'>
-        <NavLink to={publicPaths.PUBLIC} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
+        <NavLink
+          to={publicPaths.PUBLIC}
+          className={({ isActive }) =>
+            isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+          }
+        >
           Home
         </NavLink>
-        <NavLink to={publicPaths.ABOUT} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
+        <NavLink
+          to={publicPaths.ABOUT}
+          className={({ isActive }) =>
+            isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+          }
+        >
           About
         </NavLink>
-        <NavLink to={publicPaths.PRODUCT} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
+        <NavLink
+          to={publicPaths.PRODUCT}
+          className={({ isActive }) =>
+            isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+          }
+        >
           Product
         </NavLink>
-        <NavLink to={publicPaths.SERVICE} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
+        <NavLink
+          to={publicPaths.SERVICE}
+          className={({ isActive }) =>
+            isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+          }
+        >
           Service
         </NavLink>
-        <NavLink to={publicPaths.CONTACT} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
+        <NavLink
+          to={publicPaths.CONTACT}
+          className={({ isActive }) =>
+            isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+          }
+        >
           Contact
         </NavLink>
       </div>
@@ -109,7 +135,9 @@ function Header() {
         {/* Giỏ hàng */}
         <div className='relative cursor-pointer' onClick={handleCartToggle}>
           <ShoppingCart size={24} className='text-gray-700 hover:text-blue-500 transition' />
-          <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>{sampleCartItems.length}</span>
+          <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>
+            {sampleCartItems.length}
+          </span>
         </div>
 
         {/* Chuyển đổi chế độ sáng/tối */}
@@ -119,14 +147,30 @@ function Header() {
 
         {/* Đăng Nhập & Đăng Ký */}
         {isLoggedIn ? (
-          <div
-            className='w-10 rounded-full overflow-hidden'
-            onClick={() => {
-              dispatch(userActions.logout())
-              showToastSuccess('Logout successfully')
-            }}
-          >
-            <img src='https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp' />
+          <div className=' d-dropdown d-dropdown-hover  d-dropdown-end '>
+            <div tabIndex={0} className='w-10 rounded-full overflow-hidden'>
+              <img src={userData?.avatar} alt={userData.last_name} />
+            </div>
+            <ul tabIndex={0} className='d-dropdown-content d-menu bg-base-100 rounded-md z-10 w-52 p-2 shadow-md'>
+              {dropDownProfile.map((item) => {
+                let Comp: React.ElementType = 'button'
+                if (item.to) {
+                  Comp = Link
+                }
+                return (
+                  <li key={item.id} className={`${item.styleParent ? item.styleParent : ''}`}>
+                    <Comp
+                      {...(item.to ? { to: item.to } : {})}
+                      onClick={item?.onClick ? handleLogout : undefined}
+                      className={`flex items-center w-full px-4 py-2 ${item.style ? item.style : ' text-gray-700 hover:bg-gray-100 transition'}`}
+                    >
+                      {item.icon}
+                      {item.name}
+                    </Comp>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
         ) : (
           <div className='hidden md:flex space-x-3'>
@@ -155,19 +199,44 @@ function Header() {
       {isMenuOpen && (
         <div className='absolute top-16 left-0 w-full bg-white shadow-md md:hidden z-[999999]'>
           <div className='flex flex-col space-y-4 p-4 text-gray-700'>
-            <NavLink to={publicPaths.PUBLIC} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
+            <NavLink
+              to={publicPaths.PUBLIC}
+              className={({ isActive }) =>
+                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+              }
+            >
               Home
             </NavLink>
-            <NavLink to={publicPaths.ABOUT} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
+            <NavLink
+              to={publicPaths.ABOUT}
+              className={({ isActive }) =>
+                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+              }
+            >
               About
             </NavLink>
-            <NavLink to={publicPaths.PRODUCT} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
+            <NavLink
+              to={publicPaths.PRODUCT}
+              className={({ isActive }) =>
+                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+              }
+            >
               Product
             </NavLink>
-            <NavLink to={publicPaths.SERVICE} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
+            <NavLink
+              to={publicPaths.SERVICE}
+              className={({ isActive }) =>
+                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+              }
+            >
               Service
             </NavLink>
-            <NavLink to={publicPaths.CONTACT} className={({ isActive }) => isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'}>
+            <NavLink
+              to={publicPaths.CONTACT}
+              className={({ isActive }) =>
+                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+              }
+            >
               Contact
             </NavLink>
             <div className='flex items-center space-x-4 border-t pt-4'>
@@ -192,13 +261,12 @@ function Header() {
           </div>
         </div>
       )}
-        {/* Giỏ hàng Modal */}
-        <Cart
+      {/* Giỏ hàng Modal */}
+      <Cart
         isOpen={isCartOpen}
         onClose={handleCartToggle}
         cartItems={sampleCartItems} // Truyền dữ liệu mẫu vào modal giỏ hàng
       />
-      <button onClick={handleLogout}>Logout</button> 
     </nav>
   )
 }

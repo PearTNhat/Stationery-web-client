@@ -3,28 +3,28 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
 interface Banner {
-  id: number;
-  image: string;
-  title: string;
-  content: string;
-  buttonText: string;
-  buttonLink: string;
+  id: number
+  image: string
+  title: string
+  content: string
+  buttonText: string
+  buttonLink: string
 }
 
 interface BannerProps {
-  banners: Banner[];
+  banners: Banner[]
 }
 
 export default function BannerSlider({ banners }: BannerProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % banners.length);
     }, 7000);
 
-    return () => clearInterval(intervalId);
-  }, [banners.length]);
+    return () => clearInterval(intervalId)
+  }, [banners.length])
 
   return (
     <section className="relative w-full min-h-[700px] overflow-hidden">
@@ -66,5 +66,5 @@ export default function BannerSlider({ banners }: BannerProps) {
         ))}
       </div>
     </section>
-  );
+  )
 }

@@ -1,12 +1,13 @@
 // cái này xài mấy cái biến global khác
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { fetchCurrentUser } from '../actions/user'
 
 interface UserState {
   userData: object | null
   accessToken: string | null
   isLoggedIn: boolean
-  isLoading: false
-  isError: false
+  isLoading: boolean
+  isError: boolean
 }
 const initialState: UserState = {
   userData: null,
@@ -30,6 +31,27 @@ const userSlice = createSlice({
       state.isLoggedIn = false
       localStorage.removeItem('access_token')
     }
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchCurrentUser.pending, (state) => {
+      state.isLoading = true
+    })
+    builder.addCase(
+      fetchCurrentUser.fulfilled,
+      (state, action: PayloadAction<{ accessToken: string; userData: object }>) => {
+        state.isLoading = false
+        state.isLoggedIn = true
+        state.userData = action.payload
+        return state
+      }
+    )
+    builder.addCase(fetchCurrentUser.rejected, (state) => {
+      state.isLoading = false
+      state.isError = true
+      state.isLoggedIn = true
+      // state.userData = {}
+      // state.accessToken = null
+    })
   }
 })
 const userReducer = userSlice.reducer
