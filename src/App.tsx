@@ -33,6 +33,7 @@ import ScrollToTop from './components/scroll/ScrollToTop'
 import NotFound from './pages/public/notfound/NotFound'
 import ReturnExchangePolicy from './pages/public/support/ReturnExchangePolicy'
 import ShippingPolicyPage from './pages/public/support/ShippingPolicyPage'
+import { useEffect } from 'react'
 
 function App() {
   const { childrenModal, isOpenModal } = useAppSelector((state) => state.modal)
@@ -40,7 +41,6 @@ function App() {
     <div className='bg-baseBackground h-screen text-baseText'>
       <Modal isOpen={isOpenModal}>{childrenModal}</Modal>
       <Routes>
-      <Route element={<ScrollToTop />} />
         <Route path={publicPaths.PUBLIC} element={<PublicLayout />}>
           <Route path='/auth' element={<AuthPage />} />
           <Route path={publicPaths.LOGIN} element={<Login />} />
@@ -70,7 +70,7 @@ function App() {
           <Route path={adminPaths.DEPARTMENT} element={<ManageDepartments />} />
           <Route path={adminPaths.VOUCHER} element={<VoucherManagement />} />
         </Route>
-        <Route path='*' element={<NotFound/>} />
+        <Route path='*' element={<NotFound />} />
       </Routes>
     </div>
   )

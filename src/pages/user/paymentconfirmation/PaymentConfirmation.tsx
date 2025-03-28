@@ -22,7 +22,7 @@ export default function PaymentConfirmation() {
   const [discountAmount, setDiscountAmount] = useState(0);
 
   return (
-    <div className="max-w-3xl mx-auto p-8 bg-white rounded-lg shadow-lg mt-8">
+    <div className="max-w-3xl mx-auto p-8 bg-white rounded-lg shadow-lg mt-16">
       <h1 className="text-3xl font-bold text-blue-800 text-center">Xác nhận thanh toán</h1>
       <ShippingAddress />
       <CustomerInfo />

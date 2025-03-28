@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "~/components/card/Card";
 import Banner from "./Banner";
 import ProductCategories from "./ProductCategories";
 import Faq from "./Faq";
-import ZaloFloatingButton from "~/components/zalo/ZaloFloatingButton";
+import { publicPaths } from "~/constance/paths";
+import FloatingButtons from "~/components/contactnow/FloatingButtons";
 
 // Định nghĩa kiểu dữ liệu cho sản phẩm
 type Product = {
@@ -65,27 +66,27 @@ interface BannerData {
 const banners: BannerData[] = [
   {
     id: 1,
-    image: "https://haycafe.vn/wp-content/uploads/2022/03/Background-banner-1.jpg",
-    title: "Discover New Arrivals",
-    content: "Explore our latest collection now",
+    image: "public/images/banner1.jpg", 
+    title: "New Collection Arrived",
+    content: "Discover unique and creative stationery items!",
     buttonText: "Shop Now",
-    buttonLink: "#shop",
+    buttonLink: publicPaths.PRODUCT,
   },
   {
     id: 2,
-    image: "https://th.bing.com/th?id=OIP.9FcAolHajDjUhAItsWmV9QHaDU&w=350&h=156&c=8&rs=1&qlt=90&o=6&dpr=1.3&pid=3.1&rm=2",
-    title: "Spring Sale",
-    content: "Up to 50% off everything",
+    image: "public/images/banner2.jpg",
+    title: "Big April Sale",
+    content: "Up to 50% off on hundreds of stationery products!",
     buttonText: "Get Deals",
-    buttonLink: "#sale",
+    buttonLink: publicPaths.PRODUCT,
   },
   {
     id: 3,
-    image: "https://arena.fpt.edu.vn/wp-content/uploads/2022/10/banner-thoi-trang.jpg",
+    image: "public/images/banner3.jpg",
     title: "Free Shipping",
-    content: "On orders over $50",
+    content: "Enjoy free shipping on orders over $12!",
     buttonText: "Learn More",
-    buttonLink: "#shipping",
+    buttonLink: publicPaths.SHIPPING_POLICY,
   },
 ];
 
@@ -113,6 +114,11 @@ const ProductSection: React.FC<ProductSectionProps> = ({ title, products }) => {
   const handleNext = () => setPage((prev) => (prev + 1) % totalPages);
   const handlePrev = () => setPage((prev) => (prev - 1 + totalPages) % totalPages);
 
+  useEffect(() => {
+      console.log("Location changed to:", location.pathname);
+      window.scrollTo(0, 0);
+  }, []);
+  
   return (
     <section className="container mx-auto py-12 px-6">
       <h3 className="text-2xl font-bold text-blue-800 text-center mb-6">{title}</h3>
@@ -142,7 +148,7 @@ const Home: React.FC = () => {
       <ProductSection title="New Products" products={sampleProducts} />
       <ProductSection title="Featured Products" products={sampleProducts} />
       <Faq />
-      <ZaloFloatingButton/>
+      <FloatingButtons/>
     </div>
   );
 };

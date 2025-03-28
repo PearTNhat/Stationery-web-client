@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 interface Banner {
   id: number;
@@ -20,42 +21,47 @@ export default function BannerSlider({ banners }: BannerProps) {
   useEffect(() => {
     const intervalId = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % banners.length);
-    }, 5000);
+    }, 7000);
 
     return () => clearInterval(intervalId);
   }, [banners.length]);
 
   return (
-    <section className="relative w-full min-h-[600px] overflow-hidden">
+    <section className="relative w-full min-h-[700px] overflow-hidden">
       {banners.map((banner, index) => (
-        <motion.div
-          key={banner.id}
-          className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-1000"
-          style={{ backgroundImage: `url(${banner.image})`, opacity: currentIndex === index ? 1 : 0 }}
-        >
-          <div className="absolute inset-0 bg-black opacity-40"></div>
-          <div className="relative h-full flex flex-col items-center justify-center text-center px-6">
-            <h2 className="text-5xl font-bold text-white drop-shadow-lg">{banner.title}</h2>
-            <p className="mt-4 text-xl text-white drop-shadow-lg">{banner.content}</p>
-            <a
-              href={banner.buttonLink}
-              className="mt-6 inline-block px-6 py-3 rounded-lg font-semibold text-gray-800 bg-white hover:bg-gray-200 transition-colors shadow-lg"
-            >
-              {banner.buttonText}
-            </a>
-          </div>
-        </motion.div>
+      <motion.div
+        key={banner.id}
+        className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-1000"
+        style={{
+          backgroundImage: `url(${banner.image})`,
+          opacity: currentIndex === index ? 1 : 0,
+          pointerEvents: currentIndex === index ? "auto" : "none",
+        }}
+      >
+        <div className="absolute inset-0 bg-black opacity-50"></div>
+        <div className="relative h-full flex flex-col items-center justify-center text-center px-6">
+          <h2 className="text-6xl font-bold text-white drop-shadow-2xl">{banner.title}</h2>
+          <p className="mt-6 text-xl text-white drop-shadow-2xl">{banner.content}</p>
+          <Link
+            to={banner.buttonLink}
+            className="mt-8 inline-block px-8 py-4 rounded-lg font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-700 hover:to-blue-500 transition-colors shadow-2xl transform hover:scale-105"
+          >
+            {banner.buttonText}
+          </Link>
+        </div>
+      </motion.div>
       ))}
-      
+
       {/* Navigation Dots */}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
         {banners.map((_, index) => (
           <button
             key={index}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              currentIndex === index ? 'bg-white scale-125' : 'bg-gray-400'
+            className={`w-4 h-4 rounded-full transition-all duration-300 transform ${
+              currentIndex === index ? 'bg-white scale-150' : 'bg-gray-400 scale-100'
             }`}
             onClick={() => setCurrentIndex(index)}
+            style={{ position: 'relative', zIndex: 20 }}
           />
         ))}
       </div>

@@ -4,15 +4,16 @@ import { useNavigate, NavLink } from 'react-router-dom'
 import { publicPaths } from '~/constance/paths'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { userActions } from '~/store/slices/user'
-import { showToastSuccess } from '~/utils/alert'
+import { showToastError, showToastSuccess } from '~/utils/alert'
 import Cart from '~/pages/public/cart/Cart'
+import { apiLogout } from '~/api/authenticate'
 
 function Header() {
   const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'light')
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { isLoggedIn, userData } = useAppSelector((state) => state.user)
+  const { isLoggedIn, userData ,accessToken} = useAppSelector((state) => state.user)
   const [isCartOpen, setIsCartOpen] = useState(false); 
 
   const sampleCartItems = [
@@ -46,6 +47,25 @@ function Header() {
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'))
   }
+
+  const handleLogout = async () => {
+    try {
+      const response = await apiLogout({token: accessToken});
+  
+      console.log('Logout response:', response);
+      if (response.code = 200) {
+        dispatch(userActions.logout());
+        showToastSuccess('Logout successfully');
+        navigate('/auth?mode=login');
+      } else {
+        showToastError(response.message || 'Logout failed');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      showToastError('Logout failed. Please try again.');
+    }
+  };
+  
 
   useEffect(() => {
     console.log('isLoggedIn', isLoggedIn)
@@ -172,12 +192,13 @@ function Header() {
           </div>
         </div>
       )}
-            {/* Giỏ hàng Modal */}
-            <Cart
+        {/* Giỏ hàng Modal */}
+        <Cart
         isOpen={isCartOpen}
         onClose={handleCartToggle}
         cartItems={sampleCartItems} // Truyền dữ liệu mẫu vào modal giỏ hàng
       />
+      <button onClick={handleLogout}>Logout</button> 
     </nav>
   )
 }
