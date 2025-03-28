@@ -149,7 +149,7 @@ function Header() {
         {isLoggedIn ? (
           <div className=' d-dropdown d-dropdown-hover  d-dropdown-end '>
             <div tabIndex={0} className='w-10 rounded-full overflow-hidden'>
-              <img src={userData?.avatar} alt={userData.last_name} />
+              <img src={userData?.avatar} alt={userData?.last_name} />
             </div>
             <ul tabIndex={0} className='d-dropdown-content d-menu bg-base-100 rounded-md z-10 w-52 p-2 shadow-md'>
               {dropDownProfile.map((item) => {

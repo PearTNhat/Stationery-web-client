@@ -8,17 +8,6 @@ import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { fetchCurrentUser } from '~/store/actions/user'
 import { useNavigate } from 'react-router-dom'
 
-interface User {
-  avatar?: string
-  username: string
-  fullName: string
-  email: string
-  birthDate: string
-  gender: string
-  phone: string
-  address: string
-}
-
 interface Order {
   id: string
   status: 'Đang chuẩn bị hàng' | 'Đã xác nhận đơn hàng' | 'Đang Giao' | 'Đã hủy'

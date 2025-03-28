@@ -1,19 +1,10 @@
 // src/components/ProfileHeader.tsx
 import React, { useState } from 'react'
 import { FaEdit, FaSave, FaCamera } from 'react-icons/fa'
+import { User } from '~/types/user'
 
 interface ProfileHeaderProps {
-  initialData: {
-    avatar?: string
-    username?: string
-    fullName?: string
-    email?: string
-    birthDate?: string
-    gender?: string
-    phone: string
-    carts?: []
-    addresses?: []
-  } | null
+  initialData: User | null
   onSave: (updatedData: ProfileHeaderProps['initialData']) => void
 }
 
@@ -45,7 +36,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) =>
     onSave(formData)
     setIsEditing(false)
   }
-
+  console.log(formData)
   return (
     <div className='bg-white p-6 rounded-xl shadow-lg max-w-3xl mx-auto'>
       {/* Header */}
@@ -83,8 +74,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) =>
           )}
         </div>
         <div>
-          <h3 className='text-xl font-medium text-gray-800'>{formData?.fullName}</h3>
-          <p className='text-gray-500'>{formData?.username}</p>
+          <h3 className='text-xl font-medium text-gray-800'>{formData?.first_name + ' ' + formData?.last_name}</h3>
+          <p className='text-gray-500'>{formData?.first_name + ' ' + formData?.last_name}</p>
         </div>
       </div>
 

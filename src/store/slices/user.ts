@@ -1,9 +1,10 @@
 // cái này xài mấy cái biến global khác
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { fetchCurrentUser } from '../actions/user'
+import { User } from '~/types/user'
 
 interface UserState {
-  userData: object | null
+  userData: User | null
   accessToken: string | null
   isLoggedIn: boolean
   isLoading: boolean
@@ -20,7 +21,7 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    login(state, action: PayloadAction<{ accessToken: string; userData: object }>) {
+    login(state, action: PayloadAction<{ accessToken: string; userData: User }>) {
       state.accessToken = action.payload.accessToken
       state.userData = action.payload.userData
       state.isLoggedIn = true
@@ -38,10 +39,10 @@ const userSlice = createSlice({
     })
     builder.addCase(
       fetchCurrentUser.fulfilled,
-      (state, action: PayloadAction<{ accessToken: string; userData: object }>) => {
+      (state, action: PayloadAction<{ accessToken: string; userData: User }>) => {
         state.isLoading = false
         state.isLoggedIn = true
-        state.userData = action.payload
+        state.userData = action.payload.userData
         return state
       }
     )
