@@ -55,7 +55,7 @@ const UserProfile: React.FC = () => {
   }
 
   return (
-    <div className='min-h-screen bg-gray-100 flex'>
+    <div className='min-h-screen bg-gray-100 flex mt-16'>
       <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} onLogout={handleLogout} />
       <div className='flex-1 p-10'>{renderContent()}</div>
     </div>

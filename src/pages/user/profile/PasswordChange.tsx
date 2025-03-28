@@ -1,96 +1,103 @@
-// src/components/PasswordChange.tsx
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
 import { FaLock } from 'react-icons/fa';
+import { apiChangePassword } from '~/api/users';
+import { useAppSelector } from '~/hooks/redux';
+import { showAlertError, showAlertSucess } from '~/utils/alert';
+
+interface FormData {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
 
 const PasswordChange: React.FC = () => {
-  const [formData, setFormData] = useState({
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: '', // Thêm xác nhận mật khẩu mới để hoàn thiện form
-  });
+  const { userData } = useAppSelector((state) => state.user);
+  const userEmail = userData?.email || '';
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<FormData>();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.newPassword !== formData.confirmPassword) {
-      alert('Mật khẩu mới và xác nhận không khớp!');
-      return;
+  const onSubmit = async (data: FormData) => {
+    try {
+      const response = await apiChangePassword({
+        email: userEmail,
+        oldPassword: data.oldPassword,
+        newPassword: data.newPassword,
+      });
+      showAlertSucess('Password changed successfully!');
+      reset();
+    } catch (error) {
+      showAlertError('Failed to change password. Please try again.');
     }
-    if (formData.newPassword.length < 6) {
-      alert('Mật khẩu mới phải dài ít nhất 6 ký tự!');
-      return;
-    }
-    console.log('Password change submitted:', formData);
-    setFormData({ oldPassword: '', newPassword: '', confirmPassword: '' });
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg max-w-3xl mx-auto">
+    <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md mx-auto mt-10">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6 border-b pb-4">
+      <div className="flex items-center justify-center mb-6">
         <h2 className="text-2xl font-semibold text-gray-800 flex items-center">
-          <FaLock className="mr-2 text-blue-500" /> Đổi mật khẩu
+          <FaLock className="mr-2 text-blue-500" /> Change Password
         </h2>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Mật khẩu cũ
-            </label>
-            <input
-              type="password"
-              name="oldPassword"
-              value={formData.oldPassword}
-              onChange={handleInputChange}
-              className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="Nhập mật khẩu cũ"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Mật khẩu mới
-            </label>
-            <input
-              type="password"
-              name="newPassword"
-              value={formData.newPassword}
-              onChange={handleInputChange}
-              className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="Nhập mật khẩu mới"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Xác nhận mật khẩu mới
-            </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="Xác nhận mật khẩu mới"
-            />
-          </div>
-
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md"
-            >
-              Cập nhật mật khẩu
-            </button>
-          </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <div className="relative">
+          <FaLock className="absolute top-3 left-3 text-gray-500" />
+          <input
+            {...register('oldPassword', { required: 'Please enter your old password' })}
+            type="password"
+            placeholder="Old Password"
+            className="w-full p-3 pl-10 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+          />
+          {errors.oldPassword?.message && <p className="text-red-500 text-sm">{errors.oldPassword.message}</p>}
         </div>
+
+        <div className="relative">
+          <FaLock className="absolute top-3 left-3 text-gray-500" />
+          <input
+            {...register('newPassword', {
+              required: 'Please enter a new password',
+              minLength: { value: 7, message: 'Password must be at least 7 characters long' },
+              pattern: { value: /^[a-zA-Z0-9]+$/, message: 'Password can only contain letters and numbers' },
+            })}
+            type="password"
+            placeholder="New Password"
+            className="w-full p-3 pl-10 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+          />
+          {errors.newPassword?.message && <p className="text-red-500 text-sm">{errors.newPassword.message}</p>}
+        </div>
+
+        <div className="relative">
+          <FaLock className="absolute top-3 left-3 text-gray-500" />
+          <input
+            {...register('confirmPassword', {
+              required: 'Please confirm your new password',
+              validate: (value) => value === watch('newPassword') || 'Passwords do not match',
+            })}
+            type="password"
+            placeholder="Confirm New Password"
+            className="w-full p-3 pl-10 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+          />
+          {errors.confirmPassword?.message && <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>}
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className={`w-full py-3 rounded-lg transition-all duration-200 shadow-md ${
+            isSubmitting
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700'
+          }`}
+        >
+          {isSubmitting ? 'Processing...' : 'Update Password'}
+        </button>
       </form>
     </div>
   );
