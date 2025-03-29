@@ -3,6 +3,8 @@ const publicPaths = {
   LOGIN: '/login',
   REGISTER: '/register',
 
+  PRODUCT_DETAIL: '/products/:slug',
+
   DASHBOARD: '/dashboard',
   NOT_FOUND: '/not-found',
   PRODUCT: '/product',

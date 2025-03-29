@@ -14,8 +14,8 @@ function Header() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { isLoggedIn, userData ,accessToken} = useAppSelector((state) => state.user)
-  const [isCartOpen, setIsCartOpen] = useState(false); 
+  const { isLoggedIn, userData, accessToken } = useAppSelector((state) => state.user)
+  const [isCartOpen, setIsCartOpen] = useState(false)
 
   const sampleCartItems = [
     {
@@ -51,22 +51,21 @@ function Header() {
 
   const handleLogout = async () => {
     try {
-      const response = await apiLogout({token: accessToken});
-  
-      console.log('Logout response:', response);
-      if (response.code = 200) {
-        dispatch(userActions.logout());
-        showToastSuccess('Logout successfully');
-        navigate('/auth?mode=login');
+      const response = await apiLogout({ token: accessToken })
+
+      console.log('Logout response:', response)
+      if (response.code == 200) {
+        dispatch(userActions.logout())
+        showToastSuccess('Logout successfully')
+        navigate('/auth?mode=login')
       } else {
-        showToastError(response.message || 'Logout failed');
+        showToastError(response.message || 'Logout failed')
       }
     } catch (error) {
-      console.error('Logout error:', error);
-      showToastError('Logout failed. Please try again.');
+      console.error('Logout error:', error)
+      showToastError('Logout failed. Please try again.')
     }
-  };
-  
+  }
 
   useEffect(() => {
     console.log('isLoggedIn', isLoggedIn)

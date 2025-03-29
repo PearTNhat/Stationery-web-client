@@ -2,7 +2,7 @@ import { AxiosError } from 'axios'
 import { FaEnvelope, FaEye, FaEyeSlash, FaLock } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 import { useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import InputForm from '~/components/input/InputForm'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { FormLogin, ForgotPasswordRequest, ResetPasswordRequest } from '~/types/auth'
@@ -19,7 +19,6 @@ export default function LoginForm() {
   const [isForgotPassword, setIsForgotPassword] = useState(false)
   const [emailForOtp, setEmailForOtp] = useState('')
   const [isOtpSent, setIsOtpSent] = useState(false)
-  const [otp, setOtp] = useState('') // Lưu OTP để dùng khi reset mật khẩu
 
   // Form login
   const {
@@ -123,7 +122,7 @@ export default function LoginForm() {
               value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
               message: 'Please enter a valid email address'
             }
-          }}          
+          }}
           error={loginErrors}
         />
         <InputForm

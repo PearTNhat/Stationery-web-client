@@ -48,7 +48,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path={publicPaths.PRODUCT} element={<ProductPage />} />
           <Route path={userPaths.PROFILE} element={<UserProfile />} />
-          <Route path='/products/:id' element={<ProductDetail />} />
+          <Route path={publicPaths.PRODUCT_DETAIL} element={<ProductDetail />} />
           <Route path='/products/payment/:id' element={<PaymentConfirmation />} />
           <Route path={publicPaths.CONTACT} element={<Contact />} />
           <Route path={publicPaths.SERVICE} element={<Service />} />

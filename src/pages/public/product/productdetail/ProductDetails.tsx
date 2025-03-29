@@ -29,11 +29,11 @@ export default function ProductDetail() {
         <ProductInfo product={product} onAddToCart={handleAddToCart} />
       </div>
       <ProductTabs product={product} />
-      <SimilarProducts
+      {/* <SimilarProducts
         similarProducts={similarProducts}
         onAddToCart={handleAddToCart}
         onViewDetails={handleViewDetails}
-      />
+      /> */}
     </div>
   )
 }
