@@ -28,4 +28,10 @@ const convertNumberToStar = (number: number) => {
   }
   return stars
 }
-export { formatNumber, convertNumberToStar }
+const calculatePercent = (price: number, priceDiscount: number) => {
+  if (price === 0 || !price || priceDiscount === 0 || !priceDiscount) {
+    return 0
+  }
+  return Math.round(((price - priceDiscount) / price) * 100)
+}
+export { formatNumber, convertNumberToStar, calculatePercent }

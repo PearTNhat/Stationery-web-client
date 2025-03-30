@@ -7,11 +7,16 @@ import ColorSelector from '../product_attributes/ColorSelector'
 import ProductModal from '../model/ProductModal'
 import { Color, Product, ProductColor, ProductDetail } from '~/types/product'
 import NumberToStart from '~/components/numberToStar/NumberToStart'
+import { calculatePercent, formatNumber } from '~/utils/helper'
 
 interface ProductCardProps {
   product: Product
   onAddToCart: (id: string) => void
   onViewDetails: (id: string) => void
+}
+interface MinPrice {
+  orginal: number
+  final: number
 }
 
 const Card: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails }) => {
@@ -20,6 +25,7 @@ const Card: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails 
   const [productDetails, setProductDetails] = useState<ProductDetail | null>(null)
   const [productColor, setProductColor] = useState<ProductColor | null>(null)
   const [colors, setColors] = useState<Color[]>([])
+  const [minPrice, setMinPrice] = useState<MinPrice>({ orginal: 0, final: 0 })
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color)
@@ -31,27 +37,38 @@ const Card: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails 
     setSelectedColor('') // Reset màu khi đóng modal
   }
   useEffect(() => {
-    let isFound: boolean = false
-    console.log('product', product)
+    if (!product) return
+    const colorList: Color[] = []
+    let isSetProductDetail: boolean = false
+    const minPrice: MinPrice = { orginal: 0, final: 0 }
     for (const pc of product.productColors) {
+      colorList.push(pc.color)
       for (const pd of pc.productDetails) {
-        if (pd.stockQuantity > 0) {
-          isFound = true
+        if (pd.stockQuantity > 0 && !isSetProductDetail) {
+          //price
+          minPrice.final = pd.discountPrice
+          minPrice.orginal = pd.originalPrice
+          // setProductDetails
+          isSetProductDetail = true
           setProductDetails(pd)
           setProductColor(pc)
           setSelectedColor(pc.color.colorId)
         }
-        break
+        minPrice.orginal = Math.min(minPrice.orginal, pd.originalPrice)
+        minPrice.final = Math.min(minPrice.final, pd.discountPrice)
       }
-      if (isFound) break
     }
-    setColors(product.productColors.map((color) => color.color))
+    if (!isSetProductDetail) {
+      console.log('san pham het hang')
+    }
+    setColors(colorList)
+    setMinPrice(minPrice)
   }, [product])
   return (
     <motion.div className='bg-white text-gray-900 rounded-2xl shadow-lg p-5 flex flex-col items-center space-y-4 transition-all duration-300 hover:shadow-2xl'>
       <Link to={`/products/${productDetails?.slug}`}>
         <motion.img
-          src={productColor?.images[1]?.url}
+          src={productColor?.images[0]?.url}
           alt={product.name}
           className='w-52 h-52 object-cover rounded-xl shadow-md'
           initial={{ scale: 0.8, opacity: 0 }}
@@ -61,8 +78,23 @@ const Card: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails 
       </Link>
       <h3 className='text-lg font-bold text-center'>{product.name}</h3>
       <div className='flex items-center justify-between w-full px-4'>
-        <span className='text-xl font-semibold text-blue-500'>${productDetails?.originalPrice}</span>
-        <div className='flex items-center text-xs'>
+        <div>
+          {/* Giá đã giảm */}
+          <p className='text-[19px] max-sm:text-xs font-semibold text-blue-500'>{formatNumber(minPrice.final)} ₫</p>
+          <div className='flex items-center '>
+            {/* Giá chưa giảm */}
+            {minPrice.orginal !== 0 && (
+              <>
+                <p className='line-through text-[#6b7280] text-sm '>{formatNumber(minPrice.orginal)}₫</p>
+                {/* % */}
+                <p className={`ml-1 text-red-400 text-sm font-bold`}>
+                  - {calculatePercent(minPrice.orginal, minPrice.final)}%
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+        <div className='flex items-center text-sm'>
           <NumberToStart number={product.totalRating} />
         </div>
       </div>
