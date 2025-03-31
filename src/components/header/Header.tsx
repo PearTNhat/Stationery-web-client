@@ -17,6 +17,8 @@ function Header() {
   const { isLoggedIn, userData, accessToken } = useAppSelector((state) => state.user)
   const [isCartOpen, setIsCartOpen] = useState(false)
 
+  console.log(userData);
+
   const sampleCartItems = [
     {
       id: 1,
