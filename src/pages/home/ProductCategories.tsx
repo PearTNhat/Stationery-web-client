@@ -46,18 +46,18 @@ const ProductCategories: React.FC = () => {
             : // Danh sách danh mục khi tải xong
               categories.map((category) => (
                 <div
-                  key={category.category_id}
+                  key={category.categoryId}
                   className="bg-white rounded-lg shadow-md p-4 text-center hover:shadow-lg transition-transform transform hover:scale-105 active:scale-95 cursor-pointer"
-                  aria-label={category.category_name}
+                  aria-label={category.categoryName}
                 >
                   <div
-                    style={{ backgroundColor: category.bg_color }}
+                    style={{ backgroundColor: category.bgColor }}
                     className="w-14 h-14 text-white rounded-full flex items-center justify-center mx-auto mb-2 text-2xl shadow-lg"
                   >
                     {category.icon}
                   </div>
                   <p className="text-sm font-medium text-gray-700">
-                    {category.category_name}
+                    {category.categoryName}
                   </p>
                 </div>
               ))}

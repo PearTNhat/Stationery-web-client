@@ -1,6 +1,6 @@
 export interface Category {
-    category_id: string;
-    category_name: string;
+    categoryId: string;
+    categoryName: string;
     icon: string;
-    bg_color: string;
+    bgColor: string;
   }
