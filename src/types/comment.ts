@@ -1,31 +1,32 @@
 type User = {
-  _id: string
+  userId: string
   firstName: string
   lastName: string
   avatar?: {
     url: string
   }
 }
-
-type CommentType = {
-  replies: CommentType[] | undefined
-  _id: string
+interface Review {
+  reviewId: string
   user: User
-  content: string
+  content: string | null
+  rating: number
+  reviewImage: string | null
+  childReviews: Review[]
+  replyOnUser: User | null
   createdAt: string
-  likes: string[]
-  rating?: number
-  replyOnUser?: User
 }
+
 type AffectedCommentType = {
   type: 'REPLY' | 'EDIT'
   id: string
 } | null
+
 type CommentProps = {
-  userId: string
-  comment: CommentType
+  userId?: string
+  comment: Review
   isAdmin: boolean
-  replies?: CommentType[]
+  replies?: Review[]
   parentId?: string
   affectedComment?: AffectedCommentType
   setAffectedComment: (data: AffectedCommentType) => void
@@ -35,11 +36,11 @@ type CommentProps = {
 }
 
 type CommentFormProps = {
-  initValue?: string // Giá trị khởi tạo của textarea (optional)
+  initValue: string | null // Giá trị khởi tạo của textarea (optional)
   cancelHandler?: () => void // Hàm xử lý khi nhấn nút Cancel (optional)
   confirmText: string // Văn bản hiển thị trên nút Confirm (required)
   handleSubmitComment: (content: string, rating: number) => void // Hàm xử lý khi nhấn nút Confirm (required)
   setAffectedComment?: (comment: null) => void // Hàm để đặt lại affectedComment (optional)
 }
 
-export type { AffectedCommentType, CommentType, CommentProps, CommentFormProps }
+export type { AffectedCommentType, Review, CommentProps, CommentFormProps }

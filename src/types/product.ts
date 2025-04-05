@@ -1,8 +1,9 @@
-import { Review } from './review'
+import { Review } from './comment'
 
 interface Size {
   sizeId: string
   name: string
+  piority: number
 }
 
 export interface ProductDetail {
@@ -20,28 +21,33 @@ interface Image {
   url: string
   priority: number
 }
-export interface Color {
+interface Color {
   colorId: string
   name: string
   hex: string
 }
-export interface ProductColor {
+interface ProductColor {
   productColorId: string
   color: Color
   productDetails: ProductDetail[]
   images: Image[]
 }
 
-export interface Product {
+interface Product {
   productId: string
   name: string
   description: string
+  slug: string
   category: {
     categoryId: string
     categoryName: string
   }
   productColors: ProductColor[]
-  reviews: Review[]
+
   totalRating: number
   createdAt: string
 }
+interface ProductDeatilResponse extends Product {
+  reviews: Review[]
+}
+export type { Product, Color, ProductColor, ProductDeatilResponse, Image, Size }

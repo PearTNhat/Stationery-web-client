@@ -1,15 +1,15 @@
 // components/product/ProductTabs.tsx
 import React, { useState } from 'react'
 import CommentContainer from '~/components/comment/CommentContainer'
-import { Product } from '~/constance/seed/product'
+import { Review } from '~/types/comment'
 
 type ProductTabsProps = {
-  product: Product
+  reviews?: Review[]
+  desc?: string
 }
 
-export const ProductTabs: React.FC<ProductTabsProps> = ({ product }) => {
+export const ProductTabs: React.FC<ProductTabsProps> = ({ reviews, desc }) => {
   const [activeTab, setActiveTab] = useState('description')
-
   return (
     <div className='mt-8'>
       <div className='flex border-b'>
@@ -31,15 +31,8 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product }) => {
         </button>
       </div>
       <div className='p-6'>
-        {activeTab === 'description' && (
-          <div>
-            <p>Em như làn gió mát trong,</p>
-            <p>Lướt qua một chút mà lòng ngẩn ngơ.</p>
-            <p>Nụ cười tỏa nắng say mơ,</p>
-            <p>Cho anh lỡ bước, đợi chờ bóng ai. 💕</p>
-          </div>
-        )}
-        <CommentContainer />
+        {activeTab === 'description' && <div className='text-gray-700 text-base'>{desc}</div>}
+        <CommentContainer comments={reviews} />
       </div>
     </div>
   )

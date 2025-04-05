@@ -7,20 +7,21 @@ import { useNavigate } from 'react-router-dom'
 import Comment from './Comment'
 import YourRating from './YourRating'
 import { AffectedCommentType, CommentType } from '~/types/comment'
-import { useAppDispatch } from '~/hooks/redux'
+import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { modalActions } from '~/store/slices/modal'
+import { Review } from '~/types/review'
 
 interface CommentContainerProps {
-  title: string
   pId: string
-  comments: CommentType[]
+  comments?: Review[]
   totalRating: number
   setFetchAgain: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const CommentContainer: React.FC<CommentContainerProps> = ({ title, pId, comments, totalRating, setFetchAgain }) => {
+const CommentContainer: React.FC<CommentContainerProps> = ({ pId, comments, totalRating, setFetchAgain }) => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const { userData } = useAppSelector((state) => state.user)
   const [affectedComment, setAffectedComment] = useState<AffectedCommentType>(null)
   const [rated, setRated] = useState<CommentType | null>(null)
 
@@ -91,8 +92,8 @@ const CommentContainer: React.FC<CommentContainerProps> = ({ title, pId, comment
       )}
       {comments?.map((comment) => (
         <Comment
-          key={comment._id}
-          userId={'1232'}
+          key={comment.reviewId}
+          userId={userData?.userId}
           comment={comment}
           isAdmin={false}
           affectedComment={affectedComment}

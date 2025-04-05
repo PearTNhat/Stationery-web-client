@@ -1,14 +1,16 @@
 import React from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { Color } from '~/types/product'
 
 type ColorSelectorProps = {
-  colors: { name: string; hex: string }[]
-  selectedColor: string
-  onColorSelect: (color: string) => void
+  colors: Color[]
+  currentParams: { colorId?: string }
 }
 
-const ColorSelector: React.FC<ColorSelectorProps> = ({ colors, selectedColor, onColorSelect }) => {
+const ColorSelector: React.FC<ColorSelectorProps> = ({ colors, currentParams }) => {
+  const [, setSearchParams] = useSearchParams()
   const handleColorSelect = (color: string) => {
-    onColorSelect(color) // Chọn màu mới
+    setSearchParams({ ...currentParams, colorId: color })
   }
 
   return (
@@ -18,7 +20,7 @@ const ColorSelector: React.FC<ColorSelectorProps> = ({ colors, selectedColor, on
           key={color.name}
           onClick={() => handleColorSelect(color.name)}
           className={`w-5 h-5 rounded-full border-2 transition-all ${
-            selectedColor === color.name
+            currentParams.colorId === color.colorId
               ? 'border-black scale-110 ring-1 ring-offset-1 ring-black'
               : 'border-transparent'
           }`}

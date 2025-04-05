@@ -23,21 +23,17 @@ function CommentForm({
         />
         <div className='flex justify-end gap-3 mt-2'>
           {cancelHandler && (
-            <Button
-              outline
+            <button
+              className='d-btn d-btn-secondary'
               onClick={() => {
                 if (setAffectedComment) {
                   setAffectedComment(null)
                 }
               }}
-              className='!py-2'
             >
               Cancel
-            </Button>
+            </button>
           )}
-          {/* <Button className='!py-2 !px-4' onClick={() => handleSubmitComment(value)}>
-            {confirmText}
-          </Button> */}
           <button className='d-btn d-btn-primary'>{confirmText}</button>
         </div>
       </div>
