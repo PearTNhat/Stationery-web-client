@@ -1,28 +1,15 @@
 import { FC } from 'react'
 import { convertNumberToStar } from '~/utils/helper'
 import Rating from './Rating'
-import { CommentType } from '~/types/comment'
+import { Review } from '~/types/comment'
 
 type VoteBarProps = {
   totalRating?: number
-  comments: CommentType[]
+  comments?: Review[]
 }
 
-const fakeComments = [
-  { rating: 5 },
-  { rating: 4 },
-  { rating: 5 },
-  { rating: 3 },
-  { rating: 5 },
-  { rating: 2 },
-  { rating: 4 },
-  { rating: 3 },
-  { rating: 1 },
-  { rating: 5 }
-]
-
-const VoteBar: FC<VoteBarProps> = ({ totalRating = 4.2, comments = fakeComments }) => {
-  const totalReviews = fakeComments?.length || 0
+const VoteBar: FC<VoteBarProps> = ({ totalRating, comments }) => {
+  const totalReviews = comments?.length || 0
   console.log('totalReviews', totalReviews)
   return (
     <div className='flex'>
@@ -30,7 +17,7 @@ const VoteBar: FC<VoteBarProps> = ({ totalRating = 4.2, comments = fakeComments 
         <div className='flex flex-col items-center justify-center'>
           <p className='font-bold text-xl'>{totalRating}/5</p>
           <div className='flex gap-1 my-1'>
-            {convertNumberToStar(totalRating).map((el: string, i: number) => (
+            {convertNumberToStar(totalRating ?? 0).map((el: string, i: number) => (
               <div key={i} className='text-yellow-300 text-[16px]'>
                 {el}
               </div>
@@ -46,7 +33,7 @@ const VoteBar: FC<VoteBarProps> = ({ totalRating = 4.2, comments = fakeComments 
           <Rating
             key={el}
             number={el + 1}
-            numberOfReviews={comments?.filter((item) => item.rating === el + 1).length}
+            numberOfReviews={comments?.filter((item) => item.rating === el + 1).length || 0}
             totalReviews={totalReviews}
           />
         ))}

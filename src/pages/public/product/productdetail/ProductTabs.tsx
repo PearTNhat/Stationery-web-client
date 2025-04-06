@@ -4,11 +4,14 @@ import CommentContainer from '~/components/comment/CommentContainer'
 import { Review } from '~/types/comment'
 
 type ProductTabsProps = {
+  pId?: string
   reviews?: Review[]
   desc?: string
+  totalRating?: number
+  setFetchAgain: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export const ProductTabs: React.FC<ProductTabsProps> = ({ reviews, desc }) => {
+export const ProductTabs: React.FC<ProductTabsProps> = ({ pId, reviews, desc, totalRating, setFetchAgain }) => {
   const [activeTab, setActiveTab] = useState('description')
   return (
     <div className='mt-8'>
@@ -32,7 +35,7 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ reviews, desc }) => {
       </div>
       <div className='p-6'>
         {activeTab === 'description' && <div className='text-gray-700 text-base'>{desc}</div>}
-        <CommentContainer comments={reviews} />
+        <CommentContainer pId={pId} comments={reviews} totalRating={totalRating} setFetchAgain={setFetchAgain} />
       </div>
     </div>
   )

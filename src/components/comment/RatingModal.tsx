@@ -3,12 +3,13 @@ import { IoClose } from 'react-icons/io5'
 import { FaStar } from 'react-icons/fa'
 import { useAppDispatch } from '~/hooks/redux'
 import { modalActions } from '~/store/slices/modal'
+import { CreateCommentProps } from '~/types/comment'
 
 const startText = ['Rất tệ', 'Tệ', 'Bình thường', 'Tốt', 'Tuyệt']
 
 type RatingModalProps = {
   title: string
-  handleSubmitComment: (payload: { rating: number; content: string }) => void
+  handleSubmitComment: ({ rating, content }: CreateCommentProps) => void
   rating?: number
   content?: string
   confirmText?: string
@@ -17,7 +18,7 @@ type RatingModalProps = {
 const RatingModal: React.FC<RatingModalProps> = ({
   title,
   handleSubmitComment,
-  rating = 5,
+  rating,
   content = '',
   confirmText = 'Submit'
 }) => {
@@ -78,7 +79,9 @@ const RatingModal: React.FC<RatingModalProps> = ({
           rows={4}
         ></textarea>
         <div className='flex justify-center'>
-          <button className='d-btn d-btn-primary mb-2'>{confirmText}</button>
+          <button className='d-btn d-btn-primary mb-2' onClick={() => handleSubmitComment(payload)}>
+            {confirmText}
+          </button>
         </div>
       </div>
     </div>

@@ -5,23 +5,10 @@ import { LuPencil } from 'react-icons/lu'
 import { convertNumberToStar } from '~/utils/helper'
 import { FC } from 'react'
 import { DefaultUser } from '~/assets/images'
-
-interface User {
-  avatar?: { url?: string }
-  firstName: string
-  lastName: string
-}
-
-interface Comment {
-  _id: string
-  user?: User
-  rating?: number
-  content: string
-  createdAt: string
-}
+import { Review } from '~/types/comment'
 
 interface YourRatingProps {
-  comment: Comment
+  comment: Review
   handleShowModalUpdateRating: () => void
   handleDeleteComment: (params: { commentId: string }) => void
 }
@@ -63,7 +50,7 @@ const YourRating: FC<YourRatingProps> = ({ comment, handleShowModalUpdateRating,
             </button>
             <button
               className='flex justify-center items-center gap-1'
-              onClick={() => handleDeleteComment({ commentId: comment._id })}
+              onClick={() => handleDeleteComment({ commentId: comment.reviewId })}
             >
               <IoTrashOutline />
               <span className='text-xs'>Delete</span>

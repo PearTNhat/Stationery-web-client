@@ -1,48 +1,71 @@
-import { useSelector, useDispatch } from 'react-redux'
 import VoteBar from './VoteBar'
 import RatingModal from './RatingModal'
-import { memo, useCallback, useEffect, useState } from 'react'
-import Swal from 'sweetalert2'
+import { memo, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Comment from './Comment'
 import YourRating from './YourRating'
-import { AffectedCommentType, CommentType } from '~/types/comment'
+import { AffectedCommentType, CreateCommentProps } from '~/types/comment'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { modalActions } from '~/store/slices/modal'
-import { Review } from '~/types/review'
+import { Review } from '~/types/comment'
+import { confirmAleart, showAlertError, showToastError, showToastSuccess, showToastWarning } from '~/utils/alert'
+import { apiCreateReview, apiDeleteReview, apiUpdateReview } from '~/api/review'
 
 interface CommentContainerProps {
-  pId: string
+  pId?: string
   comments?: Review[]
-  totalRating: number
+  totalRating?: number
+  totalRatingCount?: number
   setFetchAgain: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const CommentContainer: React.FC<CommentContainerProps> = ({ pId, comments, totalRating, setFetchAgain }) => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const { userData } = useAppSelector((state) => state.user)
+  const { userData, accessToken } = useAppSelector((state) => state.user)
   const [affectedComment, setAffectedComment] = useState<AffectedCommentType>(null)
-  const [rated, setRated] = useState<CommentType | null>(null)
+  const [rated, setRated] = useState<Review | null>(null)
 
-  const handleSubmitComment = async ({
-    rating,
-    content,
-    parentId,
-    replyOnUser
-  }: {
-    rating?: number
-    content: string
-    parentId?: string
-    replyOnUser?: string
-  }) => {
-    if (content.trim() === '') {
-      Swal.fire({
-        title: 'Comment is required',
-        icon: 'info',
-        confirmButtonColor: '#ee3131'
-      })
+  const handleSubmitComment = async ({ rating, content, parentId, replyOnUser }: CreateCommentProps) => {
+    if (content?.trim() === '') {
+      showToastWarning("Comment can't be empty")
       return
+    }
+    try {
+      if (!accessToken) {
+        confirmAleart({ message: 'You need to login to comment', confirmText: 'Login' }).then((result) => {
+          if (result.isConfirmed) {
+            navigate('/login')
+          }
+        })
+        return
+      }
+      const res = await apiCreateReview({
+        productId: pId,
+        content,
+        rating,
+        parentId,
+        replyOnUser,
+        accessToken
+      })
+      if (res.code !== 200) {
+        showAlertError(res.message)
+        return
+      }
+      dispatch(
+        modalActions.toggleModal({
+          isOpenModal: false,
+          childrenModal: null
+        })
+      )
+      showToastSuccess('Created successfully')
+      setFetchAgain((prev) => !prev)
+    } catch (error) {
+      if (error instanceof Error) {
+        showToastError(error.message)
+      } else {
+        showToastError(error as string)
+      }
     }
   }
 
@@ -54,10 +77,93 @@ const CommentContainer: React.FC<CommentContainerProps> = ({ pId, comments, tota
     commentId: string
     content: string
     rating?: number
-  }) => {}
+  }) => {
+    try {
+      if (!accessToken) {
+        confirmAleart({ message: 'You need to login to comment', confirmText: 'Login' }).then((result) => {
+          if (result.isConfirmed) {
+            navigate('/login')
+          }
+        })
+        return
+      }
+      const res = await apiUpdateReview({
+        reviewId: commentId,
+        content,
+        rating,
+        accessToken
+      })
+      if (res.code !== 200) {
+        showAlertError(res.message)
+        return
+      }
+      dispatch(
+        modalActions.toggleModal({
+          isOpenModal: false,
+          childrenModal: null
+        })
+      )
+      showToastSuccess('Edited successfully')
+      setFetchAgain((prev) => !prev)
+      setAffectedComment(null)
+    } catch (error) {
+      if (error instanceof Error) {
+        showToastError(error.message)
+      } else {
+        showToastError(error as string)
+      }
+    }
+  }
 
-  const handleDeleteComment = async (data: { commentId: string }) => {}
-
+  const handleDeleteComment = async ({ commentId }: { commentId: string }) => {
+    if (!accessToken) {
+      confirmAleart({ message: 'You need to login to comment', confirmText: 'Login' }).then((result) => {
+        if (result.isConfirmed) {
+          navigate('/login')
+        }
+      })
+      return
+    }
+    try {
+      const res = await apiDeleteReview({
+        reviewId: commentId,
+        accessToken
+      })
+      if (res.code !== 200) {
+        showAlertError(res.message)
+        return
+      }
+      showToastSuccess('Delete successfully')
+      setFetchAgain((prev) => !prev)
+    } catch (error) {
+      if (error instanceof Error) {
+        showToastError(error.message)
+      } else {
+        showToastError(error as string)
+      }
+    }
+  }
+  const handleShowModalUpdateRating = () => {
+    dispatch(
+      modalActions.toggleModal({
+        isOpenModal: true,
+        childrenModal: (
+          <RatingModal
+            rating={rated?.rating}
+            content={rated?.content || ''}
+            title='Edit your rating'
+            handleSubmitComment={({ content = '', rating }: CreateCommentProps) => {
+              handleUpdateComment({
+                rating,
+                content,
+                commentId: rated?.reviewId || ''
+              })
+            }}
+          />
+        )
+      })
+    )
+  }
   useEffect(() => {}, [comments])
   const handleRatingModal = () => {
     dispatch(
@@ -67,20 +173,16 @@ const CommentContainer: React.FC<CommentContainerProps> = ({ pId, comments, tota
       })
     )
   }
-
+  useEffect(() => {
+    setRated(comments?.find((comment) => comment.user?.userId === userData?.userId) || null)
+  }, [comments])
   return (
     <div>
       <VoteBar totalRating={totalRating} comments={comments} />
       {rated ? (
         <YourRating
           comment={rated}
-          handleShowModalUpdateRating={() =>
-            handleUpdateComment({
-              rating: rated.rating,
-              content: rated.content,
-              commentId: rated._id
-            })
-          }
+          handleShowModalUpdateRating={handleShowModalUpdateRating}
           handleDeleteComment={handleDeleteComment}
         />
       ) : (

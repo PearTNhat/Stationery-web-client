@@ -10,7 +10,7 @@ function CommentForm({
   setAffectedComment
 }: CommentFormProps) {
   const [value, setValue] = useState(initValue)
-
+  console.log('value', value)
   return (
     <div>
       <div>
@@ -34,7 +34,9 @@ function CommentForm({
               Cancel
             </button>
           )}
-          <button className='d-btn d-btn-primary'>{confirmText}</button>
+          <button className='d-btn d-btn-primary' onClick={() => handleSubmitComment({ content: value })}>
+            {confirmText}
+          </button>
         </div>
       </div>
     </div>

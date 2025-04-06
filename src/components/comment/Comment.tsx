@@ -23,13 +23,15 @@ function Comment({
   const replyCommentId = parentId ? parentId : comment.reviewId
   const isReply = affectedComment?.type === 'REPLY' && affectedComment?.id === comment.reviewId
   const isEdit = affectedComment?.type === 'EDIT' && affectedComment?.id === comment.reviewId
-  console.log('comment', comment)
+  console.log(isBelongToUser, userId, comment.user?.userId)
   return (
     <div className={`mt-4`}>
       <div className='flex gap-1'>
         <img
           className='w-7 h-7 rounded-full'
-          src={comment.user?.avatar?.url ? comment.user.avatar.url : DefaultUser}
+          src={
+            typeof comment.user?.avatar === 'string' ? comment.user?.avatar : comment.user?.avatar?.url || DefaultUser
+          }
           alt={comment.user?.lastName}
         />
         <p>
@@ -74,7 +76,7 @@ function Comment({
               <span className='text-xs'>{replies.length} Reply</span>
             </button>
 
-            {isBelongToUser && parentId && (
+            {isBelongToUser && (
               <button
                 className='flex justify-center items-center gap-1'
                 onClick={() => {
@@ -106,8 +108,9 @@ function Comment({
               initValue={''}
               setAffectedComment={setAffectedComment}
               cancelHandler={() => setAffectedComment(null)}
-              handleSubmitComment={(content: string, rating: number) => {
-                handleSubmitComment({ content, rating, parentId: replyCommentId, replyOnUser: comment.user.userId })
+              handleSubmitComment={({ content }: { content: string }) => {
+                console.log('contetn', content)
+                handleSubmitComment({ content, parentId: replyCommentId, replyOnUser: comment.user.userId })
               }}
             />
           )}
@@ -115,10 +118,12 @@ function Comment({
           {isEdit && (
             <CommentForm
               confirmText='Update'
-              initValue={comment?.content}
+              initValue={comment.content || ''}
               setAffectedComment={setAffectedComment}
               cancelHandler={() => setAffectedComment(null)}
-              handleSubmitComment={(content: string) => handleUpdateComment({ commentId: comment.reviewId, content })}
+              handleSubmitComment={({ content }: { content: string; rating: number }) =>
+                handleUpdateComment({ commentId: comment.reviewId, content })
+              }
             />
           )}
 
