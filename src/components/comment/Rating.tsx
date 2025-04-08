@@ -14,7 +14,6 @@ const Rating: FC<RatingProps> = ({ number, numberOfReviews, totalReviews }) => {
     if (barRef.current) {
       barRef.current.style.right = `${100 - (numberOfReviews / totalReviews || 0) * 100}%`
     }
-    console.log(`${100 - (numberOfReviews / totalReviews || 0) * 100}%`)
   }, [totalReviews, numberOfReviews])
 
   return (

@@ -1,15 +1,18 @@
 // components/product/ProductTabs.tsx
 import React, { useState } from 'react'
 import CommentContainer from '~/components/comment/CommentContainer'
-import { Product } from '~/constance/seed/product'
+import { Review } from '~/types/comment'
 
 type ProductTabsProps = {
-  product: Product
+  pId?: string
+  reviews?: Review[]
+  desc?: string
+  totalRating?: number
+  setFetchAgain: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export const ProductTabs: React.FC<ProductTabsProps> = ({ product }) => {
+export const ProductTabs: React.FC<ProductTabsProps> = ({ pId, reviews, desc, totalRating, setFetchAgain }) => {
   const [activeTab, setActiveTab] = useState('description')
-
   return (
     <div className='mt-8'>
       <div className='flex border-b'>
@@ -31,15 +34,8 @@ export const ProductTabs: React.FC<ProductTabsProps> = ({ product }) => {
         </button>
       </div>
       <div className='p-6'>
-        {activeTab === 'description' && (
-          <div>
-            <p>Em như làn gió mát trong,</p>
-            <p>Lướt qua một chút mà lòng ngẩn ngơ.</p>
-            <p>Nụ cười tỏa nắng say mơ,</p>
-            <p>Cho anh lỡ bước, đợi chờ bóng ai. 💕</p>
-          </div>
-        )}
-        <CommentContainer />
+        {activeTab === 'description' && <div className='text-gray-700 text-base'>{desc}</div>}
+        <CommentContainer pId={pId} comments={reviews} totalRating={totalRating} setFetchAgain={setFetchAgain} />
       </div>
     </div>
   )

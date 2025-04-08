@@ -10,7 +10,7 @@ function CommentForm({
   setAffectedComment
 }: CommentFormProps) {
   const [value, setValue] = useState(initValue)
-
+  console.log('value', value)
   return (
     <div>
       <div>
@@ -23,22 +23,20 @@ function CommentForm({
         />
         <div className='flex justify-end gap-3 mt-2'>
           {cancelHandler && (
-            <Button
-              outline
+            <button
+              className='d-btn d-btn-secondary'
               onClick={() => {
                 if (setAffectedComment) {
                   setAffectedComment(null)
                 }
               }}
-              className='!py-2'
             >
               Cancel
-            </Button>
+            </button>
           )}
-          {/* <Button className='!py-2 !px-4' onClick={() => handleSubmitComment(value)}>
+          <button className='d-btn d-btn-primary' onClick={() => handleSubmitComment({ content: value })}>
             {confirmText}
-          </Button> */}
-          <button className='d-btn d-btn-primary'>{confirmText}</button>
+          </button>
         </div>
       </div>
     </div>

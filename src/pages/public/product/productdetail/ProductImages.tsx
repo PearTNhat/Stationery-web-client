@@ -1,27 +1,23 @@
-import React, { useState, useEffect } from "react";
-import { Product } from "~/constance/seed/product";
+import React, { useState, useEffect } from 'react'
+import { Image } from '~/types/product'
 
 type ProductImagesProps = {
-  product: Product;
-};
+  images: Image[]
+}
 
-export const ProductImages: React.FC<ProductImagesProps> = ({ product }) => {
-  const [currentImage, setCurrentImage] = useState(0);
+export const ProductImages: React.FC<ProductImagesProps> = ({ images }) => {
+  const [currentImage, setCurrentImage] = useState<Image | null>(null)
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % product.product_images.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [product.product_images]);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setCurrentImage((prev) => images[(prev ? images.indexOf(prev) + 1 : 0) % images.length])
+  //   }, 3000)
+  //   return () => clearInterval(interval)
+  // }, [images])
 
   return (
-    <div className="w-full md:w-1/2">
-      <img
-        src={product.product_images[currentImage]?.imgname}
-        alt={product.name}
-        className="w-full h-96 object-cover rounded-lg"
-      />
+    <div className='w-full md:w-1/2'>
+      <img src={images[0]?.url} alt={'product'} className='block w-full h-96 object-contain rounded-lg' />
     </div>
-  );
-};
+  )
+}

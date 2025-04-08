@@ -10,10 +10,10 @@ type Role = {
 }
 
 type User = {
-  user_id: string
+  userId: string
   avatar: string
-  first_name: string
-  last_name: string
+  firstName: string
+  lastName: string
   email: string
   phone: string
   addresses: Address[]

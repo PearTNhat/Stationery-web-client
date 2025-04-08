@@ -19,17 +19,19 @@ function Comment({
   handleUpdateComment,
   handleDeleteComment
 }: CommentProps) {
-  const isBelongToUser = userId === comment.user?._id
-  const replyCommentId = parentId ? parentId : comment._id
-  const isReply = affectedComment?.type === 'REPLY' && affectedComment?.id === comment._id
-  const isEdit = affectedComment?.type === 'EDIT' && affectedComment?.id === comment._id
-
+  const isBelongToUser = userId === comment.user?.userId
+  const replyCommentId = parentId ? parentId : comment.reviewId
+  const isReply = affectedComment?.type === 'REPLY' && affectedComment?.id === comment.reviewId
+  const isEdit = affectedComment?.type === 'EDIT' && affectedComment?.id === comment.reviewId
+  console.log(isBelongToUser, userId, comment.user?.userId)
   return (
     <div className={`mt-4`}>
       <div className='flex gap-1'>
         <img
           className='w-7 h-7 rounded-full'
-          src={comment.user?.avatar?.url ? comment.user.avatar.url : DefaultUser}
+          src={
+            typeof comment.user?.avatar === 'string' ? comment.user?.avatar : comment.user?.avatar?.url || DefaultUser
+          }
           alt={comment.user?.lastName}
         />
         <p>
@@ -54,11 +56,11 @@ function Comment({
         {/* Comment content */}
         <div className='mt-3 p-2 shadow-[rgba(0,_0,_0,_0.24)_0px_3px_8px] rounded-md'>
           <p className='text-sm'>
-            {comment.replyOnUser && comment.replyOnUser._id !== comment.user._id && (
+            {comment.replyOnUser && comment.replyOnUser.userId !== comment.user.userId && (
               <span className='text-blue-500 leading-[16px]'>
                 @{comment.replyOnUser.firstName} {comment.replyOnUser.lastName}
               </span>
-            )}{' '}
+            )}
             {comment.content}
           </p>
 
@@ -67,18 +69,18 @@ function Comment({
             <button
               className='flex justify-center items-center gap-1'
               onClick={() => {
-                setAffectedComment({ type: 'REPLY', id: comment._id })
+                setAffectedComment({ type: 'REPLY', id: comment.reviewId })
               }}
             >
               <TiMessages />
               <span className='text-xs'>{replies.length} Reply</span>
             </button>
 
-            {isBelongToUser && parentId && (
+            {isBelongToUser && (
               <button
                 className='flex justify-center items-center gap-1'
                 onClick={() => {
-                  setAffectedComment({ type: 'EDIT', id: comment._id })
+                  setAffectedComment({ type: 'EDIT', id: comment.reviewId })
                 }}
               >
                 <LuPencil />
@@ -89,7 +91,7 @@ function Comment({
             {isBelongToUser && (
               <button
                 className='flex justify-center items-center gap-1'
-                onClick={() => handleDeleteComment({ commentId: comment._id })}
+                onClick={() => handleDeleteComment({ commentId: comment.reviewId })}
               >
                 <IoTrashOutline />
                 <span className='text-xs'>Delete</span>
@@ -103,10 +105,12 @@ function Comment({
           {isReply && (
             <CommentForm
               confirmText='Reply'
+              initValue={''}
               setAffectedComment={setAffectedComment}
               cancelHandler={() => setAffectedComment(null)}
-              handleSubmitComment={(content: string, rating: number) => {
-                handleSubmitComment({ content, rating, parentId: replyCommentId, replyOnUser: comment.user._id })
+              handleSubmitComment={({ content }: { content: string }) => {
+                console.log('contetn', content)
+                handleSubmitComment({ content, parentId: replyCommentId, replyOnUser: comment.user.userId })
               }}
             />
           )}
@@ -114,17 +118,19 @@ function Comment({
           {isEdit && (
             <CommentForm
               confirmText='Update'
-              initValue={comment.content}
+              initValue={comment.content || ''}
               setAffectedComment={setAffectedComment}
               cancelHandler={() => setAffectedComment(null)}
-              handleSubmitComment={(content: string) => handleUpdateComment({ commentId: comment._id, content })}
+              handleSubmitComment={({ content }: { content: string; rating: number }) =>
+                handleUpdateComment({ commentId: comment.reviewId, content })
+              }
             />
           )}
 
           {/* Render replies */}
           {replies.map((reply) => (
             <Comment
-              key={reply._id}
+              key={reply.reviewId}
               userId={userId}
               comment={reply}
               isAdmin={isAdmin}

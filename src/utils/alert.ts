@@ -7,6 +7,15 @@ const Toast = Swal.mixin({
   timer: 2000,
   timerProgressBar: true
 })
+const confirmAleart = ({ message, confirmText }: { message: string; confirmText: string }) => {
+  return Swal.fire({
+    title: 'Notification',
+    text: message,
+    showCancelButton: true,
+    confirmButtonText: confirmText,
+    confirmButtonColor: '#ee3131'
+  })
+}
 const showAlertSucess = (message: string) => {
   Swal.fire({
     title: 'Success',
@@ -27,6 +36,12 @@ const showToastSuccess = (message: string) => {
     title: message
   })
 }
+const showToastWarning = (message: string) => {
+  Toast.fire({
+    icon: 'warning',
+    title: message
+  })
+}
 const showToastError = (message: string) => {
   Toast.fire({
     icon: 'error',
@@ -34,4 +49,4 @@ const showToastError = (message: string) => {
   })
 }
 
-export { showToastSuccess, showToastError, showAlertError, showAlertSucess }
+export { showToastSuccess, showToastError, showToastWarning, showAlertError, showAlertSucess, confirmAleart }

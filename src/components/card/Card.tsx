@@ -20,7 +20,7 @@ interface MinPrice {
 }
 
 const Card: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails }) => {
-  const [selectedColor, setSelectedColor] = useState('')
+  const [selectedColor, setSelectedColor] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [productDetails, setProductDetails] = useState<ProductDetail | null>(null)
   const [productColor, setProductColor] = useState<ProductColor | null>(null)
@@ -66,7 +66,7 @@ const Card: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails 
   }, [product])
   return (
     <motion.div className='bg-white text-gray-900 rounded-2xl shadow-lg p-5 flex flex-col items-center space-y-4 transition-all duration-300 hover:shadow-2xl'>
-      <Link to={`/products/${productDetails?.slug}`}>
+      <Link to={`/products/${product?.slug}?colorId=${selectedColor}`} className='w-full flex justify-center'>
         <motion.img
           src={productColor?.images[0]?.url}
           alt={product.name}
@@ -104,10 +104,10 @@ const Card: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails 
         <span>Sold: {productDetails?.soldQuantity}</span>
       </div>
 
-      <ColorSelector colors={colors} selectedColor={selectedColor} onColorSelect={handleColorSelect} />
+      {/* <ColorSelector colors={colors} selectedColor={selectedColor} onColorSelect={handleColorSelect} /> */}
 
       <div className='flex space-x-4 w-full mt-2'>
-        <Link to={`/products/${productDetails?.slug}`} className='w-full'>
+        <Link to={`/products/${product?.slug}?colorId=${selectedColor}`} className='w-full'>
           <Button className='bg-blue-500 text-white px-4 py-2 w-full rounded-lg shadow-md transition hover:bg-blue-600'>
             View Details
           </Button>
