@@ -11,7 +11,6 @@ import { calculatePercent, formatNumber } from '~/utils/helper'
 
 interface ProductCardProps {
   product: Product
-  onAddToCart: (id: string) => void
   onViewDetails: (id: string) => void
 }
 interface MinPrice {
@@ -19,7 +18,7 @@ interface MinPrice {
   final: number
 }
 
-const Card: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails }) => {
+const Card: React.FC<ProductCardProps> = ({ product, onViewDetails }) => {
   const [selectedColor, setSelectedColor] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [productDetails, setProductDetails] = useState<ProductDetail | null>(null)
@@ -112,10 +111,7 @@ const Card: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails 
             View Details
           </Button>
         </Link>
-        <button
-          onClick={() => onAddToCart(product.productId)}
-          className='bg-yellow-400 text-black p-3 rounded-lg shadow-md transition hover:bg-yellow-500'
-        >
+        <button className='bg-yellow-400 text-black p-3 rounded-lg shadow-md transition hover:bg-yellow-500'>
           <FaShoppingCart size={20} />
         </button>
       </div>

@@ -1,31 +1,28 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AxiosError } from 'axios'
 import { ProductList } from './ProductList'
 import Filters from './Filters'
 import { showToastError } from '~/utils/alert'
 import { Product } from '~/types/product'
 import { apiGetAllProducts } from '~/api/product'
+import { ProductSearchParams } from '~/types/filter'
+import { useSearchParams } from 'react-router-dom'
 const coupons = [
   { id: 1, discount: 200000, minOrder: 1300000, code: '0325SALE200', expiry: '31/03/2025' },
   { id: 2, discount: 100000, minOrder: 800000, code: 'DISCOUNT100', expiry: '15/04/2025' },
   { id: 3, discount: 100000, minOrder: 800000, code: 'GIAMGIA100', expiry: '15/04/2025' }
 ]
+
 const ProductPage: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState(1)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as ProductSearchParams, [searchParams])
   const [selectedCategory, setSelectedCategory] = useState('All')
-  const [sortByPrice, setSortByPrice] = useState('')
-  const [priceRange, setPriceRange] = useState([0, 200000])
   const [products, setProducts] = useState<Product[] | null>(null)
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
-  const [filters, setFilters] = useState({
-    bestSeller: false,
-    isNew: false,
-    discounted: false
-  })
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null)
-  const getAllProduct = async () => {
+  const getAllProduct = async (searchParams: ProductSearchParams) => {
+    const { minPrice, maxPrice } = searchParams
     try {
-      const response = await apiGetAllProducts({})
+      const response = await apiGetAllProducts({ minPrice, maxPrice })
       if (response.code == 200) {
         setProducts(response.result.content)
       } else {
@@ -36,28 +33,6 @@ const ProductPage: React.FC = () => {
         showToastError(error.message)
       }
     }
-  }
-  const productsPerPage = 12
-
-  // const filteredProducts = products
-  //   .filter(
-  //     (product) =>
-  //       (selectedCategory === 'All' || product.category === selectedCategory) &&
-  //       product.price >= priceRange[0] &&
-  //       product.price <= priceRange[1] &&
-  //       ((!filters.bestSeller && !filters.isNew && !filters.discounted) ||
-  //         (filters.bestSeller && product.isBestSeller) ||
-  //         (filters.isNew && product.isNew) ||
-  //         (filters.discounted && product.isDiscounted))
-  //   )
-  //   .sort((a, b) => {
-  //     if (sortByPrice === 'asc') return a.price - b.price
-  //     if (sortByPrice === 'desc') return b.price - a.price
-  //     return 0
-  //   })
-
-  const handleAddToCart = (product: Product) => {
-    console.log(`Added to cart: ${product.name}`)
   }
 
   const handleViewDetails = (product: Product) => {
@@ -70,32 +45,21 @@ const ProductPage: React.FC = () => {
   }
 
   useEffect(() => {
-    getAllProduct()
-  }, [])
-
+    getAllProduct(currentParams)
+  }, [currentParams])
+  // console.log(products)
   return (
     <section className='mx-auto p-10 flex gap-10 mt-16'>
       <Filters
+        currentParams={currentParams}
+        setSearchParams={setSearchParams}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
-        sortByPrice={sortByPrice}
-        setSortByPrice={setSortByPrice}
-        priceRange={priceRange}
-        setPriceRange={setPriceRange}
-        filters={filters}
-        setFilters={setFilters}
         coupons={coupons}
         appliedCoupon={appliedCoupon}
         onApplyDiscount={applyDiscount}
       />
-      <ProductList
-        products={products}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        productsPerPage={productsPerPage}
-        onAddToCart={handleAddToCart}
-        onViewDetails={handleViewDetails}
-      />
+      <ProductList products={products} onViewDetails={handleViewDetails} />
     </section>
   )
 }
