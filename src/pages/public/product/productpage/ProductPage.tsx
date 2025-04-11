@@ -14,15 +14,14 @@ const coupons = [
 ]
 
 const ProductPage: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as ProductSearchParams, [searchParams])
-  const [selectedCategory, setSelectedCategory] = useState('All')
   const [products, setProducts] = useState<Product[] | null>(null)
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null)
   const getAllProduct = async (searchParams: ProductSearchParams) => {
-    const { minPrice, maxPrice } = searchParams
+    const { minPrice, maxPrice, sortBy, categoryId, search } = searchParams
     try {
-      const response = await apiGetAllProducts({ minPrice, maxPrice })
+      const response = await apiGetAllProducts({ minPrice, maxPrice, sortBy, categoryId, search })
       if (response.code == 200) {
         setProducts(response.result.content)
       } else {
@@ -52,9 +51,6 @@ const ProductPage: React.FC = () => {
     <section className='mx-auto p-10 flex gap-10 mt-16'>
       <Filters
         currentParams={currentParams}
-        setSearchParams={setSearchParams}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
         coupons={coupons}
         appliedCoupon={appliedCoupon}
         onApplyDiscount={applyDiscount}

@@ -19,7 +19,7 @@ interface MinPrice {
 }
 
 const Card: React.FC<ProductCardProps> = ({ product, onViewDetails }) => {
-  const [selectedColor, setSelectedColor] = useState(null)
+  const [selectedColor, setSelectedColor] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [productDetails, setProductDetails] = useState<ProductDetail | null>(null)
   const [productColor, setProductColor] = useState<ProductColor | null>(null)
@@ -43,7 +43,7 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails }) => {
     for (const pc of product.productColors) {
       colorList.push(pc.color)
       for (const pd of pc.productDetails) {
-        if (pd.stockQuantity > 0 && !isSetProductDetail) {
+        if (pd.discountPrice == product.minPrice && !isSetProductDetail) {
           //price
           minPrice.final = pd.discountPrice
           minPrice.orginal = pd.originalPrice
@@ -99,8 +99,8 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails }) => {
       </div>
 
       <div className='flex justify-between w-full text-gray-500 text-sm px-4'>
-        <span>Stock: {productDetails?.stockQuantity}</span>
-        <span>Sold: {productDetails?.soldQuantity}</span>
+        <span>Stock: {product.quantity}</span>
+        <span>Sold: {product.soldQuantity}</span>
       </div>
 
       {/* <ColorSelector colors={colors} selectedColor={selectedColor} onColorSelect={handleColorSelect} /> */}

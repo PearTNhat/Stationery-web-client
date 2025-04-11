@@ -36,7 +36,6 @@ const UserProfile: React.FC = () => {
     // console.log('Profile updated:', updatedData)
     // Thêm logic gọi API để lưu thông tin nếu cần
   }
-  console.log(accessToken)
   useEffect(() => {
     if (!isLoggedIn) navigate('/')
     dispatch(fetchCurrentUser({ token: accessToken }))

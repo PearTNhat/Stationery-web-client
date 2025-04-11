@@ -1,8 +1,7 @@
 import React from 'react'
-import { ProductSearchParams } from '~/types/filter'
+import { useSearchParams } from 'react-router-dom'
 
 type Props = {
-  setSearchParams: (params: ProductSearchParams) => void
   currentParams: { sortBy: keyof typeof filters }
 }
 const filters = {
@@ -13,7 +12,8 @@ const reverseFilters = {
   soldQuantity: 'bestSeller',
   createdAt: 'isNew'
 }
-const TagFilter: React.FC<Props> = ({ currentParams, setSearchParams }) => {
+const TagFilter: React.FC<Props> = ({ currentParams }) => {
+  const [, setSearchParams] = useSearchParams()
   return (
     <div className='mb-4'>
       <label className='block font-medium mb-2'>Tags</label>

@@ -1,25 +1,25 @@
 import React from 'react'
-import { ProductSearchParams } from '~/types/filter'
+import { useSearchParams } from 'react-router-dom'
 
 type Props = {
-  setSearchParams: (params: ProductSearchParams) => void
   currentParams: { sortBy?: string }
 }
 
-const SortByPrice: React.FC<Props> = ({ currentParams, setSearchParams }) => {
+const SortByPrice: React.FC<Props> = ({ currentParams }) => {
+  const [, setSearchParams] = useSearchParams()
   return (
     <div className='mb-4'>
       <label className='block font-medium mb-2'>Sort by Price</label>
       <select
         className='w-full p-2 border rounded-lg'
-        value={currentParams.sort || ''}
+        value={currentParams.sortBy || ''}
         onChange={(e) => {
           setSearchParams({ ...currentParams, sortBy: e.target.value })
         }}
       >
         <option value=''>Default</option>
-        <option value='-discountPrice'>Ascending</option>
-        <option value='discountPrice'>Descending</option>
+        <option value='-minPrice'>Ascending</option>
+        <option value='minPrice'>Descending</option>
       </select>
     </div>
   )

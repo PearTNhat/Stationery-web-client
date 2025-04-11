@@ -7,15 +7,15 @@ interface FetchUserParams {
 
 interface UserResponse {
   code: number
-  data?: any // Thay thế `any` bằng kiểu dữ liệu chính xác của user
+  result?: any // Thay thế `any` bằng kiểu dữ liệu chính xác của user
   message?: string
 }
 
-export const fetchCurrentUser = createAsyncThunk<UserResponse['data'], FetchUserParams>(
+export const fetchCurrentUser = createAsyncThunk<UserResponse['result'], FetchUserParams>(
   'current-user/getUser',
   async ({ token }, { rejectWithValue }) => {
     const response: UserResponse = await apiGetUserInfo({ token })
     if (response?.code != 200) return rejectWithValue(response)
-    return response.data
+    return response.result
   }
 )

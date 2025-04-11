@@ -30,7 +30,6 @@ const userSlice = createSlice({
       state.accessToken = null
       state.userData = null
       state.isLoggedIn = false
-      localStorage.removeItem('access_token')
     }
   },
   extraReducers: (builder) => {
@@ -49,9 +48,9 @@ const userSlice = createSlice({
     builder.addCase(fetchCurrentUser.rejected, (state) => {
       state.isLoading = false
       state.isError = true
-      state.isLoggedIn = true
-      // state.userData = {}
-      // state.accessToken = null
+      state.isLoggedIn = false
+      state.userData = null
+      state.accessToken = null
     })
   }
 })

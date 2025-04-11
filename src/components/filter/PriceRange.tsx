@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css'
-import { ProductSearchParams } from '~/types/filter'
+import { useSearchParams } from 'react-router-dom'
 
 type Props = {
-  setSearchParams: (params: ProductSearchParams) => void
   currentParams: { minPrice?: number; maxPrice?: number }
 }
-const PriceRange: React.FC<Props> = ({ currentParams, setSearchParams }) => {
+const PriceRange: React.FC<Props> = ({ currentParams }) => {
+  const [, setSearchParams] = useSearchParams()
   const [priceRange, setPriceRange] = useState<{ minPrice: number; maxPrice: number }>({
     minPrice: currentParams.minPrice || 0,
     maxPrice: currentParams.maxPrice || 200000

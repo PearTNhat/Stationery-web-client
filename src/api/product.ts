@@ -5,25 +5,28 @@ const apiGetAllProducts = async ({
   page = 0,
   limit = 10,
   sortBy = 'createdAt',
-  ascending = true,
   minPrice,
-  maxPrice
+  maxPrice,
+  categoryId,
+  search
 }: {
   page?: number
   limit?: number
   sortBy?: string
-  ascending?: boolean
-  minPrice?: number
-  maxPrice?: number
+  minPrice?: string
+  maxPrice?: string
+  categoryId?: string
+  search?: string
 }) => {
   try {
     const params = {
       page,
       limit,
       sortBy,
-      ascending,
       minPrice,
-      maxPrice
+      maxPrice,
+      categoryId,
+      search
     }
     const response = await http.get('/products', { params })
     return response.data

@@ -43,7 +43,9 @@ interface Product {
     categoryName: string
   }
   productColors: ProductColor[]
-
+  minPrice: number
+  soldQuantity: number
+  quantity: number
   totalRating: number
   createdAt: string
 }

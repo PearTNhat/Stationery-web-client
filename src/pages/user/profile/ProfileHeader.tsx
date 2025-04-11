@@ -74,8 +74,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) =>
           )}
         </div>
         <div>
-          <h3 className='text-xl font-medium text-gray-800'>{formData?.first_name + ' ' + formData?.last_name}</h3>
-          <p className='text-gray-500'>{formData?.first_name + ' ' + formData?.last_name}</p>
+          <h3 className='text-xl font-medium text-gray-800'>{formData?.firstName + ' ' + formData?.lastName}</h3>
+          <p className='text-gray-500'>{formData?.firstName + ' ' + formData?.lastName}</p>
         </div>
       </div>
 
