@@ -10,10 +10,12 @@ import Cart from '~/pages/public/cart/Cart'
 import { apiLogout } from '~/api/authenticate'
 import { fetchCategories } from '~/store/actions/category'
 import { ProductSearchParams } from '~/types/filter'
+import { CartItem } from '~/types/cart'
+import { apiGetCartItems } from '~/api/cart'
 
 function Header() {
   const navigate = useNavigate()
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as ProductSearchParams, [searchParams])
   const [search, setSearch] = useState<string>('')
   const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'light')
@@ -21,23 +23,7 @@ function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { isLoggedIn, userData, accessToken } = useAppSelector((state) => state.user)
   const [isCartOpen, setIsCartOpen] = useState(false)
-
-  const sampleCartItems = [
-    {
-      id: 1,
-      name: 'Product 1',
-      price: 20.0,
-      quantity: 2,
-      image: 'https://stbcuulong.edu.vn/wp-content/uploads/2023/06/L4_KNTT_TiengViet4.1-scaled.jpg'
-    },
-    {
-      id: 2,
-      name: 'Product 2',
-      price: 15.0,
-      quantity: 1,
-      image: 'https://stbcuulong.edu.vn/wp-content/uploads/2023/06/L4_KNTT_TiengViet4.1-scaled.jpg'
-    }
-  ]
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
 
   const handleCartToggle = () => {
     setIsCartOpen(!isCartOpen) // Mở hoặc đóng giỏ hàng
@@ -77,9 +63,28 @@ function Header() {
       search: createSearchParams(newParams).toString()
     })
   }
+  const fetchCart = async () => {
+    try {
+      if (isLoggedIn && accessToken) {
+        const items = await apiGetCartItems(accessToken)
+        console.log('Cart items header:', items)
+        if (Array.isArray(items)) {
+          setCartItems(items)
+        } else {
+          console.error('Unexpected response format:', items)
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch cart:', err)
+    }
+  }
+
   useEffect(() => {
-    dispatch(fetchCategories())
-  }, [])
+    if (isLoggedIn && accessToken && userData?.userId) {
+      fetchCart()
+      dispatch(fetchCategories())
+    }
+  }, [isLoggedIn, accessToken])
 
   return (
     <nav className='fixed top-0 left-0 right-0 z-50 shadow-md bg-white px-6 py-3 flex items-center justify-between md:px-10'>
@@ -155,7 +160,7 @@ function Header() {
         <div className='relative cursor-pointer' onClick={handleCartToggle}>
           <ShoppingCart size={24} className='text-gray-700 hover:text-blue-500 transition' />
           <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>
-            {sampleCartItems.length}
+            {cartItems.length}
           </span>
         </div>
 
@@ -284,7 +289,9 @@ function Header() {
       <Cart
         isOpen={isCartOpen}
         onClose={handleCartToggle}
-        cartItems={sampleCartItems} // Truyền dữ liệu mẫu vào modal giỏ hàng
+        cartItems={cartItems}
+        accessToken={accessToken || ''}
+        onRefresh={fetchCart}
       />
     </nav>
   )

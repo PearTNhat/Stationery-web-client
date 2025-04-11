@@ -16,6 +16,7 @@ export interface ProductDetail {
   discountPrice: number
   size: Size
   promotion: Promotion | null
+  // productId?: string
 }
 
 interface Image {
@@ -33,6 +34,7 @@ interface ProductColor {
   color: Color
   productDetails: ProductDetail[]
   images: Image[]
+  sizes: Size[]
 }
 
 interface Product {
@@ -52,6 +54,7 @@ interface Product {
   createdAt: string
 }
 interface ProductDeatilResponse extends Product {
+  image: Image[]
   reviews: Review[]
 }
 export type { Product, Color, ProductColor, ProductDeatilResponse, Image, Size }

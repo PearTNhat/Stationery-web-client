@@ -49,7 +49,7 @@ function App() {
           <Route path={publicPaths.PRODUCT} element={<ProductPage />} />
           <Route path={userPaths.PROFILE} element={<UserProfile />} />
           <Route path={publicPaths.PRODUCT_DETAIL} element={<ProductDetail />} />
-          <Route path='/products/payment/:id' element={<PaymentConfirmation />} />
+          <Route path='/products/payment-confirnation' element={<PaymentConfirmation />} />
           <Route path={publicPaths.CONTACT} element={<Contact />} />
           <Route path={publicPaths.SERVICE} element={<Service />} />
           <Route path={publicPaths.ABOUT} element={<About />} />

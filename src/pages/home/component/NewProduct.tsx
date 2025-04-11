@@ -7,8 +7,6 @@ import { Product } from '~/types/product'
 
 const NewProduct = () => {
   const [products, setProducts] = useState<Product[]>([])
-  //   const [totalPages, setTotalPages] = useState<number>(0)
-  //   const [currentPage, setCurrentPage] = useState<number>(1)
   const getNewProducts = async () => {
     try {
       const response = await apiGetAllProducts({
@@ -28,9 +26,11 @@ const NewProduct = () => {
       }
     }
   }
+
   useEffect(() => {
     getNewProducts()
   }, [])
+
   return <ProductSection title='New Products' products={products} />
 }
 

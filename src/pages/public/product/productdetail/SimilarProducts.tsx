@@ -5,11 +5,11 @@ import { Product } from '~/types/product'
 
 type SimilarProductsProps = {
   similarProducts: Product[]
-  // onAddToCart: (id: number) => void
-  // onViewDetails: (id: number) => void
+  onAddToCart: (productId: string, colorId: string, sizeId: string, quantity: number) => Promise<void>
+  onViewDetails: (id: number) => void
 }
 
-export const SimilarProducts: React.FC<SimilarProductsProps> = ({ similarProducts }) => {
+export const SimilarProducts: React.FC<SimilarProductsProps> = ({ similarProducts, onAddToCart, onViewDetails }) => {
   return (
     <div className='mt-12'>
       <h3 className='text-2xl font-bold text-center'>Similar Products</h3>
@@ -18,8 +18,8 @@ export const SimilarProducts: React.FC<SimilarProductsProps> = ({ similarProduct
           <Card
             key={product.productId}
             product={product}
-            // onAddToCart={() => onAddToCart(product.productId)}
-            // onViewDetails={() => onViewDetails(product.productId)}
+            onAddToCart={() => onAddToCart(product.productId, product.colorId, product.sizeId, 1)}
+            onViewDetails={() => onViewDetails(Number(product.productId))}
           />
         ))}
       </div>
