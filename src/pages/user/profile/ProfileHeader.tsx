@@ -1,17 +1,50 @@
-// src/components/ProfileHeader.tsx
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { FaEdit, FaSave, FaCamera } from 'react-icons/fa'
 import { User } from '~/types/user'
 
 interface ProfileHeaderProps {
   initialData: User | null
-  onSave: (updatedData: ProfileHeaderProps['initialData']) => void
+  onSave: (updatedData: User | null) => void
+}
+
+const normalizeUserData = (user: any): User => {
+  if ('result' in user) {
+    user = user.result
+  }
+
+  return {
+    ...user,
+    dob: user?.dob ?? '',
+    phone: user?.phone ?? '',
+    avatar: user?.avatar ?? '',
+    addresses:
+      user?.addresses?.length > 0
+        ? user.addresses.map((addr: any, index: number) => ({
+            ...addr,
+            isDefault: addr?.isDefault ?? index === 0 // gán default nếu chưa có
+          }))
+        : [{ addressID: '1', addressName: '', isDefault: true }]
+  }
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) => {
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState(initialData)
-  const [previewAvatar, setPreviewAvatar] = useState<string | null>(initialData?.avatar || null)
+  const [formData, setFormData] = useState<User | null>(null)
+  const [originalData, setOriginalData] = useState<User | null>(null)
+  const [previewAvatar, setPreviewAvatar] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (initialData) {
+      const normalizedData = normalizeUserData(initialData)
+      setFormData(normalizedData)
+      setOriginalData(normalizedData)
+      setPreviewAvatar(normalizedData.avatar || null)
+    } else {
+      setFormData(null)
+      setOriginalData(null)
+      setPreviewAvatar(null)
+    }
+  }, [initialData])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -36,98 +69,176 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) =>
     onSave(formData)
     setIsEditing(false)
   }
-  console.log(formData)
+
+  const handleEditToggle = () => {
+    if (isEditing) {
+      onSave(formData)
+      setIsEditing(false)
+    } else {
+      if (originalData) {
+        setFormData(originalData)
+        setPreviewAvatar(originalData.avatar || null)
+      }
+      setIsEditing(true)
+    }
+  }
+
+  // 🧠 Lấy địa chỉ mặc định hoặc fallback về cái đầu tiên
+  const defaultAddress = formData?.addresses?.find((a) => a.isDefault) || formData?.addresses?.[0]
+
   return (
-    <div className='bg-white p-6 rounded-xl shadow-lg max-w-3xl mx-auto'>
-      {/* Header */}
-      <div className='flex justify-between items-center mb-6 border-b pb-4'>
-        <h2 className='text-2xl font-semibold text-gray-800'>Thông tin cá nhân</h2>
+    <div className='bg-white/70 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-4xl mx-auto border border-gray-200'>
+      <div className='flex justify-between items-center mb-8 border-b pb-4'>
+        <h2 className='text-3xl font-bold text-gray-800 tracking-wide'>Profile Information</h2>
         <button
-          onClick={() => setIsEditing(!isEditing)}
-          className='flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md'
+          onClick={handleEditToggle}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full shadow-md text-white font-medium transition-all duration-300 ${
+            isEditing
+              ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+              : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
+          }`}
         >
-          {isEditing ? (
-            <>
-              <FaSave className='mr-2' /> Lưu
-            </>
-          ) : (
-            <>
-              <FaEdit className='mr-2' /> Chỉnh sửa
-            </>
-          )}
+          {isEditing ? <FaSave /> : <FaEdit />}
+          {isEditing ? 'Save' : 'Edit'}
         </button>
       </div>
 
-      {/* Avatar */}
-      <div className='flex items-center space-x-6 mb-8'>
-        <div className='relative'>
+      <div className='flex items-center space-x-6 mb-10'>
+        <div className='relative group'>
           <img
             src={previewAvatar || 'https://via.placeholder.com/100'}
             alt='Avatar'
-            className='w-28 h-28 rounded-full object-cover border-4 border-blue-100 shadow-sm'
+            className='w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg transition-transform group-hover:scale-105'
           />
           {isEditing && (
-            <label className='absolute bottom-0 right-0 bg-blue-500 p-2 rounded-full cursor-pointer hover:bg-blue-600 transition-colors'>
-              <FaCamera className='text-white' />
+            <label className='absolute bottom-1 right-1 bg-blue-600 p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-all shadow-md'>
+              <FaCamera className='text-white text-sm' />
               <input type='file' accept='image/*' onChange={handleAvatarChange} className='hidden' />
             </label>
           )}
         </div>
         <div>
-          <h3 className='text-xl font-medium text-gray-800'>{formData?.first_name + ' ' + formData?.last_name}</h3>
-          <p className='text-gray-500'>{formData?.first_name + ' ' + formData?.last_name}</p>
+          <h3 className='text-2xl font-semibold text-gray-900'>
+            {formData?.firstName} {formData?.lastName}
+          </h3>
+          <p className='text-gray-500'>Displayed on your public profile</p>
         </div>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className='space-y-6'>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-          {[
-            { label: 'Username', name: 'username', type: 'text' },
-            { label: 'Họ tên', name: 'fullName', type: 'text' },
-            { label: 'Email', name: 'email', type: 'email' },
-            { label: 'Ngày sinh', name: 'birthDate', type: 'date' },
-            {
-              label: 'Giới tính',
-              name: 'gender',
-              type: 'select',
-              options: ['Nam', 'Nữ', 'Khác']
-            },
-            { label: 'Số điện thoại', name: 'phone', type: 'tel' },
-            { label: 'Địa chỉ', name: 'address', type: 'text', colSpan: true }
-          ].map((field) => (
-            <div key={field.name} className={field.colSpan ? 'md:col-span-2' : ''}>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>{field.label}</label>
-              {isEditing ? (
-                field.type === 'select' ? (
-                  <select
-                    name={field.name}
-                    value={formData ? [field.name as keyof typeof formData] : ''}
-                    onChange={handleInputChange}
-                    className='w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all'
-                  >
-                    {field.options?.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type={field.type}
-                    name={field.name}
-                    value={formData ? [field.name as keyof typeof formData] : ''}
-                    onChange={handleInputChange}
-                    className='w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all'
-                  />
-                )
-              ) : (
-                <p className='text-gray-800 bg-gray-50 p-2 rounded-md'>
-                  {formData ? [field.name as keyof typeof formData] : ''}
-                </p>
-              )}
-            </div>
-          ))}
+      <form onSubmit={handleSubmit} className='space-y-8'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
+          {/* First Name */}
+          <div>
+            <label className='block text-sm font-semibold text-gray-700 mb-2'>First Name</label>
+            {isEditing ? (
+              <input
+                type='text'
+                name='firstName'
+                value={formData?.firstName || ''}
+                onChange={handleInputChange}
+                className='w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm transition-all text-gray-900'
+              />
+            ) : (
+              <p className='text-gray-900 bg-gray-100 p-3 rounded-lg shadow-inner'>
+                {formData?.firstName || 'Chưa cập nhật'}
+              </p>
+            )}
+          </div>
+
+          {/* Last Name */}
+          <div>
+            <label className='block text-sm font-semibold text-gray-700 mb-2'>Last Name</label>
+            {isEditing ? (
+              <input
+                type='text'
+                name='lastName'
+                value={formData?.lastName || ''}
+                onChange={handleInputChange}
+                className='w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm transition-all text-gray-900'
+              />
+            ) : (
+              <p className='text-gray-900 bg-gray-100 p-3 rounded-lg shadow-inner'>
+                {formData?.lastName || 'Chưa cập nhật'}
+              </p>
+            )}
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className='block text-sm font-semibold text-gray-700 mb-2'>Email</label>
+            {isEditing ? (
+              <input
+                type='email'
+                name='email'
+                value={formData?.email || ''}
+                onChange={handleInputChange}
+                className='w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm transition-all text-gray-900'
+              />
+            ) : (
+              <p className='text-gray-900 bg-gray-100 p-3 rounded-lg shadow-inner'>
+                {formData?.email || 'Chưa cập nhật'}
+              </p>
+            )}
+          </div>
+
+          {/* DOB */}
+          <div>
+            <label className='block text-sm font-semibold text-gray-700 mb-2'>Date of Birth</label>
+            {isEditing ? (
+              <input
+                type='date'
+                name='dob'
+                value={formData?.dob || ''}
+                onChange={handleInputChange}
+                className='w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm transition-all text-gray-900'
+              />
+            ) : (
+              <p className='text-gray-900 bg-gray-100 p-3 rounded-lg shadow-inner'>
+                {formData?.dob || 'Chưa cập nhật'}
+              </p>
+            )}
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label className='block text-sm font-semibold text-gray-700 mb-2'>Phone Number</label>
+            {isEditing ? (
+              <input
+                type='tel'
+                name='phone'
+                value={formData?.phone || ''}
+                onChange={handleInputChange}
+                className='w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm transition-all text-gray-900'
+              />
+            ) : (
+              <p className='text-gray-900 bg-gray-100 p-3 rounded-lg shadow-inner'>
+                {formData?.phone || 'Chưa cập nhật'}
+              </p>
+            )}
+          </div>
+
+          {/* Address */}
+          <div className='md:col-span-2'>
+            <label className='block text-sm font-semibold text-gray-700 mb-2'>Address</label>
+            {isEditing ? (
+              <input
+                type='text'
+                name='address'
+                value={defaultAddress?.addressName || ''}
+                onChange={(e) => {
+                  const updatedAddresses = formData?.addresses?.map((addr) =>
+                    addr.isDefault ? { ...addr, addressName: e.target.value } : addr
+                  )
+                  setFormData((prev) => (prev ? { ...prev, addresses: updatedAddresses || [] } : null))
+                }}
+                className='w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm transition-all text-gray-900'
+              />
+            ) : (
+              <p className='text-gray-900 bg-gray-100 p-3 rounded-lg shadow-inner'>
+                {defaultAddress?.addressName || 'Chưa cập nhật'}
+              </p>
+            )}
+          </div>
         </div>
       </form>
     </div>

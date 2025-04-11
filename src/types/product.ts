@@ -14,6 +14,7 @@ export interface ProductDetail {
   soldQuantity: number
   discountPrice: number
   size: Size
+  productId?: string
 }
 
 interface Image {
@@ -31,6 +32,7 @@ interface ProductColor {
   color: Color
   productDetails: ProductDetail[]
   images: Image[]
+  sizes: Size[]
 }
 
 interface Product {
@@ -43,11 +45,13 @@ interface Product {
     categoryName: string
   }
   productColors: ProductColor[]
-
+  colorId: string
+  sizeId: string
   totalRating: number
   createdAt: string
 }
 interface ProductDeatilResponse extends Product {
+  image: Image[]
   reviews: Review[]
 }
 export type { Product, Color, ProductColor, ProductDeatilResponse, Image, Size }

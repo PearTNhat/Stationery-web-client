@@ -8,6 +8,8 @@ import { showToastError, showToastSuccess } from '~/utils/alert'
 import { dropDownProfile } from '~/constance/dropdown'
 import Cart from '~/pages/public/cart/Cart'
 import { apiLogout } from '~/api/authenticate'
+import { CartItem } from '~/types/cart'
+import { apiGetCartItems } from '~/api/cart'
 
 function Header() {
   const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'light')
@@ -16,25 +18,7 @@ function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { isLoggedIn, userData, accessToken } = useAppSelector((state) => state.user)
   const [isCartOpen, setIsCartOpen] = useState(false)
-
-  console.log(userData);
-
-  const sampleCartItems = [
-    {
-      id: 1,
-      name: 'Product 1',
-      price: 20.0,
-      quantity: 2,
-      image: 'https://stbcuulong.edu.vn/wp-content/uploads/2023/06/L4_KNTT_TiengViet4.1-scaled.jpg'
-    },
-    {
-      id: 2,
-      name: 'Product 2',
-      price: 15.0,
-      quantity: 1,
-      image: 'https://stbcuulong.edu.vn/wp-content/uploads/2023/06/L4_KNTT_TiengViet4.1-scaled.jpg'
-    }
-  ]
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
 
   const handleCartToggle = () => {
     setIsCartOpen(!isCartOpen) // Mở hoặc đóng giỏ hàng
@@ -68,10 +52,28 @@ function Header() {
       showToastError('Logout failed. Please try again.')
     }
   }
+  const fetchCart = async () => {
+    try {
+      if (isLoggedIn && accessToken) {
+        const items = await apiGetCartItems(accessToken)
+        console.log('Cart items header:', items)
+        if (Array.isArray(items)) {
+          setCartItems(items)
+        } else {
+          console.error('Unexpected response format:', items)
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch cart:', err)
+    }
+  }
 
   useEffect(() => {
-    console.log('isLoggedIn', isLoggedIn)
-  }, [isLoggedIn])
+    if (isLoggedIn && accessToken && userData?.userId) {
+      fetchCart()
+    }
+  }, [isLoggedIn, accessToken])
+
   return (
     <nav className='fixed top-0 left-0 right-0 z-50 shadow-md bg-white px-6 py-3 flex items-center justify-between md:px-10'>
       {/* Logo */}
@@ -137,7 +139,7 @@ function Header() {
         <div className='relative cursor-pointer' onClick={handleCartToggle}>
           <ShoppingCart size={24} className='text-gray-700 hover:text-blue-500 transition' />
           <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>
-            {sampleCartItems.length}
+            {cartItems.length}
           </span>
         </div>
 
@@ -150,7 +152,7 @@ function Header() {
         {isLoggedIn ? (
           <div className=' d-dropdown d-dropdown-hover  d-dropdown-end '>
             <div tabIndex={0} className='w-10 rounded-full overflow-hidden'>
-              <img src={userData?.avatar} alt={userData?.last_name} />
+              <img src={userData?.avatar} alt={userData?.lastName} />
             </div>
             <ul tabIndex={0} className='d-dropdown-content d-menu bg-base-100 rounded-md z-10 w-52 p-2 shadow-md'>
               {dropDownProfile.map((item) => {
@@ -266,7 +268,9 @@ function Header() {
       <Cart
         isOpen={isCartOpen}
         onClose={handleCartToggle}
-        cartItems={sampleCartItems} // Truyền dữ liệu mẫu vào modal giỏ hàng
+        cartItems={cartItems}
+        accessToken={accessToken || ''}
+        onRefresh={fetchCart}
       />
     </nav>
   )

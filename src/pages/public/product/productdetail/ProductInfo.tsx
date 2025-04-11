@@ -1,6 +1,6 @@
 // components/product/ProductInfo.tsx
 import React, { useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import Button from '~/components/button/Button'
 import NumberToStart from '~/components/numberToStar/NumberToStart'
 import ColorSelector from '~/components/product_attributes/ColorSelector'
@@ -14,7 +14,9 @@ type ProductInfoProps = {
   setImages: (images: Image[]) => void
   name?: string
   totalRating?: number
-  onAddToCart: (id: number) => void
+  onAddToCart: (productId: string, colorId: string, sizeId: string, quantity: number) => Promise<void>
+  onBuyNow: (productId: string, colorId: string, sizeId: string, quantity: number) => void
+  productId?: string
 }
 
 export const ProductInfo: React.FC<ProductInfoProps> = ({
@@ -22,7 +24,9 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
   name,
   totalRating,
   setImages,
-  onAddToCart
+  onAddToCart,
+  onBuyNow,
+  productId
 }) => {
   const [searchParams, setSearchParams] = useSearchParams()
   const currentParams = useMemo(
@@ -32,6 +36,8 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
   const [productDetail, setProductDetail] = useState<ProductDetail | null>(null)
   const [colors, setColors] = useState<Color[]>([])
   const [sizes, setSizes] = useState<Size[]>([])
+  const colorId = currentParams.colorId ?? ''
+  const sizeId = currentParams.sizeId ?? ''
   const [quantity, setQuantity] = useState(1)
 
   useEffect(() => {
@@ -59,7 +65,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
         }
       }
     }
-  }, [currentParams, productColor])
+  }, [currentParams, productColor, setImages, setSearchParams])
   return (
     <div className='w-full md:w-1/2'>
       <h1 className='text-2xl font-bold text-blue-700'>{name}</h1>
@@ -94,14 +100,37 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
       </p>
       {sizes.length > 0 && <SizeSelector sizes={sizes} currentParams={currentParams} />}
 
-      <ColorSelector colors={colors} currentParams={currentParams} />
+      <ColorSelector
+        colors={colors}
+        selectedColor={currentParams.colorId ?? ''}
+        onColorSelect={(colorId) => setSearchParams({ ...currentParams, colorId })}
+        currentParams={{ ...currentParams, colorId: currentParams.colorId ?? null }}
+      />
       <QuantitySelector quantity={quantity} onQuantityChange={setQuantity} />
 
       <div className='mt-4 flex gap-4'>
-        <Button className='bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg w-1/2'>
-          <Link to={`/products/payment/${productDetail?.productDetailId}`}>Buy Now</Link>
+        <button
+          className='bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg w-1/2'
+          onClick={() => onBuyNow(productId ?? '', colorId, sizeId, quantity)}
+        >
+          Buy Now
+        </button>
+        <Button
+          className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-1/2'
+          onClick={() => {
+            console.log('Dữ liệu gửi đi:', {
+              productId: productDetail?.productId,
+              colorId: currentParams.colorId,
+              sizeId: currentParams.sizeId,
+              quantity
+            })
+            if (productDetail) {
+              onAddToCart(productId ?? '', currentParams.colorId ?? '', currentParams.sizeId ?? '', quantity)
+            }
+          }}
+        >
+          Add to Cart
         </Button>
-        <Button className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-1/2'>Add to Cart</Button>
       </div>
     </div>
   )

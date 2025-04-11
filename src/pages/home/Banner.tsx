@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 interface Banner {
   id: number
@@ -27,24 +27,24 @@ export default function BannerSlider({ banners }: BannerProps) {
   }, [banners.length])
 
   return (
-    <section className="relative w-full min-h-[700px] overflow-hidden">
+    <section className='relative w-full min-h-[700px] overflow-hidden'>
       {banners.map((banner, index) => (
       <motion.div
         key={banner.id}
-        className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-1000"
+        className='absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-1000'
         style={{
           backgroundImage: `url(${banner.image})`,
           opacity: currentIndex === index ? 1 : 0,
-          pointerEvents: currentIndex === index ? "auto" : "none",
+          pointerEvents: currentIndex === index ? 'auto' : 'none',
         }}
       >
-        <div className="absolute inset-0 bg-black opacity-50"></div>
-        <div className="relative h-full flex flex-col items-center justify-center text-center px-6">
-          <h2 className="text-6xl font-bold text-white drop-shadow-2xl">{banner.title}</h2>
-          <p className="mt-6 text-xl text-white drop-shadow-2xl">{banner.content}</p>
+        <div className='absolute inset-0 bg-black opacity-50'></div>
+        <div className='relative h-full flex flex-col items-center justify-center text-center px-6'>
+          <h2 className='text-6xl font-bold text-white drop-shadow-2xl'>{banner.title}</h2>
+          <p className='mt-6 text-xl text-white drop-shadow-2xl'>{banner.content}</p>
           <Link
             to={banner.buttonLink}
-            className="mt-8 inline-block px-8 py-4 rounded-lg font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-700 hover:to-blue-500 transition-colors shadow-2xl transform hover:scale-105"
+            className='mt-8 inline-block px-8 py-4 rounded-lg font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-700 hover:to-blue-500 transition-colors shadow-2xl transform hover:scale-105'
           >
             {banner.buttonText}
           </Link>
@@ -53,7 +53,7 @@ export default function BannerSlider({ banners }: BannerProps) {
       ))}
 
       {/* Navigation Dots */}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
+      <div className='absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10'>
         {banners.map((_, index) => (
           <button
             key={index}

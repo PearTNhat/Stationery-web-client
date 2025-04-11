@@ -11,16 +11,17 @@ import { calculatePercent, formatNumber } from '~/utils/helper'
 
 interface ProductCardProps {
   product: Product
-  onAddToCart: (id: string) => void
   onViewDetails: (id: string) => void
+  onAddToCart: (productId: string, colorId: string, sizeId: string, quantity: number) => void
 }
+
 interface MinPrice {
   orginal: number
   final: number
 }
 
-const Card: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails }) => {
-  const [selectedColor, setSelectedColor] = useState(null)
+const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, onAddToCart }) => {
+  const [selectedColor, setSelectedColor] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [productDetails, setProductDetails] = useState<ProductDetail | null>(null)
   const [productColor, setProductColor] = useState<ProductColor | null>(null)
@@ -104,7 +105,12 @@ const Card: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails 
         <span>Sold: {productDetails?.soldQuantity}</span>
       </div>
 
-      {/* <ColorSelector colors={colors} selectedColor={selectedColor} onColorSelect={handleColorSelect} /> */}
+      <ColorSelector
+        colors={colors}
+        selectedColor={selectedColor}
+        onColorSelect={handleColorSelect}
+        currentParams={{ colorId: selectedColor }}
+      />
 
       <div className='flex space-x-4 w-full mt-2'>
         <Link to={`/products/${product?.slug}?colorId=${selectedColor}`} className='w-full'>
@@ -113,8 +119,12 @@ const Card: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails 
           </Button>
         </Link>
         <button
-          onClick={() => onAddToCart(product.productId)}
           className='bg-yellow-400 text-black p-3 rounded-lg shadow-md transition hover:bg-yellow-500'
+          onClick={() => {
+            if (selectedColor && productDetails?.size.sizeId) {
+              onAddToCart(product.productId, selectedColor, productDetails.size.sizeId, 1)
+            }
+          }}
         >
           <FaShoppingCart size={20} />
         </button>
@@ -127,7 +137,7 @@ const Card: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails 
           productName={product.name}
           productPrice={productDetails?.originalPrice}
           productDescription={product.description}
-          selectedColor={selectedColor}
+          selectedColor={selectedColor ?? undefined}
           productImage={productColor?.images[0]?.url}
           colors={colors}
           productId={product.productId}

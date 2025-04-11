@@ -39,7 +39,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
         />
       </div>
       <div className='px-2'>
-        <img src={'a'} alt='digital world' className='pt-4 mx-auto' />
+        <img src={'/images/logo_stationery.svg'} alt='digital world' className='pt-4 mx-auto w-1/4' />
         <p className='text-xl font-medium py-4'>{title}</p>
         <div className='flex justify-around items-center'>
           {startText.map((el, index) => {

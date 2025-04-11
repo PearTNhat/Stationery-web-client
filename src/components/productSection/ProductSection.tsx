@@ -1,6 +1,9 @@
 import { Product } from '~/types/product'
 import Card from '../card/Card'
 import { useEffect } from 'react'
+import { showToastError, showToastSuccess } from '~/utils/alert'
+import { apiAddItemToCart } from '~/api/cart'
+import { useAppSelector } from '~/hooks/redux'
 
 interface ProductSectionProps {
   title: string
@@ -8,9 +11,21 @@ interface ProductSectionProps {
 }
 
 const ProductSection: React.FC<ProductSectionProps> = ({ title, products }) => {
+  const { accessToken } = useAppSelector((state) => state.user)
   // Hàm xử lý thêm vào giỏ hàng
-  const handleAddToCart = (product: Product) => {
-    console.log(`Added to cart: ${product.name}`)
+  const handleAddToCart = async (productDetailId: string, colorId: string, sizeId: string, quantity: number) => {
+    const result = await apiAddItemToCart({
+      productId: productDetailId,
+      colorId,
+      sizeId,
+      quantity,
+      accessToken: accessToken || ''
+    })
+    if (typeof result === 'string') {
+      showToastError(result)
+    } else {
+      showToastSuccess('Đã thêm vào giỏ hàng!')
+    }
   }
 
   // Hàm xử lý khi nhấn xem chi tiết
@@ -30,7 +45,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({ title, products }) => {
           <Card
             key={product?.productId}
             product={product}
-            onAddToCart={() => handleAddToCart(product)}
+            onAddToCart={handleAddToCart}
             onViewDetails={() => handleViewDetails(product)}
           />
         ))}

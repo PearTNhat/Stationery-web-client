@@ -16,7 +16,7 @@ const ProductPage: React.FC = () => {
   const [sortByPrice, setSortByPrice] = useState('')
   const [priceRange, setPriceRange] = useState([0, 200000])
   const [products, setProducts] = useState<Product[] | null>(null)
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
+  // Removed unused filteredProducts state
   const [filters, setFilters] = useState({
     bestSeller: false,
     isNew: false,
@@ -89,7 +89,7 @@ const ProductPage: React.FC = () => {
         onApplyDiscount={applyDiscount}
       />
       <ProductList
-        products={products}
+        products={products || []}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         productsPerPage={productsPerPage}

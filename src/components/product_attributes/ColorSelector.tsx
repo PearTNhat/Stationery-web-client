@@ -4,7 +4,9 @@ import { Color } from '~/types/product'
 
 type ColorSelectorProps = {
   colors: Color[]
-  currentParams: { colorId?: string }
+  selectedColor: string | null
+  onColorSelect: (color: string) => void
+  currentParams: { colorId: string | null }
 }
 
 const ColorSelector: React.FC<ColorSelectorProps> = ({ colors, currentParams }) => {
