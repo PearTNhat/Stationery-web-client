@@ -36,15 +36,13 @@ const userSlice = createSlice({
     builder.addCase(fetchCurrentUser.pending, (state) => {
       state.isLoading = true
     })
-    builder.addCase(
-      fetchCurrentUser.fulfilled,
-      (state, action: PayloadAction<{ accessToken: string; userData: User }>) => {
-        state.isLoading = false
-        state.isLoggedIn = true
-        state.userData = action.payload.userData
-        return state
-      }
-    )
+    builder.addCase(fetchCurrentUser.fulfilled, (state, action: PayloadAction<User>) => {
+      console.log('action.payload', action.payload)
+      state.isLoading = false
+      state.isLoggedIn = true
+      state.userData = action.payload
+      return state
+    })
     builder.addCase(fetchCurrentUser.rejected, (state) => {
       state.isLoading = false
       state.isError = true

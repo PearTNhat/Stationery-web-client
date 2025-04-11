@@ -64,7 +64,7 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, onAddToCart 
       console.log('san pham het hang')
     }
     setColors(colorList)
-    setMinPrice(minPrice)
+    // setMinPrice(minPrice)
   }, [product])
   console.log('p', product)
   console.log('productDetails', productDetails)

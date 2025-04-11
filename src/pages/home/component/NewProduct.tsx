@@ -12,8 +12,7 @@ const NewProduct = () => {
       const response = await apiGetAllProducts({
         page: 0,
         limit: 10,
-        sortBy: 'createdAt',
-        ascending: false
+        sortBy: 'createdAt'
       })
       if (response.code == 200) {
         setProducts(response.result.content)

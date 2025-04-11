@@ -1,10 +1,19 @@
 import SideBar from './components/SideBar'
 import { useAppSelector } from '~/hooks/redux'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import Header from './components/Header'
+import { useEffect } from 'react'
 
 const AdminLayout = () => {
   const { isExpanded, isHovered, isMobileOpen } = useAppSelector((state) => state.sideBar)
+  const { userData } = useAppSelector((state) => state.user)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (Number(userData?.role.role_id) !== 111) {
+      navigate('/')
+    }
+  }, [])
   return (
     <div className='min-h-screen xl:flex'>
       <div>

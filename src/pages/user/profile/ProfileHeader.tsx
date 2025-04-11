@@ -4,7 +4,7 @@ import { User } from '~/types/user'
 
 interface ProfileHeaderProps {
   initialData: User | null
-  onSave: (updatedData: User | null) => void
+  onSave: (updatedData: User | null, file: File | null) => void
 }
 
 const normalizeUserData = (user: any): User => {
@@ -13,17 +13,19 @@ const normalizeUserData = (user: any): User => {
   }
 
   return {
-    ...user,
+    firstName: user?.firstName ?? '',
+    lastName: user?.lastName ?? '',
+    email: user?.email ?? '',
     dob: user?.dob ?? '',
     phone: user?.phone ?? '',
-    avatar: user?.avatar ?? '',
-    addresses:
-      user?.addresses?.length > 0
-        ? user.addresses.map((addr: any, index: number) => ({
-            ...addr,
-            isDefault: addr?.isDefault ?? index === 0 // gán default nếu chưa có
-          }))
-        : [{ addressID: '1', addressName: '', isDefault: true }]
+    avatar: user?.avatar ?? ''
+    // addresses:
+    //   user?.addresses?.length > 0
+    //     ? user.addresses.map((addr: any, index: number) => ({
+    //         ...addr,
+    //         isDefault: addr?.isDefault ?? index === 0 // gán default nếu chưa có
+    //       }))
+    //     : [{ addressID: '1', addressName: '', isDefault: true }]
   }
 }
 
@@ -32,7 +34,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) =>
   const [formData, setFormData] = useState<User | null>(null)
   const [originalData, setOriginalData] = useState<User | null>(null)
   const [previewAvatar, setPreviewAvatar] = useState<string | null>(null)
-
+  const [file, setFile] = useState<File | null>(null)
   useEffect(() => {
     if (initialData) {
       const normalizedData = normalizeUserData(initialData)
@@ -45,7 +47,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) =>
       setPreviewAvatar(null)
     }
   }, [initialData])
-
+  console.log('formData', initialData)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => (prev ? { ...prev, [name]: value } : null))
@@ -54,25 +56,19 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) =>
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const base64String = reader.result as string
-        setPreviewAvatar(base64String)
-        setFormData((prev) => (prev ? { ...prev, avatar: base64String } : null))
-      }
-      reader.readAsDataURL(file)
+      setFile(file)
     }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSave(formData)
+    onSave(formData, file)
     setIsEditing(false)
   }
 
   const handleEditToggle = () => {
     if (isEditing) {
-      onSave(formData)
+      onSave(formData, file)
       setIsEditing(false)
     } else {
       if (originalData) {
@@ -218,7 +214,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) =>
           </div>
 
           {/* Address */}
-          <div className='md:col-span-2'>
+          {/* <div className='md:col-span-2'>
             <label className='block text-sm font-semibold text-gray-700 mb-2'>Address</label>
             {isEditing ? (
               <input
@@ -238,7 +234,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) =>
                 {defaultAddress?.addressName || 'Chưa cập nhật'}
               </p>
             )}
-          </div>
+          </div> */}
         </div>
       </form>
     </div>

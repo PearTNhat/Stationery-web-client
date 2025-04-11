@@ -37,5 +37,17 @@ const apiChangePassword = async ({
     return (error as Error).message // Avoid undefined error
   }
 }
+const apiUpdateUserInfo = async ({ formData, accessToken }: { formData: FormData; accessToken: string }) => {
+  try {
+    const config = { headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'multipart/form-data' } }
+    const response = await http.put('/users/update-user', formData, config)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data // Return server error response if available
+    }
+    return error // Avoid undefined error
+  }
+}
 
-export { apiGetUserInfo, apiChangePassword }
+export { apiGetUserInfo, apiChangePassword, apiUpdateUserInfo }
