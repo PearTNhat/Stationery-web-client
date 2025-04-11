@@ -22,6 +22,7 @@ interface MinPrice {
 
 const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, onAddToCart }) => {
   const [selectedColor, setSelectedColor] = useState<string | null>(null)
+
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [productDetails, setProductDetails] = useState<ProductDetail | null>(null)
   const [productColor, setProductColor] = useState<ProductColor | null>(null)
@@ -45,7 +46,7 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, onAddToCart 
     for (const pc of product.productColors) {
       colorList.push(pc.color)
       for (const pd of pc.productDetails) {
-        if (pd.stockQuantity > 0 && !isSetProductDetail) {
+        if (pd.discountPrice == product.minPrice && !isSetProductDetail) {
           //price
           minPrice.final = pd.discountPrice
           minPrice.orginal = pd.originalPrice
@@ -65,6 +66,8 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, onAddToCart 
     setColors(colorList)
     setMinPrice(minPrice)
   }, [product])
+  console.log('p', product)
+  console.log('productDetails', productDetails)
   return (
     <motion.div className='bg-white text-gray-900 rounded-2xl shadow-lg p-5 flex flex-col items-center space-y-4 transition-all duration-300 hover:shadow-2xl'>
       <Link to={`/products/${product?.slug}?colorId=${selectedColor}`} className='w-full flex justify-center'>
@@ -101,8 +104,8 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, onAddToCart 
       </div>
 
       <div className='flex justify-between w-full text-gray-500 text-sm px-4'>
-        <span>Stock: {productDetails?.stockQuantity}</span>
-        <span>Sold: {productDetails?.soldQuantity}</span>
+        <span>Stock: {product.quantity}</span>
+        <span>Sold: {product.soldQuantity}</span>
       </div>
 
       <ColorSelector

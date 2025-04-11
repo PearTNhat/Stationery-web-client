@@ -86,8 +86,7 @@ export default function ProductDetail() {
       const response = await apiGetAllProducts({
         page: 0,
         limit: 10,
-        sortBy: 'totalRating',
-        ascending: false
+        sortBy: 'totalRating'
       })
       if (response.code == 200) {
         setSimilarProducts(response.result.content)

@@ -60,6 +60,7 @@ const CommentContainer: React.FC<CommentContainerProps> = ({ pId, comments, tota
       )
       showToastSuccess('Created successfully')
       setFetchAgain((prev) => !prev)
+      setAffectedComment(null)
     } catch (error) {
       if (error instanceof Error) {
         showToastError(error.message)

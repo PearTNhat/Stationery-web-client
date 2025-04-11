@@ -1,35 +1,21 @@
-import React, { useEffect, useState } from 'react'
-import { getCategories } from '~/api/category'
-import { Category } from '~/types/category'
-
+import React, { useEffect } from 'react'
+import { useAppDispatch, useAppSelector } from '~/hooks/redux'
+import { fetchCategories } from '~/store/actions/category'
 const ProductCategories: React.FC = () => {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<boolean>(false)
+  const dispatch = useAppDispatch()
+  const { categories, isLoading, isError } = useAppSelector((state) => state.category)
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await getCategories()
-        console.log(data)
-        setCategories(data)
-      } catch (err) {
-        setError(true)
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchCategories()
+    dispatch(fetchCategories())
   }, [])
 
   return (
     <section className='py-8 px-4 bg-gray-100'>
       <div className='w-main mx-auto'>
         <h2 className='text-2xl font-bold text-blue-800 mb-6 text-center'>Product Categories</h2>
+
         <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4'>
-          {loading || error
+          {isLoading || isError
             ? // Skeleton loading khi đang tải hoặc khi có lỗi
               Array.from({ length: 20 }).map((_, index) => (
                 <div key={index} className='bg-white rounded-lg shadow-md p-4 text-center animate-pulse'>

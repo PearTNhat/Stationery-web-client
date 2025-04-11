@@ -23,6 +23,11 @@ const PasswordChange: React.FC = () => {
   } = useForm<FormData>()
 
   const onSubmit = async (data: FormData) => {
+    if (data.newPassword !== data.confirmPassword) {
+      showAlertError('Passwords do not match!')
+      return
+    }
+
     try {
       await apiChangePassword({
         email: userEmail,

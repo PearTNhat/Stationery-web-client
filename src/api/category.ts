@@ -5,9 +5,10 @@ import { Category } from '~/types/category'
 interface ApiResponse<T> {
   message: string
   result: T
+  code: number
 }
 
-export const getCategories = async (): Promise<Category[]> => {
+export const apiGetCategories = async (): Promise<Category[]> => {
   try {
     const response = await http.get<ApiResponse<Category[]>>('/categories')
     return response.data.result

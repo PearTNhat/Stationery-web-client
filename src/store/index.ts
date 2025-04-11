@@ -4,6 +4,7 @@ import storage from 'redux-persist/lib/storage'
 import { sideBarReducer } from './slices/sideBar'
 import { userReducer } from './slices/user'
 import { modalReducer } from './slices/modal'
+import { categoryReducer } from './slices/category'
 const persistConfig = {
   key: 'stationery/user',
   storage,
@@ -14,7 +15,8 @@ const store = configureStore({
   reducer: {
     user: persistedReducer,
     sideBar: sideBarReducer,
-    modal: modalReducer
+    modal: modalReducer,
+    category: categoryReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

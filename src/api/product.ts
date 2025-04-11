@@ -5,19 +5,28 @@ const apiGetAllProducts = async ({
   page = 0,
   limit = 10,
   sortBy = 'createdAt',
-  ascending = true
+  minPrice,
+  maxPrice,
+  categoryId,
+  search
 }: {
   page?: number
   limit?: number
   sortBy?: string
-  ascending?: boolean
+  minPrice?: string
+  maxPrice?: string
+  categoryId?: string
+  search?: string
 }) => {
   try {
     const params = {
       page,
       limit,
       sortBy,
-      ascending
+      minPrice,
+      maxPrice,
+      categoryId,
+      search
     }
     const response = await http.get('/products', { params })
     return response.data
@@ -39,4 +48,5 @@ const apiGetDetailProduct = async (slug: string | undefined) => {
     return error // Avoid undefined error
   }
 }
+
 export { apiGetAllProducts, apiGetDetailProduct }

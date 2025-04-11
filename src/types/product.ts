@@ -1,4 +1,5 @@
 import { Review } from './comment'
+import { Promotion } from './promotion'
 
 interface Size {
   sizeId: string
@@ -14,7 +15,8 @@ export interface ProductDetail {
   soldQuantity: number
   discountPrice: number
   size: Size
-  productId?: string
+  promotion: Promotion | null
+  // productId?: string
 }
 
 interface Image {
@@ -45,8 +47,9 @@ interface Product {
     categoryName: string
   }
   productColors: ProductColor[]
-  colorId: string
-  sizeId: string
+  minPrice: number
+  soldQuantity: number
+  quantity: number
   totalRating: number
   createdAt: string
 }

@@ -4,7 +4,6 @@ import { AxiosError } from 'axios'
 const apiGetUserInfo = async ({ token }: { token: string | null }) => {
   try {
     const config = { headers: { Authorization: `Bearer ${token}` } }
-    console.log(config)
     const response = await http.get('/users/info', config)
     return response.data
   } catch (error) {

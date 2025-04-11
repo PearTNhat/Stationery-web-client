@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ShoppingCart, Search, Menu, X } from 'lucide-react'
-import { useNavigate, NavLink, Link } from 'react-router-dom'
+import { useNavigate, NavLink, Link, useSearchParams, createSearchParams } from 'react-router-dom'
 import { publicPaths } from '~/constance/paths'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { userActions } from '~/store/slices/user'
@@ -8,13 +8,18 @@ import { showToastError, showToastSuccess } from '~/utils/alert'
 import { dropDownProfile } from '~/constance/dropdown'
 import Cart from '~/pages/public/cart/Cart'
 import { apiLogout } from '~/api/authenticate'
+import { fetchCategories } from '~/store/actions/category'
+import { ProductSearchParams } from '~/types/filter'
 import { CartItem } from '~/types/cart'
 import { apiGetCartItems } from '~/api/cart'
 
 function Header() {
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as ProductSearchParams, [searchParams])
+  const [search, setSearch] = useState<string>('')
   const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'light')
   const dispatch = useAppDispatch()
-  const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { isLoggedIn, userData, accessToken } = useAppSelector((state) => state.user)
   const [isCartOpen, setIsCartOpen] = useState(false)
@@ -38,8 +43,6 @@ function Header() {
   const handleLogout = async () => {
     try {
       const response = await apiLogout({ token: accessToken })
-
-      console.log('Logout response:', response)
       if (response.code == 200) {
         dispatch(userActions.logout())
         showToastSuccess('Logout successfully')
@@ -51,6 +54,14 @@ function Header() {
       console.error('Logout error:', error)
       showToastError('Logout failed. Please try again.')
     }
+  }
+  const handleSearchProduct = () => {
+    console.log('click')
+    const newParams = { ...currentParams, search }
+    navigate({
+      pathname: publicPaths.PRODUCT,
+      search: createSearchParams(newParams).toString()
+    })
   }
   const fetchCart = async () => {
     try {
@@ -71,6 +82,7 @@ function Header() {
   useEffect(() => {
     if (isLoggedIn && accessToken && userData?.userId) {
       fetchCart()
+      dispatch(fetchCategories())
     }
   }, [isLoggedIn, accessToken])
 
@@ -129,8 +141,17 @@ function Header() {
           type='text'
           placeholder='Search product...'
           className='w-full pl-10 pr-4 py-2 border rounded-lg focus:ring focus:ring-blue-200'
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleSearchProduct()
+            }
+          }}
         />
-        <Search className='absolute top-2.5 left-3 text-gray-500' size={20} />
+        <button type='button' onClick={() => handleSearchProduct()} className='absolute top-2.5 left-3 text-gray-500'>
+          <Search size={20} />
+        </button>
       </div>
 
       {/* Biểu tượng giỏ hàng & đổi giao diện & Đăng nhập */}
@@ -151,7 +172,7 @@ function Header() {
         {/* Đăng Nhập & Đăng Ký */}
         {isLoggedIn ? (
           <div className=' d-dropdown d-dropdown-hover  d-dropdown-end '>
-            <div tabIndex={0} className='w-10 rounded-full overflow-hidden'>
+            <div tabIndex={0} className='w-10 h-10 rounded-full overflow-hidden'>
               <img src={userData?.avatar} alt={userData?.lastName} />
             </div>
             <ul tabIndex={0} className='d-dropdown-content d-menu bg-base-100 rounded-md z-10 w-52 p-2 shadow-md'>
