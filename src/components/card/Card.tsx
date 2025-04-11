@@ -7,7 +7,7 @@ import ColorSelector from '../product_attributes/ColorSelector'
 import ProductModal from '../model/ProductModal'
 import { Color, Product, ProductColor, ProductDetail } from '~/types/product'
 import NumberToStart from '~/components/numberToStar/NumberToStart'
-import { calculatePercent, formatNumber } from '~/utils/helper'
+import { calculatePercent, formatNumber, priceInPromotion } from '~/utils/helper'
 
 interface ProductCardProps {
   product: Product
@@ -53,8 +53,8 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails }) => {
           setProductColor(pc)
           setSelectedColor(pc.color.colorId)
         }
-        minPrice.orginal = Math.min(minPrice.orginal, pd.originalPrice)
-        minPrice.final = Math.min(minPrice.final, pd.discountPrice)
+        // minPrice.orginal = Math.min(minPrice.orginal, pd.originalPrice)
+        // minPrice.final = Math.min(minPrice.final, pd.discountPrice)
       }
     }
     if (!isSetProductDetail) {
@@ -79,15 +79,19 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails }) => {
       <div className='flex items-center justify-between w-full px-4'>
         <div>
           {/* Giá đã giảm */}
-          <p className='text-[19px] max-sm:text-xs font-semibold text-blue-500'>{formatNumber(minPrice.final)} ₫</p>
+          <p className='text-[19px] max-sm:text-xs font-semibold text-blue-500'>
+            {formatNumber(priceInPromotion(productDetails))} ₫
+          </p>
           <div className='flex items-center '>
             {/* Giá chưa giảm */}
-            {minPrice.orginal !== 0 && (
+            {productDetails?.originalPrice !== 0 && (
               <>
-                <p className='line-through text-[#6b7280] text-sm '>{formatNumber(minPrice.orginal)}₫</p>
+                <p className='line-through text-[#6b7280] text-sm '>
+                  {formatNumber(productDetails?.originalPrice ?? 0)}₫
+                </p>
                 {/* % */}
                 <p className={`ml-1 text-red-400 text-sm font-bold`}>
-                  - {calculatePercent(minPrice.orginal, minPrice.final)}%
+                  - {calculatePercent(productDetails?.originalPrice ?? 0, priceInPromotion(productDetails))}%
                 </p>
               </>
             )}
