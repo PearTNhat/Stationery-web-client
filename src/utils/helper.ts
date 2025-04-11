@@ -1,6 +1,8 @@
 import React from 'react'
 import { FaRegStar, FaStar } from 'react-icons/fa'
 import { FaRegStarHalfStroke } from 'react-icons/fa6'
+import { ProductDetail } from '~/types/product'
+import { Promotion } from '~/types/promotion'
 
 const formatNumber = (number: number | string) => {
   const numberParse: number = Number(number)
@@ -9,7 +11,35 @@ const formatNumber = (number: number | string) => {
   }
   return numberParse.toLocaleString('de-DE')
 }
-
+const priceInPromotion = (productDetail: ProductDetail | null): number => {
+  if (!productDetail?.promotion) {
+    return productDetail?.discountPrice || 0
+  }
+  const promotion: Promotion = productDetail.promotion
+  const currentDate = new Date()
+  const startDate = new Date(promotion.startDate)
+  const endDate = new Date(promotion.endDate)
+  if (
+    currentDate >= startDate &&
+    currentDate <= endDate &&
+    promotion.usageLimit > 0 &&
+    promotion.minOrderValue <= productDetail.discountPrice
+  ) {
+    let price
+    if (promotion.discountType === 'VALUE') {
+      price = productDetail.discountPrice - promotion.discountValue
+    } else {
+      const discount = (productDetail.discountPrice * promotion.discountValue) / 100
+      if (discount > promotion.maxValue) {
+        price = productDetail.discountPrice - promotion.maxValue
+      } else {
+        price = productDetail.discountPrice - discount
+      }
+    }
+    return price
+  }
+  return productDetail.discountPrice
+}
 const convertNumberToStar = (number: number) => {
   if (!number) {
     return new Array(5).fill(React.createElement(FaRegStar))
@@ -34,4 +64,4 @@ const calculatePercent = (price: number, priceDiscount: number) => {
   }
   return Math.round(((price - priceDiscount) / price) * 100)
 }
-export { formatNumber, convertNumberToStar, calculatePercent }
+export { formatNumber, convertNumberToStar, calculatePercent, priceInPromotion }

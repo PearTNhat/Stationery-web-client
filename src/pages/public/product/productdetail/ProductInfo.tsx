@@ -7,7 +7,7 @@ import ColorSelector from '~/components/product_attributes/ColorSelector'
 import QuantitySelector from '~/components/product_attributes/QuantitySelector'
 import SizeSelector from '~/components/product_attributes/SizeSelector'
 import { Color, Image, ProductColor, ProductDetail, Size } from '~/types/product'
-import { calculatePercent, formatNumber } from '~/utils/helper'
+import { calculatePercent, formatNumber, priceInPromotion } from '~/utils/helper'
 
 type ProductInfoProps = {
   productColor?: ProductColor[]
@@ -66,7 +66,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
       <div>
         {/* Giá đã giảm */}
         <p className='text-[19px] max-sm:text-xs font-semibold text-blue-500'>
-          {formatNumber(productDetail?.discountPrice ?? 0)} ₫
+          {formatNumber(priceInPromotion(productDetail))} ₫
         </p>
         <div className='flex items-center '>
           {/* Giá chưa giảm */}
@@ -75,7 +75,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
               <p className='line-through text-[#6b7280] text-sm '>{formatNumber(productDetail?.originalPrice ?? 0)}₫</p>
               {/* % */}
               <p className={`ml-1 text-red-400 text-sm font-bold`}>
-                - {calculatePercent(productDetail?.originalPrice ?? 0, productDetail?.discountPrice ?? 0)}%
+                - {calculatePercent(productDetail?.originalPrice ?? 0, priceInPromotion(productDetail))}%
               </p>
             </>
           )}

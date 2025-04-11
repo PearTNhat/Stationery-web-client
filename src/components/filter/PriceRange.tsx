@@ -14,13 +14,13 @@ const PriceRange: React.FC<Props> = ({ currentParams }) => {
   })
   const handleMinPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newMin = Math.max(Number(e.target.value.replace(/^0+/, '')) || 0, 0)
-    setSearchParams({ ...currentParams, minPrice: newMin })
+    setSearchParams({ ...currentParams, minPrice: newMin.toString() })
     setPriceRange((prev) => ({ ...prev, minPrice: newMin }))
   }
 
   const handleMaxPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newMax = Math.min(Number(e.target.value.replace(/^0+/, '')) || 0, 200000)
-    setSearchParams({ ...currentParams, minPrice: newMax })
+    setSearchParams({ ...currentParams, minPrice: newMax.toString() })
     setPriceRange((prev) => ({ ...prev, maxPrice: newMax }))
   }
   return (
@@ -51,7 +51,11 @@ const PriceRange: React.FC<Props> = ({ currentParams }) => {
         value={[priceRange.minPrice, priceRange.maxPrice]}
         onChange={(val: number | number[]) => {
           if (Array.isArray(val)) {
-            setSearchParams({ ...currentParams, minPrice: val[0], maxPrice: val[1] })
+            setSearchParams({
+              ...currentParams,
+              minPrice: val[0].toString(),
+              maxPrice: val[1].toString()
+            })
             setPriceRange({ minPrice: val[0], maxPrice: val[1] })
           }
         }}
