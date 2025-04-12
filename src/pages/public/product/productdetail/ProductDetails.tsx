@@ -22,11 +22,9 @@ export default function ProductDetail() {
   const [similarProducts, setSimilarProducts] = useState<ProductDeatilResponse[]>([])
   const navigate = useNavigate()
 
-  const handleAddToCart = async (productDetailId: string, colorId: string, sizeId: string, quantity: number) => {
+  const handleAddToCart = async (productDetailId: string, quantity: number) => {
     const result = await apiAddItemToCart({
       productId: productDetailId,
-      colorId,
-      sizeId,
       quantity,
       accessToken: accessToken || ''
     })

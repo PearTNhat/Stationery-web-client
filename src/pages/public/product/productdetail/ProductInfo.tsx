@@ -14,7 +14,7 @@ type ProductInfoProps = {
   setImages: (images: Image[]) => void
   name?: string
   totalRating?: number
-  onAddToCart: (productId: string, colorId: string, sizeId: string, quantity: number) => Promise<void>
+  onAddToCart: (productId: string, quantity: number) => Promise<void>
   onBuyNow: (productId: string, colorId: string, sizeId: string, quantity: number) => void
   productId?: string
 }
@@ -66,6 +66,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
       }
     }
   }, [currentParams, productColor, setImages, setSearchParams])
+  console.log('quantity', quantity)
   return (
     <div className='w-full md:w-1/2'>
       <h1 className='text-2xl font-bold text-blue-700'>{name}</h1>
@@ -119,13 +120,13 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
           className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-1/2'
           onClick={() => {
             console.log('Dữ liệu gửi đi:', {
-              productId: productDetail?.productId,
+              productId: productDetail?.productDetailId,
               colorId: currentParams.colorId,
               sizeId: currentParams.sizeId,
               quantity
             })
             if (productDetail) {
-              onAddToCart(productId ?? '', currentParams.colorId ?? '', currentParams.sizeId ?? '', quantity)
+              onAddToCart(productDetail.productDetailId, quantity)
             }
           }}
         >

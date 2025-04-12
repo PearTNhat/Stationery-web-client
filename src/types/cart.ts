@@ -2,7 +2,7 @@ export interface CartItem {
   productId: string
   productDetailId: string
   productName: string
-  image: string
+  imageUrl: string
   quantity: number
   colorName: string
   colorId: string

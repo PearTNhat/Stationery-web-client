@@ -13,7 +13,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, onLo
   const menuItems = [
     { id: 'profile', label: 'Profile', icon: <FaUser className='mr-2' /> },
     { id: 'password', label: 'Đổi mật khẩu', icon: <FaLock className='mr-2' /> },
-    { id: 'orders', label: 'Quản lý đơn hàng', icon: <FaBox className='mr-2' /> }
+    { id: 'orders', label: 'Quản lý đơn hàng', icon: <FaBox className='mr-2' /> },
+    { id: 'myVoucher', label: 'Quản lý voucher', icon: <FaBox className='mr-2' /> }
   ]
 
   return (
