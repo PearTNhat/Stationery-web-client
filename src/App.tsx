@@ -34,6 +34,7 @@ import NotFound from './pages/public/notfound/NotFound'
 import ReturnExchangePolicy from './pages/public/support/ReturnExchangePolicy'
 import ShippingPolicyPage from './pages/public/support/ShippingPolicyPage'
 import { useEffect } from 'react'
+import CategoriesProductManagement from './pages/admin/categoryProduct/CategoriesProductManagement'
 
 function App() {
   const { childrenModal, isOpenModal } = useAppSelector((state) => state.modal)
@@ -66,6 +67,7 @@ function App() {
         <Route path={adminPaths.ADMIN} element={<AdminLayout />}>
           <Route index element={<DashBoard />} />
           <Route path={adminPaths.USER} element={<UserManagement />} />
+          <Route path={adminPaths.PRODUCT_CATEGORY} element={<CategoriesProductManagement />} />
           <Route path={adminPaths.PRODUCT} element={<ProductsManagement />} />
           <Route path={adminPaths.DEPARTMENT} element={<ManageDepartments />} />
           <Route path={adminPaths.VOUCHER} element={<VoucherManagement />} />

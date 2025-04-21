@@ -124,7 +124,7 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, onAddToCart 
         <button
           className='bg-yellow-400 text-black p-3 rounded-lg shadow-md transition hover:bg-yellow-500'
           onClick={() => {
-            if (selectedColor && productDetails?.size.sizeId) {
+            if (selectedColor && productDetails?.size?.sizeId) {
               onAddToCart(product.productId, selectedColor, productDetails.size.sizeId, 1)
             }
           }}

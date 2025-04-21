@@ -1,8 +1,8 @@
 import { AxiosError } from 'axios'
 import { FaEnvelope, FaEye, FaEyeSlash, FaLock } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
-import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import InputForm from '~/components/input/InputForm'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { FormLogin, ForgotPasswordRequest, ResetPasswordRequest } from '~/types/auth'
@@ -10,9 +10,12 @@ import { showToastError, showToastSuccess } from '~/utils/alert'
 import { apiLogin, apiForgotPassword, apiResetPassword } from '~/api/authenticate'
 import { useAppDispatch } from '~/hooks/redux'
 import { userActions } from '~/store/slices/user'
+import { apiGetUserInfo } from '~/api/users'
+import { User } from '~/types/user'
 
 export default function LoginForm() {
   const navigate = useNavigate()
+  const location = useLocation() // ✅ FIXED
   const [loading, setLoading] = useState(false)
   const dispatch = useAppDispatch()
   const [isShowPassword, setIsShowPassword] = useState(false)
@@ -27,21 +30,52 @@ export default function LoginForm() {
     formState: { errors: loginErrors }
   } = useForm<FormLogin>()
 
-  // Form quên mật khẩu (nhập email)
+  // Form quên mật khẩu
   const {
     register: registerForgot,
     handleSubmit: handleSubmitForgot,
     formState: { errors: forgotErrors }
   } = useForm<ForgotPasswordRequest>()
 
-  // Form nhập OTP và đặt lại mật khẩu
+  // Form đặt lại mật khẩu
   const {
     register: registerReset,
     handleSubmit: handleSubmitReset,
     formState: { errors: resetErrors }
   } = useForm<ResetPasswordRequest>()
 
-  // Xử lý login
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search)
+    const token = queryParams.get('token')
+    if (token) {
+      setLoading(true)
+      apiGetUserInfo({ token })
+        .then((response) => {
+          console.log('Response from Google:', response)
+          if (response.code == 200) {
+            const userData: User = response.result
+            console.log('User data Login with Google:', userData)
+            dispatch(userActions.login({ accessToken: token, userData }))
+            showToastSuccess('Login with Google successfully')
+            navigate('/') // Chuyển hướng về trang chủ
+          } else {
+            showToastError(response.message || 'Failed to login with Google')
+            navigate('/auth') // Chuyển hướng về trang đăng nhập nếu thất bại
+          }
+        })
+        .catch((error) => {
+          showToastError(error.message || 'Failed to fetch user info')
+          navigate('/auth') // Chuyển hướng về trang đăng nhập nếu có lỗi
+        })
+        .finally(() => {
+          setLoading(false)
+          // Xóa dòng này để không ghi đè chuyển hướng
+          // navigate('/login', { replace: true });
+        })
+    }
+  }, [location, dispatch, navigate])
+
+  // Login submit
   const onSubmitLogin: SubmitHandler<FormLogin> = async (data) => {
     try {
       setLoading(true)
@@ -62,7 +96,7 @@ export default function LoginForm() {
     }
   }
 
-  // Xử lý gửi yêu cầu quên mật khẩu
+  // Forgot password submit
   const onSubmitForgot: SubmitHandler<ForgotPasswordRequest> = async (data) => {
     try {
       setLoading(true)
@@ -83,7 +117,7 @@ export default function LoginForm() {
     }
   }
 
-  // Xử lý đặt lại mật khẩu
+  // Reset password submit
   const onSubmitReset: SubmitHandler<ResetPasswordRequest> = async (data) => {
     try {
       setLoading(true)
@@ -92,7 +126,7 @@ export default function LoginForm() {
         showToastSuccess('Password reset successfully')
         setIsForgotPassword(false)
         setIsOtpSent(false)
-        navigate('/auth') // Quay lại trang login
+        navigate('/auth')
       } else {
         showToastError(response.message || 'Failed to reset password')
       }
@@ -105,7 +139,6 @@ export default function LoginForm() {
     }
   }
 
-  // Form login
   const renderLoginForm = () => (
     <div className='w-1/2 p-8 flex flex-col justify-center translate-x-full'>
       <h2 className='text-3xl font-bold text-gray-700 mb-6 text-center'>Login</h2>
@@ -119,7 +152,7 @@ export default function LoginForm() {
           validate={{
             required: 'Email is required',
             pattern: {
-              value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
               message: 'Please enter a valid email address'
             }
           }}
@@ -138,7 +171,7 @@ export default function LoginForm() {
           }
           id='password'
           cssInput='pl-10'
-          type={`${isShowPassword ? 'text' : 'password'}`}
+          type={isShowPassword ? 'text' : 'password'}
           placeholder='Password'
           register={registerLogin}
           validate={{ required: 'Password is required' }}
@@ -155,6 +188,7 @@ export default function LoginForm() {
       <button
         className='w-full mt-3 flex items-center justify-center gap-2 bg-white border p-3 rounded-lg shadow-md hover:bg-gray-100 transition'
         disabled={loading}
+        onClick={() => (window.location.href = 'http://localhost:8080/api/oauth2/authorization/google')}
       >
         <FcGoogle className='text-xl' />
         <span>{loading ? 'Processing...' : 'Login with Google'}</span>
@@ -177,7 +211,6 @@ export default function LoginForm() {
     </div>
   )
 
-  // Form quên mật khẩu (nhập email và OTP + đặt lại mật khẩu)
   const renderForgotPasswordForm = () => (
     <div className='w-1/2 p-8 flex flex-col justify-center translate-x-full'>
       <h2 className='text-3xl font-bold text-gray-700 mb-6 text-center'>

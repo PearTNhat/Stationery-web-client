@@ -29,6 +29,7 @@ const departmentPath = {
 const adminPaths = {
   ADMIN: '/admin',
   USER: '/admin/users',
+  PRODUCT_CATEGORY: '/admin/product-categories',
   PRODUCT: '/admin/products',
   DEPARTMENT: '/admin/departments',
   VOUCHER: '/admin/vouchers'
