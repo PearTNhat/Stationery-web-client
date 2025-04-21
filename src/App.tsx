@@ -11,7 +11,6 @@ import ProductsManagement from './pages/admin/product/ProductsManagement'
 import Modal from './components/model/Modal'
 import AuthPage from './pages/public/auth/AuthPage'
 import VoucherManagement from './pages/admin/voucher/VoucherManagement'
-import CommentContainer from './components/comment/CommentContainer'
 
 // import Hero from '~/sections/Hero'
 import ProductPage from './pages/public/product/productpage/ProductPage'
@@ -32,6 +31,7 @@ import WarrantyPolicyPage from './pages/public/support/WarrantyPolicyPage'
 import NotFound from './pages/public/notfound/NotFound'
 import ReturnExchangePolicy from './pages/public/support/ReturnExchangePolicy'
 import ShippingPolicyPage from './pages/public/support/ShippingPolicyPage'
+import CategoriesProductManagement from './pages/admin/categoryProduct/CategoriesProductManagement'
 
 function App() {
   const { childrenModal, isOpenModal } = useAppSelector((state) => state.modal)
@@ -65,6 +65,7 @@ function App() {
         <Route path={adminPaths.ADMIN} element={<AdminLayout />}>
           <Route index element={<DashBoard />} />
           <Route path={adminPaths.USER} element={<UserManagement />} />
+          <Route path={adminPaths.PRODUCT_CATEGORY} element={<CategoriesProductManagement />} />
           <Route path={adminPaths.PRODUCT} element={<ProductsManagement />} />
           <Route path={adminPaths.DEPARTMENT} element={<ManageDepartments />} />
           <Route path={adminPaths.VOUCHER} element={<VoucherManagement />} />

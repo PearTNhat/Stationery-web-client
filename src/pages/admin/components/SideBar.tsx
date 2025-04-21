@@ -165,7 +165,7 @@ const SideBar: React.FC = () => {
             {isExpanded || isHovered || isMobileOpen ? (
               <img
                 className='rounded-full w-10 h-10'
-                src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvAcbcrnO8u8gq7IzJu4npQO7Bu2J2VZKb_Q&s'
+                src='/images/logo_stationery.svg'
                 alt='Logo'
                 width={150}
                 height={40}
@@ -173,7 +173,7 @@ const SideBar: React.FC = () => {
             ) : (
               <img
                 className='rounded-full w-10 h-10'
-                src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvAcbcrnO8u8gq7IzJu4npQO7Bu2J2VZKb_Q&s'
+                src='/images/logo_stationery.svg'
                 alt='Logo'
                 width={32}
                 height={32}

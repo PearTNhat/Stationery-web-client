@@ -1,12 +1,13 @@
 import { NavItem } from '~/types/navAdmin'
-import { MdDashboard } from 'react-icons/md'
-import { FaUsers } from 'react-icons/fa'
-import { TbBuildingWarehouse } from 'react-icons/tb'
+import { FaShoppingCart, FaUsers } from 'react-icons/fa'
+import { TbCategoryFilled } from 'react-icons/tb'
+import { BsTicketPerforatedFill } from 'react-icons/bs'
 import { RiProductHuntLine } from 'react-icons/ri'
 import { adminPaths } from './paths'
+import { IoHome } from 'react-icons/io5'
 const navItems: NavItem[] = [
   {
-    icon: <MdDashboard />,
+    icon: <IoHome />,
     name: 'Dashboard',
     path: '/admin'
   },
@@ -16,17 +17,22 @@ const navItems: NavItem[] = [
     path: '/admin/users'
   },
   {
+    icon: <TbCategoryFilled />,
+    name: 'Product Categories',
+    path: '/admin/product-categories'
+  },
+  {
     icon: <RiProductHuntLine />,
     name: 'Products',
     path: '/admin/products'
   },
   {
-    icon: <TbBuildingWarehouse />,
-    name: 'Departments',
+    icon: <FaShoppingCart />,
+    name: 'Orders',
     path: '/admin/departments'
   },
   {
-    icon: <TbBuildingWarehouse />,
+    icon: <BsTicketPerforatedFill />,
     name: 'Vouchers',
     path: adminPaths.VOUCHER
   }

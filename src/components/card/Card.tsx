@@ -93,7 +93,9 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, onAddToCart 
         <button
           className='bg-yellow-400 text-black p-3 rounded-lg shadow-md transition hover:bg-yellow-500'
           onClick={() => {
-            onAddToCart(productDetail?.productDetailId, 1)
+            if (selectedColor && productDetails?.size?.sizeId) {
+              onAddToCart(product.productId, selectedColor, productDetails.size.sizeId, 1)
+            }
           }}
         >
           <FaShoppingCart size={20} />
