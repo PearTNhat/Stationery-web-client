@@ -23,4 +23,13 @@ type User = {
   dob: string // Date of birth in ISO format (e.g., "2012-11-11")
 }
 
-export type { User, Address, Role }
+interface UserProfileForm {
+  firstName: string | null
+  lastName: string | null
+  email: string | null
+  phone: string | null
+  dob: string | null
+  avatar: File | null
+}
+
+export type { User, Address, Role, UserProfileForm }

@@ -58,7 +58,7 @@ const convertNumberToStar = (number: number) => {
   }
   return stars
 }
-const calculatePercent = (price: number, priceDiscount: number) => {
+const calculatePercent = (price?: number, priceDiscount?: number) => {
   if (price === 0 || !price || priceDiscount === 0 || !priceDiscount) {
     return 0
   }

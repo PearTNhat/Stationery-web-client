@@ -6,27 +6,30 @@ import { ProductImages } from './ProductImages'
 import { ProductInfo } from './ProductInfo'
 import { ProductTabs } from './ProductTabs'
 import { SimilarProducts } from './SimilarProducts'
-import { apiGetAllProducts, apiGetDetailProduct } from '~/api/product'
+import { apiFetchColorSizeProductDetail, apiGetAllProducts, apiGetDetailProduct } from '~/api/product'
 import { apiAddItemToCart } from '~/api/cart'
 import { useAppSelector } from '~/hooks/redux'
 import { showToastError, showToastSuccess } from '~/utils/alert'
-import { Image, ProductDeatilResponse } from '~/types/product'
+import { Image, Product, ProductDeatilResponse } from '~/types/product'
 import AxiosError from 'axios'
+import { apiGetReviewOfProduct } from '~/api/review'
+import { Review } from '~/types/comment'
+import { ColorSize } from '~/types/color'
 
 export default function ProductDetail() {
   const { slug } = useParams()
   const { accessToken } = useAppSelector((state) => state.user)
-  const [product, setProduct] = useState<ProductDeatilResponse | null>(null)
+  const [product, setProduct] = useState<Product | null>(null)
   const [images, setImages] = useState<Image[]>([])
   const [fechAgain, setFetchAgain] = useState(false)
   const [similarProducts, setSimilarProducts] = useState<ProductDeatilResponse[]>([])
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [colorSize, setColorSize] = useState<ColorSize[]>([])
   const navigate = useNavigate()
 
-  const handleAddToCart = async (productDetailId: string, colorId: string, sizeId: string, quantity: number) => {
+  const handleAddToCart = async (productDetailId: string, quantity: number) => {
     const result = await apiAddItemToCart({
       productId: productDetailId,
-      colorId,
-      sizeId,
       quantity,
       accessToken: accessToken || ''
     })
@@ -38,10 +41,10 @@ export default function ProductDetail() {
   }
 
   const handleBuyNow = (productId: string, colorId: string, sizeId: string, quantity: number) => {
-    const selectedColor = product?.productColors.find((c) => c.color.colorId === colorId)
-    const selectedProductDetail = selectedColor?.productDetails.find((d) => d.size.sizeId === sizeId)
-    const selectedImage = selectedColor?.images?.[0]?.url || ''
-    const price = selectedProductDetail?.discountPrice || 0
+    const selectedColor = 'red' //product?.productColors.find((c) => c.color.colorId === colorId)
+    const selectedProductDetail = 'red' //selectedColor?.productDetails.find((d) => d.size.sizeId === sizeId)
+    const selectedImage = 'red' //selectedColor?.images?.[0]?.url || ''
+    const price = 0 //selectedProductDetail?.discountPrice || 0
 
     const order = {
       orderId: 'ORDER' + Date.now(),
@@ -51,9 +54,9 @@ export default function ProductDetail() {
           name: product?.name || '',
           price,
           quantity,
-          image: selectedImage,
-          color: selectedColor?.color.name || '',
-          size: selectedProductDetail?.size.name || ''
+          image: selectedImage
+          // color: selectedColor?.color.name || '',
+          // size: selectedProductDetail?.size.name || ''
         }
       ],
       totalAmount: price * quantity
@@ -101,27 +104,62 @@ export default function ProductDetail() {
       }
     }
   }
+  const fetchColorSize = async () => {
+    try {
+      const response = await apiFetchColorSizeProductDetail(slug)
+      if (response.code == 200) {
+        setColorSize(response.result)
+      } else {
+        showToastError(response.message || response.error)
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        showToastError(error.message)
+      } else {
+        showToastError(error as string)
+      }
+    }
+  }
+  const getReviewOfProduct = async () => {
+    try {
+      const response = await apiGetReviewOfProduct({ slug })
+      if (response.code == 200) {
+        setReviews(response.result)
+      } else {
+        showToastError(response.message || response.error)
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        showToastError(error.message)
+      } else {
+        showToastError(error as string)
+      }
+    }
+  }
+  useEffect(() => {
+    getReviewOfProduct()
+  }, [fechAgain])
+
+  useEffect(() => {
+    fetchColorSize()
+  }, [])
 
   useEffect(() => {
     getProductDetail()
-  }, [slug, fechAgain])
-
-  useEffect(() => {
     getSimilarProduct()
     setTimeout(() => {
       window.scrollTo(0, 0)
     }, 400)
   }, [slug])
-
   return (
     <div className='max-w-7xl mx-auto p-8 bg-white rounded-lg shadow-lg mt-16'>
       <div className='flex flex-col md:flex-row gap-6'>
-        <ProductImages images={images} />
+        <ProductImages images={product?.productDetail?.images || []} />
         <ProductInfo
-          productColor={product?.productColors}
+          colorSize={colorSize}
+          productDetail={product?.productDetail}
           name={product?.name}
           totalRating={product?.totalRating}
-          setImages={setImages}
           productId={product?.productId}
           onAddToCart={handleAddToCart}
           onBuyNow={handleBuyNow}
@@ -131,7 +169,7 @@ export default function ProductDetail() {
         pId={product?.productId}
         totalRating={product?.totalRating}
         desc={product?.description}
-        reviews={product?.reviews}
+        reviews={reviews}
         setFetchAgain={setFetchAgain}
       />
       <SimilarProducts

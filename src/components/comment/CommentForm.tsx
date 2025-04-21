@@ -10,7 +10,6 @@ function CommentForm({
   setAffectedComment
 }: CommentFormProps) {
   const [value, setValue] = useState(initValue)
-  console.log('value', value)
   return (
     <div>
       <div>

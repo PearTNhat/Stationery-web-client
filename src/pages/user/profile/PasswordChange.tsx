@@ -29,11 +29,15 @@ const PasswordChange: React.FC = () => {
     }
 
     try {
-      await apiChangePassword({
+      const res = await apiChangePassword({
         email: userEmail,
         oldPassword: data.oldPassword,
         newPassword: data.newPassword
       })
+      if (res.status !== 200) {
+        showAlertError(res.message)
+        return
+      }
       showAlertSucess('Password changed successfully!')
       reset()
     } catch {
@@ -68,7 +72,7 @@ const PasswordChange: React.FC = () => {
           <input
             {...register('newPassword', {
               required: 'Please enter a new password',
-              minLength: { value: 7, message: 'Password must be at least 7 characters long' },
+              minLength: { value: 6, message: 'Password must be at least 6 characters long' },
               pattern: { value: /^[a-zA-Z0-9]+$/, message: 'Password can only contain letters and numbers' }
             })}
             type='password'

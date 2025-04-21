@@ -1,20 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import ChatBot from '../chatbot/ChatBot'
 
 const FloatingButtons: React.FC = () => {
   const zaloLink = 'https://zalo.me/0969895549'
   const phoneNumber = 'tel:0969895549'
-
-  const [showMessage, setShowMessage] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowMessage(true)
-    }, 5000)
-
-    return () => clearTimeout(timer)
-  }, [])
 
   return (
     <>

@@ -1,5 +1,16 @@
 import { http } from '~/utils/http'
 import { AxiosError } from 'axios'
+const apiGetReviewOfProduct = async ({ slug }: { slug?: string }) => {
+  try {
+    const response = await http.get(`/reviews/${slug}`)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data // Return server error response if available
+    }
+    return (error as Error).message // Avoid undefined error
+  }
+}
 const apiCreateReview = async ({
   parentId,
   content,
@@ -71,4 +82,4 @@ const apiDeleteReview = async ({ reviewId, accessToken }: { reviewId: string; ac
     return error // Avoid undefined error
   }
 }
-export { apiCreateReview, apiUpdateReview, apiDeleteReview }
+export { apiCreateReview, apiUpdateReview, apiDeleteReview, apiGetReviewOfProduct }

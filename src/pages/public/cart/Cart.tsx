@@ -15,7 +15,6 @@ interface CartProps {
 const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken, onRefresh }) => {
   const navigate = useNavigate()
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null)
-
   const handleQuantityChange = async (productDetailId: string, newQuantity: number) => {
     if (newQuantity < 1) return
     setLoadingItemId(productDetailId)
@@ -56,7 +55,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken, on
       name: item.productName,
       price: item.discountPrice,
       quantity: item.quantity,
-      image: item.image?.startsWith('http') ? item.image : `https://your-domain.com/${item.image}`,
+      image: item.imageUrl,
       color: item.colorName,
       size: item.sizeName
     }))
@@ -102,17 +101,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken, on
                   }`}
                 >
                   <div className='w-20 h-20 border rounded overflow-hidden'>
-                    <img
-                      src={
-                        item.image?.startsWith('http')
-                          ? item.image
-                          : item.image
-                            ? `https://your-domain.com/${item.image}`
-                            : 'https://via.placeholder.com/80'
-                      }
-                      alt={item.productName}
-                      className='w-full h-full object-cover'
-                    />
+                    <img src={item.imageUrl} alt={item.productName} className='w-full h-full object-cover' />
                   </div>
                   <div className='flex-1'>
                     <div className='flex justify-between items-start'>

@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { fetchCategories } from '~/store/actions/category'
 const ProductCategories: React.FC = () => {
   const dispatch = useAppDispatch()
   const { categories, isLoading, isError } = useAppSelector((state) => state.category)
-
+  const navigate = useNavigate()
   useEffect(() => {
     dispatch(fetchCategories())
   }, [])
@@ -29,6 +30,7 @@ const ProductCategories: React.FC = () => {
                   key={category.categoryId}
                   className='bg-white rounded-lg shadow-md p-4 text-center hover:shadow-lg transition-transform transform hover:scale-105 active:scale-95 cursor-pointer'
                   aria-label={category.categoryName}
+                  onClick={() => navigate(`/product?categoryId=${category.categoryId}`)}
                 >
                   <div
                     style={{ backgroundColor: category.bgColor }}

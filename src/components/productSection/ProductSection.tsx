@@ -1,4 +1,4 @@
-import { Product } from '~/types/product'
+import { Product, ProductDetail } from '~/types/product'
 import Card from '../card/Card'
 import { useEffect } from 'react'
 import { showToastError, showToastSuccess } from '~/utils/alert'
@@ -29,7 +29,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({ title, products }) => {
   }
 
   // Hàm xử lý khi nhấn xem chi tiết
-  const handleViewDetails = (product: Product) => {
+  const handleViewDetails = (product: ProductDetail) => {
     console.log(`Viewing details for: ${product.name}`)
   }
 
