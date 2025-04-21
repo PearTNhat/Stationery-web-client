@@ -11,7 +11,6 @@ import ProductsManagement from './pages/admin/product/ProductsManagement'
 import Modal from './components/model/Modal'
 import AuthPage from './pages/public/auth/AuthPage'
 import VoucherManagement from './pages/admin/voucher/VoucherManagement'
-import CommentContainer from './components/comment/CommentContainer'
 
 // import Hero from '~/sections/Hero'
 import ProductPage from './pages/public/product/productpage/ProductPage'
@@ -32,7 +31,6 @@ import WarrantyPolicyPage from './pages/public/support/WarrantyPolicyPage'
 import NotFound from './pages/public/notfound/NotFound'
 import ReturnExchangePolicy from './pages/public/support/ReturnExchangePolicy'
 import ShippingPolicyPage from './pages/public/support/ShippingPolicyPage'
-import { useEffect } from 'react'
 import CategoriesProductManagement from './pages/admin/categoryProduct/CategoriesProductManagement'
 
 function App() {
