@@ -35,6 +35,8 @@ import ShippingPolicyPage from './pages/public/support/ShippingPolicyPage'
 
 function App() {
   const { childrenModal, isOpenModal } = useAppSelector((state) => state.modal)
+  const { userData } = useAppSelector((state) => state.user)
+  console.log(userData)
   return (
     <div className='bg-baseBackground h-screen text-baseText'>
       <Modal isOpen={isOpenModal}>{childrenModal}</Modal>

@@ -10,7 +10,7 @@ const AdminLayout = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (Number(userData?.role.role_id) !== 111) {
+    if (Number(userData?.role.roleId) !== 111) {
       navigate('/')
     }
   }, [])
