@@ -1,86 +1,80 @@
-import React, { useState, useEffect } from 'react'
-import { FaEdit, FaSave, FaCamera } from 'react-icons/fa'
-import { User } from '~/types/user'
+import React, { useState } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { FaEdit, FaSave, FaCamera, FaEnvelope } from 'react-icons/fa'
+import { apiUpdateUserInfo } from '~/api/users'
+import InputForm from '~/components/input/InputForm'
+import { useAppDispatch, useAppSelector } from '~/hooks/redux'
+import { fetchCurrentUser } from '~/store/actions/user'
+import { UserProfileForm } from '~/types/user'
+import { showAlertError, showAlertSucess } from '~/utils/alert'
 
-interface ProfileHeaderProps {
-  initialData: User | null
-  onSave: (updatedData: User | null, file: File | null) => void
-}
-
-const normalizeUserData = (user: any): User => {
-  if ('result' in user) {
-    user = user.result
-  }
-
-  return {
-    firstName: user?.firstName ?? '',
-    lastName: user?.lastName ?? '',
-    email: user?.email ?? '',
-    dob: user?.dob ?? '',
-    phone: user?.phone ?? '',
-    avatar: user?.avatar ?? ''
-    // addresses:
-    //   user?.addresses?.length > 0
-    //     ? user.addresses.map((addr: any, index: number) => ({
-    //         ...addr,
-    //         isDefault: addr?.isDefault ?? index === 0 // gán default nếu chưa có
-    //       }))
-    //     : [{ addressID: '1', addressName: '', isDefault: true }]
-  }
-}
-
-const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) => {
+const ProfileHeader: React.FC = () => {
+  const dispatch = useAppDispatch()
+  const { userData, accessToken } = useAppSelector((state) => state.user)
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState<User | null>(null)
-  const [originalData, setOriginalData] = useState<User | null>(null)
   const [previewAvatar, setPreviewAvatar] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
-  useEffect(() => {
-    if (initialData) {
-      const normalizedData = normalizeUserData(initialData)
-      setFormData(normalizedData)
-      setOriginalData(normalizedData)
-      setPreviewAvatar(normalizedData.avatar || null)
-    } else {
-      setFormData(null)
-      setOriginalData(null)
-      setPreviewAvatar(null)
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    formState: { errors: profileErrors }
+  } = useForm<UserProfileForm>({
+    defaultValues: {
+      firstName: userData?.firstName || '',
+      lastName: userData?.lastName || '',
+      email: userData?.email || '',
+      dob: userData?.dob || '',
+      phone: userData?.phone || ''
     }
-  }, [initialData])
-  console.log('formData', initialData)
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => (prev ? { ...prev, [name]: value } : null))
-  }
+  })
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       setFile(file)
+      const previewUrl = URL.createObjectURL(file) // Tạo URL tạm thời cho hình ảnh
+      setPreviewAvatar(previewUrl) // Cập nhật state để hiển thị preview
     }
   }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSave(formData, file)
+  const handleSaveProfile = async (updatedData: UserProfileForm | null, file: File | null) => {
+    if (!updatedData) {
+      console.warn('No data to update')
+      return
+    }
+    const formData = new FormData()
+    if (file) {
+      formData.append('file', file)
+    }
+    formData.append('document', JSON.stringify({ ...updatedData }))
+    if (!accessToken) {
+      showAlertError('You must be logged in to update your profile.')
+      return
+    }
+    const res = await apiUpdateUserInfo({ accessToken, formData })
+    if (res.code === 200) {
+      showAlertSucess('Update profile successfully')
+      dispatch(fetchCurrentUser({ token: accessToken }))
+    } else {
+      showAlertError(res.message || 'Failed to update profile')
+    }
+    // Gọi API để cập nhật dữ liệu nếu cần
+  }
+  const handleSubmitProfile: SubmitHandler<UserProfileForm> = async (data: UserProfileForm | null) => {
+    console.log(data)
+    handleSaveProfile(data, file)
     setIsEditing(false)
   }
 
   const handleEditToggle = () => {
     if (isEditing) {
-      onSave(formData, file)
+      const data = getValues()
+      handleSaveProfile(data, file)
       setIsEditing(false)
     } else {
-      if (originalData) {
-        setFormData(originalData)
-        setPreviewAvatar(originalData.avatar || null)
-      }
       setIsEditing(true)
     }
   }
-
-  // 🧠 Lấy địa chỉ mặc định hoặc fallback về cái đầu tiên
-  const defaultAddress = formData?.addresses?.find((a) => a.isDefault) || formData?.addresses?.[0]
 
   return (
     <div className='bg-white/70 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-4xl mx-auto border border-gray-200'>
@@ -115,28 +109,36 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) =>
         </div>
         <div>
           <h3 className='text-2xl font-semibold text-gray-900'>
-            {formData?.firstName} {formData?.lastName}
+            {userData?.firstName} {userData?.lastName}
           </h3>
           <p className='text-gray-500'>Displayed on your public profile</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className='space-y-8'>
+      <form onSubmit={handleSubmit(handleSubmitProfile)} className='space-y-8'>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
           {/* First Name */}
           <div>
             <label className='block text-sm font-semibold text-gray-700 mb-2'>First Name</label>
             {isEditing ? (
-              <input
-                type='text'
-                name='firstName'
-                value={formData?.firstName || ''}
-                onChange={handleInputChange}
-                className='w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm transition-all text-gray-900'
+              <InputForm
+                iconLeft={<FaEnvelope className='absolute top-3 left-3 text-gray-500' />}
+                id='firstName'
+                cssInput='pl-10'
+                placeholder='First name'
+                register={register}
+                validate={{
+                  required: 'First name is required',
+                  minLength: {
+                    value: 5, // Minimum length of 5 characters
+                    message: 'First name must be at least 5 characters long'
+                  }
+                }}
+                error={profileErrors}
               />
             ) : (
               <p className='text-gray-900 bg-gray-100 p-3 rounded-lg shadow-inner'>
-                {formData?.firstName || 'Chưa cập nhật'}
+                {userData?.firstName || 'Chưa cập nhật'}
               </p>
             )}
           </div>
@@ -145,16 +147,24 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) =>
           <div>
             <label className='block text-sm font-semibold text-gray-700 mb-2'>Last Name</label>
             {isEditing ? (
-              <input
-                type='text'
-                name='lastName'
-                value={formData?.lastName || ''}
-                onChange={handleInputChange}
-                className='w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm transition-all text-gray-900'
+              <InputForm
+                iconLeft={<FaEnvelope className='absolute top-3 left-3 text-gray-500' />}
+                id='lastName'
+                cssInput='pl-10'
+                placeholder='Last name'
+                register={register}
+                validate={{
+                  required: 'Last name is required',
+                  minLength: {
+                    value: 5, // Minimum length of 5 characters
+                    message: 'First name must be at least 5 characters long'
+                  }
+                }}
+                error={profileErrors}
               />
             ) : (
               <p className='text-gray-900 bg-gray-100 p-3 rounded-lg shadow-inner'>
-                {formData?.lastName || 'Chưa cập nhật'}
+                {userData?.lastName || 'Chưa cập nhật'}
               </p>
             )}
           </div>
@@ -163,16 +173,24 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) =>
           <div>
             <label className='block text-sm font-semibold text-gray-700 mb-2'>Email</label>
             {isEditing ? (
-              <input
-                type='email'
-                name='email'
-                value={formData?.email || ''}
-                onChange={handleInputChange}
-                className='w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm transition-all text-gray-900'
+              <InputForm
+                iconLeft={<FaEnvelope className='absolute top-3 left-3 text-gray-500' />}
+                id='email'
+                cssInput='pl-10'
+                placeholder='Email'
+                register={register}
+                validate={{
+                  required: 'Email is required',
+                  pattern: {
+                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                    message: 'Please enter a valid email address'
+                  }
+                }}
+                error={profileErrors}
               />
             ) : (
               <p className='text-gray-900 bg-gray-100 p-3 rounded-lg shadow-inner'>
-                {formData?.email || 'Chưa cập nhật'}
+                {userData?.email || 'Chưa cập nhật'}
               </p>
             )}
           </div>
@@ -181,16 +199,19 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) =>
           <div>
             <label className='block text-sm font-semibold text-gray-700 mb-2'>Date of Birth</label>
             {isEditing ? (
-              <input
+              <InputForm
+                iconLeft={<FaEnvelope className='absolute top-3 left-3 text-gray-500' />}
+                id='dob'
+                cssInput='pl-10'
+                placeholder='Dob'
                 type='date'
-                name='dob'
-                value={formData?.dob || ''}
-                onChange={handleInputChange}
-                className='w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm transition-all text-gray-900'
+                register={register}
+                error={profileErrors}
+                // className='w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm transition-all text-gray-900'
               />
             ) : (
               <p className='text-gray-900 bg-gray-100 p-3 rounded-lg shadow-inner'>
-                {formData?.dob || 'Chưa cập nhật'}
+                {userData?.dob || 'Chưa cập nhật'}
               </p>
             )}
           </div>
@@ -199,16 +220,24 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ initialData, onSave }) =>
           <div>
             <label className='block text-sm font-semibold text-gray-700 mb-2'>Phone Number</label>
             {isEditing ? (
-              <input
-                type='tel'
-                name='phone'
-                value={formData?.phone || ''}
-                onChange={handleInputChange}
-                className='w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm transition-all text-gray-900'
+              <InputForm
+                iconLeft={<FaEnvelope className='absolute top-3 left-3 text-gray-500' />}
+                id='phone'
+                cssInput='pl-10'
+                placeholder='Phone'
+                register={register}
+                validate={{
+                  required: 'Phone number is required',
+                  pattern: {
+                    value: /^[0-9]{10}$/, // Adjust the regex based on your phone number format
+                    message: 'Please enter a valid phone number 10 digits)'
+                  }
+                }}
+                error={profileErrors}
               />
             ) : (
               <p className='text-gray-900 bg-gray-100 p-3 rounded-lg shadow-inner'>
-                {formData?.phone || 'Chưa cập nhật'}
+                {userData?.phone || 'Chưa cập nhật'}
               </p>
             )}
           </div>

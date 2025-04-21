@@ -10,7 +10,6 @@ type VoteBarProps = {
 
 const VoteBar: FC<VoteBarProps> = ({ totalRating, comments }) => {
   const totalReviews = comments?.length || 0
-  console.log('totalReviews', totalReviews)
   return (
     <div className='flex'>
       <div className='flex-4 flex items-center justify-center border-r border-r-gray-300'>

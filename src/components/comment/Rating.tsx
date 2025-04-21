@@ -9,7 +9,6 @@ interface RatingProps {
 
 const Rating: FC<RatingProps> = ({ number, numberOfReviews, totalReviews }) => {
   const barRef = useRef<HTMLDivElement>(null)
-  console.log(totalReviews)
   useEffect(() => {
     if (barRef.current) {
       barRef.current.style.right = `${100 - (numberOfReviews / totalReviews || 0) * 100}%`

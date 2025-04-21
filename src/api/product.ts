@@ -37,7 +37,7 @@ const apiGetAllProducts = async ({
     return error // Avoid undefined error
   }
 }
-const apiGetDetailProduct = async (slug: string | undefined) => {
+const apiGetDetailProduct = async (slug?: string) => {
   try {
     const response = await http.get('/products/' + slug)
     return response.data
@@ -48,5 +48,16 @@ const apiGetDetailProduct = async (slug: string | undefined) => {
     return error // Avoid undefined error
   }
 }
+const apiFetchColorSizeProductDetail = async (slug?: string) => {
+  try {
+    const response = await http.get('/products/color-size/' + slug)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data // Return server error response if available
+    }
+    return error // Avoid undefined error
+  }
+}
 
-export { apiGetAllProducts, apiGetDetailProduct }
+export { apiGetAllProducts, apiGetDetailProduct, apiFetchColorSizeProductDetail }

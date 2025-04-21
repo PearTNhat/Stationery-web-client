@@ -9,14 +9,20 @@ interface Size {
 
 export interface ProductDetail {
   productDetailId: string
+  name: string
   slug: string
-  stockQuantity: number
   originalPrice: number
+  stockQuantity: number
   soldQuantity: number
   discountPrice: number
   size: Size
+  color: Color
+  totalRating: number
+  description: string
   promotion: Promotion | null
-  // productId?: string
+  images: Image[] | null
+  productId: string
+  createdAt: string
 }
 
 interface Image {
@@ -36,25 +42,31 @@ interface ProductColor {
   images: Image[]
   sizes: Size[]
 }
-
+interface FetchColor {
+  colorId: string
+  hex: string
+  slug: string
+}
 interface Product {
   productId: string
-  name: string
   description: string
   slug: string
+  name: string
   category: {
     categoryId: string
     categoryName: string
   }
-  productColors: ProductColor[]
   minPrice: number
   soldQuantity: number
   quantity: number
   totalRating: number
+  productDetail: ProductDetail
+  fetchColor: FetchColor[]
+  img: string
   createdAt: string
 }
 interface ProductDeatilResponse extends Product {
   image: Image[]
   reviews: Review[]
 }
-export type { Product, Color, ProductColor, ProductDeatilResponse, Image, Size }
+export type { Product, Color, ProductColor, ProductDeatilResponse, Image, Size, FetchColor }

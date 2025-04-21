@@ -29,7 +29,6 @@ export const apiAddAddress = async ({
       isDefault
     }
     const response = await http.post('/address', body, config)
-    console.log('response', response)
     return response.data
   } catch (error) {
     if (error instanceof AxiosError && error.response) {
@@ -54,7 +53,6 @@ export const apiSetDefaultAddress = async ({
     }
 
     const response = await http.put(`/address/default/${addressId}`, null, config)
-    console.log('Set default response', response)
     return response.data
   } catch (error) {
     if (error instanceof AxiosError && error.response) {
@@ -79,7 +77,6 @@ export const apiDeleteAddress = async ({
     }
 
     const response = await http.delete(`/address/${addressId}`, config)
-    console.log('Delete address response', response)
     return response.data
   } catch (error) {
     if (error instanceof AxiosError && error.response) {

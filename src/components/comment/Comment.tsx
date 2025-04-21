@@ -23,7 +23,6 @@ function Comment({
   const replyCommentId = parentId ? parentId : comment.reviewId
   const isReply = affectedComment?.type === 'REPLY' && affectedComment?.id === comment.reviewId
   const isEdit = affectedComment?.type === 'EDIT' && affectedComment?.id === comment.reviewId
-  console.log(isBelongToUser, userId, comment.user?.userId)
   return (
     <div className={`mt-4`}>
       <div className='flex gap-1'>
@@ -109,7 +108,6 @@ function Comment({
               setAffectedComment={setAffectedComment}
               cancelHandler={() => setAffectedComment(null)}
               handleSubmitComment={({ content }: { content: string }) => {
-                console.log('contetn', content)
                 handleSubmitComment({ content, parentId: replyCommentId, replyOnUser: comment.user.userId })
               }}
             />

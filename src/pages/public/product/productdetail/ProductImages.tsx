@@ -7,7 +7,6 @@ type ProductImagesProps = {
 
 export const ProductImages: React.FC<ProductImagesProps> = ({ images }) => {
   const [currentImage, setCurrentImage] = useState<Image | null>(null)
-
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImage((prev) => images[(prev ? images.indexOf(prev) + 1 : 0) % images.length])

@@ -56,7 +56,6 @@ function Header() {
     }
   }
   const handleSearchProduct = () => {
-    console.log('click')
     const newParams = { ...currentParams, search }
     navigate({
       pathname: publicPaths.PRODUCT,
@@ -67,7 +66,6 @@ function Header() {
     try {
       if (isLoggedIn && accessToken) {
         const items = await apiGetCartItems(accessToken)
-        console.log('Cart items header:', items)
         if (Array.isArray(items)) {
           setCartItems(items)
         } else {
@@ -89,7 +87,9 @@ function Header() {
   return (
     <nav className='fixed top-0 left-0 right-0 z-50 shadow-md bg-white px-6 py-3 flex items-center justify-between md:px-10'>
       {/* Logo */}
-      <div className='text-2xl font-bold text-blue-600 cursor-pointer'>Stationery's P</div>
+      <Link to='/'>
+        <div className='text-2xl font-bold text-blue-600 cursor-pointer'>Stationery's P</div>
+      </Link>
 
       {/* Menu trên màn hình lớn */}
       <div className='hidden md:flex space-x-6 text-gray-700'>

@@ -11,7 +11,6 @@ const NumberToStart: React.FC<Props> = ({ number }) => {
         {Array(5)
           .fill(null)
           .map((_, i) => {
-            console.log(i)
             return <FaRegStar key={i} className='text-yellow-300' />
           })}
       </>
