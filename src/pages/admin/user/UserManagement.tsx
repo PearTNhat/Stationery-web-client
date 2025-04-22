@@ -6,6 +6,7 @@ import UserModal from './modal/UserModal'
 import { DetailModal } from './modal/DetailModal'
 import { fakeUsers } from '~/constance/seed/user'
 import { ConfirmDeleteModal } from './modal/ConfirmDeleteModal'
+import Select from 'react-select'
 
 type User = {
   id: number
@@ -18,6 +19,13 @@ type User = {
   active: boolean
   dob: string
 }
+
+const roleOptions = [
+  { value: 'All', label: 'All Roles' },
+  { value: 'Admin', label: 'Admin' },
+  { value: 'User', label: 'User' },
+  { value: 'Moderator', label: 'Moderator' }
+]
 
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>(fakeUsers)
@@ -121,13 +129,18 @@ const UserManagement = () => {
           />
         </div>
 
-        <div>
-          <select className='px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300'>
-            <option value='All'>All Roles</option>
-            <option value='Admin'>Admin</option>
-            <option value='User'>User</option>
-            <option value='Moderator'>Moderator</option>
-          </select>
+        <div className='w-1/4'>
+          <Select
+            options={roleOptions}
+            defaultValue={roleOptions[0]}
+            className='basic-single'
+            classNamePrefix='select'
+            isSearchable={false}
+            onChange={(selectedOption) => {
+              // TODO: filter logic nếu cần
+              console.log('Selected role:', selectedOption?.value)
+            }}
+          />
         </div>
       </div>
 
@@ -166,7 +179,7 @@ const UserManagement = () => {
                 </td>
                 <td className='px-4 py-3 flex gap-2'>
                   <button
-                    className='bg-teal-500 text-white p-2 rounded-lg hover:bg-teal-600 transition-colors'
+                    className='bg-yellow-400 text-white p-2 rounded-lg hover:bg-yellow-500 transition-colors'
                     aria-label={`Edit user ${user.firstName} ${user.lastName}`}
                     onClick={() => handleEditUser(user)}
                   >

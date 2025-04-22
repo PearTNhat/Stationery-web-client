@@ -1,43 +1,59 @@
+// Card.tsx
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { FaShoppingCart } from 'react-icons/fa'
 import Button from '../button/Button'
 import { Link } from 'react-router-dom'
-
 import { FetchColor, Product, ProductDetail } from '~/types/product'
 import NumberToStart from '~/components/numberToStar/NumberToStart'
 import { calculatePercent, formatNumber } from '~/utils/helper'
 import { DefaultProduct } from '~/assets/images'
 import ColorSelector from '../product_attributes/ColorSelector'
+import { apiAddItemToCart } from '~/api/cart'
+import { showAlertError, showAlertSucess } from '~/utils/alert'
 
 interface ProductCardProps {
   product: Product
   onViewDetails: (id: string) => void
-  onAddToCart: (productId?: string, quantity?: number) => void
+  accessToken: string // Thêm accessToken vào props
+  onAddToCart?: () => Promise<void>
 }
 
-const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, onAddToCart }) => {
+const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, accessToken }) => {
   const [selectedColor, setSelectedColor] = useState<string>(product.productDetail.color?.colorId ?? '')
+  const [selectedSize, setSelectedSize] = useState<string>(product.productDetail.size?.sizeId ?? '')
   const [productDetail, setProductDetail] = useState<ProductDetail | null>(null)
-
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [colors, setColors] = useState<FetchColor[]>([])
-  const handleColorSelect = (color: string) => {
-    setSelectedColor(color)
-    setIsModalOpen(true) // Mở modal khi chọn màu
-  }
 
-  const handleModalClose = () => {
-    setIsModalOpen(false)
-    setSelectedColor('') // Reset màu khi đóng modal
-  }
   useEffect(() => {
     setColors(product.fetchColor)
     setProductDetail(product.productDetail)
-    // setMinPrice(minPrice)
     setSelectedColor(product.productDetail.color?.colorId ?? '')
-    setColors(product.fetchColor)
+    setSelectedSize(product.productDetail.size?.sizeId ?? '')
   }, [product])
+
+  const handleAddToCart = async () => {
+    if (!selectedColor || !selectedSize) {
+      return
+    }
+
+    try {
+      const response = await apiAddItemToCart({
+        productDetailId: product.productDetail.productDetailId,
+        quantity: 1,
+        accessToken
+      })
+
+      if (typeof response === 'string') {
+        showAlertError(response)
+      } else {
+        showAlertSucess('Added to cart successfully!')
+      }
+    } catch (error) {
+      showAlertError('Added to cart failed!')
+    }
+  }
+
   return (
     <motion.div className='bg-white text-gray-900 rounded-2xl shadow-lg p-5 flex flex-col items-center space-y-4 transition-all duration-300 hover:shadow-2xl'>
       <Link to={`/products/${productDetail?.slug}`} className='w-full flex justify-center'>
@@ -53,18 +69,15 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, onAddToCart 
       <h3 className='text-lg font-bold text-center'>{product?.name}</h3>
       <div className='flex items-center justify-between w-full px-4'>
         <div>
-          {/* Giá đã giảm */}
           <p className='text-[19px] max-sm:text-xs font-semibold text-blue-500'>
             {formatNumber(productDetail?.discountPrice ?? 0)} ₫
           </p>
-          <div className='flex items-center '>
-            {/* Giá chưa giảm */}
+          <div className='flex items-center'>
             {productDetail?.originalPrice !== 0 && (
               <>
-                <p className='line-through text-[#6b7280] text-sm '>
+                <p className='line-through text-[#6b7280] text-sm'>
                   {formatNumber(productDetail?.originalPrice ?? 0)}₫
                 </p>
-                {/* % */}
                 <p className={`ml-1 text-red-400 text-sm font-bold`}>
                   - {calculatePercent(productDetail?.originalPrice ?? 0, productDetail?.discountPrice ?? 0)}%
                 </p>
@@ -82,7 +95,18 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, onAddToCart 
         <span>Sold: {product.soldQuantity}</span>
       </div>
 
-      <ColorSelector colors={colors} selectedColor={selectedColor} />
+      <ColorSelector
+        colors={colors}
+        selectedColor={selectedColor}
+        onColorSelect={(colorId) => setSelectedColor(colorId)}
+      />
+
+      {/* Thêm Size Selector nếu cần */}
+      {/* <SizeSelector
+        sizes={product.fetchSize}
+        selectedSize={selectedSize}
+        onSizeSelect={(sizeId) => setSelectedSize(sizeId)}
+      /> */}
 
       <div className='flex space-x-4 w-full mt-2'>
         <Link to={`/products/${productDetail?.slug}`} className='w-full'>
@@ -92,29 +116,11 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, onAddToCart 
         </Link>
         <button
           className='bg-yellow-400 text-black p-3 rounded-lg shadow-md transition hover:bg-yellow-500'
-          onClick={() => {
-            if (selectedColor && productDetails?.size?.sizeId) {
-              onAddToCart(product.productId, selectedColor, productDetails.size.sizeId, 1)
-            }
-          }}
+          onClick={handleAddToCart}
         >
           <FaShoppingCart size={20} />
         </button>
       </div>
-
-      {/* {isModalOpen && (
-        <ProductModal
-          isOpen={isModalOpen}
-          onClose={handleModalClose}
-          productName={product.name}
-          productPrice={product?.originalPrice}
-          productDescription={product.description}
-          selectedColor={selectedColor ?? undefined}
-          productImage={productColor?.images[0]?.url}
-          colors={colors}
-          productId={product.productId}
-        />
-      )} */}
     </motion.div>
   )
 }

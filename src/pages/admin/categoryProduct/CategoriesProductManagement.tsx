@@ -158,7 +158,7 @@ const CategoriesProductManagement = () => {
 
                   <button
                     onClick={() => handleEditCategory(category)}
-                    className='bg-teal-500 text-white p-2 rounded-lg hover:bg-teal-600 transition-colors'
+                    className='bg-yellow-400 text-white p-2 rounded-lg hover:bg-yellow-500 transition-colors'
                   >
                     <FaEdit size={16} />
                   </button>

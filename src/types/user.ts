@@ -5,8 +5,8 @@ type Address = {
   isDefault?: boolean
 }
 type Role = {
-  role_id: string
-  role_name: string
+  roleId: string
+  roleName: string
   description: string
 }
 

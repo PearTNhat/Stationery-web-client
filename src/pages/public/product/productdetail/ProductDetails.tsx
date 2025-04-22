@@ -7,9 +7,8 @@ import { ProductInfo } from './ProductInfo'
 import { ProductTabs } from './ProductTabs'
 import { SimilarProducts } from './SimilarProducts'
 import { apiFetchColorSizeProductDetail, apiGetAllProducts, apiGetDetailProduct } from '~/api/product'
-import { apiAddItemToCart } from '~/api/cart'
 import { useAppSelector } from '~/hooks/redux'
-import { showToastError, showToastSuccess } from '~/utils/alert'
+import { showToastError } from '~/utils/alert'
 import { Image, Product, ProductDeatilResponse } from '~/types/product'
 import AxiosError from 'axios'
 import { apiGetReviewOfProduct } from '~/api/review'
@@ -26,19 +25,6 @@ export default function ProductDetail() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [colorSize, setColorSize] = useState<ColorSize[]>([])
   const navigate = useNavigate()
-
-  const handleAddToCart = async (productDetailId: string, quantity: number) => {
-    const result = await apiAddItemToCart({
-      productId: productDetailId,
-      quantity,
-      accessToken: accessToken || ''
-    })
-    if (typeof result === 'string') {
-      showToastError(result)
-    } else {
-      showToastSuccess('Đã thêm vào giỏ hàng!')
-    }
-  }
 
   const handleBuyNow = (productId: string, colorId: string, sizeId: string, quantity: number) => {
     const selectedColor = 'red' //product?.productColors.find((c) => c.color.colorId === colorId)
@@ -67,6 +53,15 @@ export default function ProductDetail() {
 
   const handleViewDetails = (id: number) => {
     console.log(`Xem chi tiết sản phẩm ${id}`)
+  }
+
+  const handleAddToCart = async (
+    productId: string,
+    colorId: string,
+    sizeId: string,
+    quantity: number
+  ): Promise<void> => {
+    console.log(`Added product ${productId} with color ${colorId}, size ${sizeId}, and quantity ${quantity} to cart`)
   }
 
   const getProductDetail = async () => {
@@ -160,8 +155,8 @@ export default function ProductDetail() {
           productDetail={product?.productDetail}
           name={product?.name}
           totalRating={product?.totalRating}
-          productId={product?.productId}
-          onAddToCart={handleAddToCart}
+          productDetailId={product?.productDetail?.productDetailId}
+          accessToken={accessToken || ''}
           onBuyNow={handleBuyNow}
         />
       </div>
