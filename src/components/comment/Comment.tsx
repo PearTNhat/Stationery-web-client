@@ -56,7 +56,7 @@ function Comment({
         <div className='mt-3 p-2 shadow-[rgba(0,_0,_0,_0.24)_0px_3px_8px] rounded-md'>
           <p className='text-sm'>
             {comment.replyOnUser && comment.replyOnUser.userId !== comment.user.userId && (
-              <span className='text-blue-500 leading-[16px]'>
+              <span className='text-blue-500 leading-[16px] mr-1'>
                 @{comment.replyOnUser.firstName} {comment.replyOnUser.lastName}
               </span>
             )}

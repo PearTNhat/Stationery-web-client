@@ -1,5 +1,5 @@
 import { Review } from './comment'
-import { Promotion } from './promotion'
+import { ProductPromotion, Promotion } from './promotion'
 
 interface Size {
   sizeId: string
@@ -19,7 +19,7 @@ export interface ProductDetail {
   color: Color
   totalRating: number
   description: string
-  promotion: Promotion | null
+  productPromotions: ProductPromotion[]
   images: Image[] | null
   productId: string
   createdAt: string

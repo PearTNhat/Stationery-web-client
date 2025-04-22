@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import Voucher from '~/components/voucher/Voucher'
+import ListVouchers from '~/components/voucher/ListVouchers'
+import Voucher from '~/components/voucher/ListVouchers'
 
 type Coupon = { id: number; code: string; discount: number; minOrder: number; expiry: string }
 
@@ -8,7 +9,7 @@ export default function DiscountSection({
   discountCode,
   setDiscountCode,
   discountAmount,
-  setDiscountAmount,
+  setDiscountAmount
 }: {
   orderTotal: number
   discountCode: string
@@ -51,7 +52,9 @@ export default function DiscountSection({
           className='w-full p-2 border rounded-lg'
           placeholder='Nhập mã giảm giá'
         />
-        <button onClick={() => applyDiscount()} className='px-4 py-2 bg-blue-500 text-white rounded-lg'>Áp dụng</button>
+        <button onClick={() => applyDiscount()} className='px-4 py-2 bg-blue-500 text-white rounded-lg'>
+          Áp dụng
+        </button>
       </div>
       <button
         onClick={() => setShowVouchers(!showVouchers)}
@@ -62,7 +65,7 @@ export default function DiscountSection({
       {showVouchers && (
         <div className='mt-2 p-2 border rounded-lg bg-white'>
           <h3 className='text-md font-semibold'>Danh sách voucher:</h3>
-          <Voucher coupons={validDiscounts} onApplyDiscount={applyDiscount} />
+          <ListVouchers coupons={validDiscounts} onApplyDiscount={applyDiscount} />
         </div>
       )}
       {discountAmount > 0 && (

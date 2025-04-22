@@ -1,13 +1,14 @@
 // src/pages/UserProfile.tsx
 import React, { useEffect, useState } from 'react'
-import ProfileHeader from './ProfileHeader'
+import ProfileHeader from './component/ProfileHeader'
 import PasswordChange from './PasswordChange'
 import OrderTabs from './OrderTab'
-import Sidebar from './Sidebar'
+import Sidebar from './component/Sidebar'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { useNavigate } from 'react-router-dom'
 import { fetchCurrentUser } from '~/store/actions/user'
 import { userActions } from '~/store/slices/user'
+import MyVoucher from './voucher/MyVoucher'
 
 interface Order {
   id: string
@@ -43,6 +44,8 @@ const UserProfile: React.FC = () => {
         return <PasswordChange />
       case 'orders':
         return <OrderTabs orders={orders} />
+      case 'myVoucher':
+        return <MyVoucher />
       default:
         return null
     }
@@ -50,6 +53,9 @@ const UserProfile: React.FC = () => {
   const handleLogout = () => {
     dispatch(userActions.logout())
   }
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
   return (
     <div className='min-h-screen bg-gray-100 flex mt-16'>
       <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} onLogout={handleLogout} />

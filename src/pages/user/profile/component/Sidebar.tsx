@@ -1,6 +1,7 @@
 // src/components/Sidebar.tsx
 import React from 'react'
 import { FaUser, FaLock, FaBox, FaSignOutAlt } from 'react-icons/fa'
+import { MdDiscount } from 'react-icons/md'
 
 // Định nghĩa interface cho props của Sidebar
 interface SidebarProps {
@@ -14,7 +15,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, onLo
     { id: 'profile', label: 'Profile', icon: <FaUser className='mr-2' /> },
     { id: 'password', label: 'Đổi mật khẩu', icon: <FaLock className='mr-2' /> },
     { id: 'orders', label: 'Quản lý đơn hàng', icon: <FaBox className='mr-2' /> },
-    { id: 'myVoucher', label: 'Quản lý voucher', icon: <FaBox className='mr-2' /> }
+    { id: 'myVoucher', label: 'Quản lý voucher', icon: <MdDiscount className='mr-2' /> }
   ]
 
   return (

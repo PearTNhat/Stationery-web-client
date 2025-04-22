@@ -2,16 +2,16 @@ import { http } from '~/utils/http'
 import { AxiosError } from 'axios'
 
 const apiGetAllProducts = async ({
-  page = 0,
-  limit = 10,
-  sortBy = 'createdAt',
+  page = '0',
+  limit = '10',
+  sortBy,
   minPrice,
   maxPrice,
   categoryId,
   search
 }: {
-  page?: number
-  limit?: number
+  page?: string
+  limit?: string
   sortBy?: string
   minPrice?: string
   maxPrice?: string

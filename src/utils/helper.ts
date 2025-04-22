@@ -11,24 +11,22 @@ const formatNumber = (number: number | string) => {
   }
   return numberParse.toLocaleString('de-DE')
 }
-const priceInPromotion = (productDetail: ProductDetail | null): number => {
-  if (!productDetail?.promotion) {
+const priceInPromotion = (productDetail: ProductDetail): number => {
+  console.log(productDetail)
+  if (productDetail == null) return 0
+  console.log('productDetail pass')
+  if (productDetail?.productPromotions.length == 0) {
     return productDetail?.discountPrice || 0
   }
-  const promotion: Promotion = productDetail.promotion
-  const currentDate = new Date()
-  const startDate = new Date(promotion.startDate)
-  const endDate = new Date(promotion.endDate)
-  if (
-    currentDate >= startDate &&
-    currentDate <= endDate &&
-    promotion.usageLimit > 0 &&
-    promotion.minOrderValue <= productDetail.discountPrice
-  ) {
+  const promotion: Promotion = productDetail?.productPromotions[0].promotion ?? ({} as Promotion)
+
+  if (promotion.usageLimit > 0 && promotion.minOrderValue <= productDetail.discountPrice) {
     let price
     if (promotion.discountType === 'VALUE') {
+      // nếu là giảm giá theo giá trị
       price = productDetail.discountPrice - promotion.discountValue
     } else {
+      // nếu là giảm giá theo phần trăm
       const discount = (productDetail.discountPrice * promotion.discountValue) / 100
       if (discount > promotion.maxValue) {
         price = productDetail.discountPrice - promotion.maxValue

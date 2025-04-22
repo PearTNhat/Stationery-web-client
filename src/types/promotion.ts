@@ -10,7 +10,14 @@ interface Promotion {
   endDate: string
   createdAt: string
 }
-
+interface ProductPromotion {
+  productPromotionId: string
+  promotion: Promotion
+}
+interface UserPromotion {
+  userPromotionId: string
+  promotion: Promotion
+}
 type DiscountType = 'PERCENTATE' | 'VALUE'
 
-export type { DiscountType, Promotion }
+export type { DiscountType, Promotion, ProductPromotion, UserPromotion }
