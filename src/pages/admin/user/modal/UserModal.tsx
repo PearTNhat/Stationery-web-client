@@ -47,7 +47,6 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isEdit }: Props) => {
         <h2 className='text-2xl font-semibold text-blue-600 mb-6 text-center'>
           {isEdit ? 'Edit User' : 'Add New User'}
         </h2>
-
         <div className='flex flex-col gap-6'>
           {/* Avatar Upload & Preview */}
           <div className='flex flex-col items-center'>

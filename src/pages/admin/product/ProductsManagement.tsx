@@ -1,131 +1,54 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import moment from 'moment'
-import { Fragment, useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
-import { FaEdit, FaSearch, FaTrash } from 'react-icons/fa'
-import { IoMdAddCircleOutline } from 'react-icons/io'
+import { useState } from 'react'
 import Swal from 'sweetalert2'
-import { formatNumber } from '~/utils/helper'
-import ProductModal from '../categoryProduct/modal/AddProductModal'
-import { useAppDispatch } from '~/hooks/redux'
+import { useDispatch } from 'react-redux'
+import ProgressBar from './component/ProgressBar'
+import AddProductForm from './addproduct/AddProductForm'
+import AddProductDetailsForm from './addproduct/AddProductDetailsForm'
+import ConfirmProductForm from './addproduct/ConfirmProductForm'
+import ProductList from './component/ProductList'
 import { modalActions } from '~/store/slices/modal'
-
-// Types
-interface Product {
-  _id: string
-  title: string
-  slug: string
-  brand: string
-  series: { title: string }
-  discountPrice: number
-  quantity: number
-  soldQuantity: number
-  totalRating: number
-  createdAt: string
-  primaryImage: { url: string }
-  colors: ProductColor[]
-}
-
-interface ProductColor {
-  _id: string
-  color: string
-  quantity: number
-  soldQuantity: number
-  primaryImage: { url: string }
-}
-
-// Mock Data
-const mockProducts: Product[] = [
-  {
-    _id: '1',
-    title: 'iPhone 14 Pro Max',
-    slug: 'iphone-14-pro-max',
-    brand: 'apple',
-    series: { title: 'iPhone 14' },
-    discountPrice: 29990000,
-    quantity: 50,
-    soldQuantity: 25,
-    totalRating: 4.8,
-    createdAt: '2024-01-15T10:00:00Z',
-    primaryImage: {
-      url: 'https://file.hstatic.net/1000213518/file/thiet_ke_chua_co_ten__2__6cdcbb666fef4b5293d76b6a84a2b135.png'
-    },
-    colors: [
-      {
-        _id: 'c1',
-        color: 'Space Black',
-        quantity: 20,
-        soldQuantity: 10,
-        primaryImage: {
-          url: 'https://file.hstatic.net/1000213518/file/thiet_ke_chua_co_ten__2__6cdcbb666fef4b5293d76b6a84a2b135.png'
-        }
-      },
-      {
-        _id: 'c2',
-        color: 'Silver',
-        quantity: 30,
-        soldQuantity: 15,
-        primaryImage: {
-          url: 'https://file.hstatic.net/1000213518/file/thiet_ke_chua_co_ten__2__6cdcbb666fef4b5293d76b6a84a2b135.png'
-        }
-      }
-    ]
-  },
-  {
-    _id: '2',
-    title: 'Galaxy S23 Ultra',
-    slug: 'galaxy-s23-ultra',
-    brand: 'samsung',
-    series: { title: 'Galaxy S23' },
-    discountPrice: 26990000,
-    quantity: 40,
-    soldQuantity: 20,
-    totalRating: 4.7,
-    createdAt: '2024-02-01T14:00:00Z',
-    primaryImage: {
-      url: 'https://file.hstatic.net/1000213518/file/thiet_ke_chua_co_ten__2__6cdcbb666fef4b5293d76b6a84a2b135.png'
-    },
-    colors: [
-      {
-        _id: 'c3',
-        color: 'Phantom Black',
-        quantity: 25,
-        soldQuantity: 12,
-        primaryImage: {
-          url: 'https://file.hstatic.net/1000213518/file/thiet_ke_chua_co_ten__2__6cdcbb666fef4b5293d76b6a84a2b135.png'
-        }
-      }
-    ]
-  }
-]
-
-const tableHeaderTitleList = [
-  '#',
-  'Image',
-  'Name',
-  'Brand',
-  'Series',
-  'Price',
-  'Quantity',
-  'Sold',
-  'Rating',
-  'Created Date',
-  'Actions'
-]
+import { FaPlus } from 'react-icons/fa'
+import { ListProductDetail, ProductDetail } from '~/types/product'
+import { mockProducts } from '~/constance/seed/mockProducts'
+import ProductDetailViewModal from './modal/ProductDetailViewModal'
 
 function ProductsManagement() {
-  // const [searchParams, setSearchParams] = useSearchParams()
-  // const { accessToken } = useSelector((state: any) => state.user)
-  // const { brands } = useSelector((state: any) => state.brand)
+  const dispatch = useDispatch()
+  const [products, setProducts] = useState<ListProductDetail[]>(mockProducts)
+  const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
+  const [newProduct, setNewProduct] = useState<ListProductDetail>({
+    productId: '',
+    name: '',
+    description: '',
+    slug: '',
+    category: { categoryId: '', categoryName: '' },
+    minPrice: 0,
+    quantity: 0,
+    soldQuantity: 0,
+    totalRating: 0,
+    createdAt: new Date().toISOString(),
+    productDetails: [],
+    fetchColor: [],
+    img: ''
+  })
 
-  const [products, setProducts] = useState<Product[]>(mockProducts)
-  const [selectedProduct, setSelectedProduct] = useState<string[]>([])
-  const dispatch = useAppDispatch()
-
-  const handleRowClick = (product: Product) => {
-    setSelectedProduct((prev) =>
-      prev.includes(product._id) ? prev.filter((id) => id !== product._id) : [...prev, product._id]
-    )
+  const resetProcess = () => {
+    setStep(0)
+    setNewProduct({
+      productId: '',
+      name: '',
+      description: '',
+      slug: '',
+      category: { categoryId: '', categoryName: '' },
+      minPrice: 0,
+      quantity: 0,
+      soldQuantity: 0,
+      totalRating: 0,
+      createdAt: new Date().toISOString(),
+      productDetail: [],
+      fetchColor: [],
+      img: ''
+    })
   }
 
   const deleteProduct = async (id: string) => {
@@ -141,16 +64,15 @@ function ProductsManagement() {
     })
 
     if (result.isConfirmed) {
-      // Implement delete logic
-      setProducts((prev) => prev.filter((p) => p._id !== id))
+      setProducts((prev) => prev.filter((p) => p.productId !== id))
       Swal.fire('Đã xóa!', 'Sản phẩm đã được xóa.', 'success')
     }
   }
 
-  const deleteProductColor = async ({ pId, cId }: { pId: string; cId: string }) => {
+  const deleteProductDetail = async (pId: string, detailId: string) => {
     const result = await Swal.fire({
       title: 'Xác nhận xóa?',
-      text: 'Bạn chắc chắn muốn xóa màu này?',
+      text: 'Bạn chắc chắn muốn xóa chi tiết sản phẩm này?',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
@@ -159,174 +81,310 @@ function ProductsManagement() {
 
     if (result.isConfirmed) {
       setProducts((prev) =>
-        prev.map((p) => {
-          if (p._id === pId) {
-            return {
-              ...p,
-              colors: p.colors.filter((c) => c._id !== cId)
-            }
-          }
-          return p
-        })
+        prev.map((p) =>
+          p.productId === pId
+            ? {
+                ...p,
+                productDetails: p.productDetails.filter((detail: ProductDetail) => detail.productDetailId !== detailId),
+                fetchColor: [
+                  ...new Set(
+                    p.productDetail
+                      .filter((detail: ProductDetail) => detail.productDetailId !== detailId)
+                      .map((detail) => ({
+                        colorId: detail.color.colorId,
+                        hex: detail.color.hex,
+                        slug: `color-${detail.color.name.toLowerCase().replace(/\s/g, '-')}`
+                      }))
+                  )
+                ],
+                minPrice:
+                  p.productDetails.length > 1
+                    ? Math.min(
+                        ...p.productDetails
+                          .filter((detail) => detail.productDetailId !== detailId)
+                          .map((d: ProductDetail) => d.discountPrice)
+                      )
+                    : 0,
+                quantity: p.productDetail
+                  .filter((detail) => detail.productDetailId !== detailId)
+                  .reduce((sum: number, d: ProductDetail) => sum + d.stockQuantity, 0),
+                soldQuantity: p.productDetail
+                  .filter((detail) => detail.productDetailId !== detailId)
+                  .reduce((sum: number, d: ProductDetail) => sum + d.soldQuantity, 0),
+                totalRating:
+                  p.productDetail.length > 1
+                    ? p.productDetail
+                        .filter((detail) => detail.productDetailId !== detailId)
+                        .reduce((sum: number, d: ProductDetail) => sum + d.totalRating, 0) /
+                      p.productDetail.filter((detail) => detail.productDetailId !== detailId).length
+                    : 0
+              }
+            : p
+        )
       )
-      Swal.fire('Đã xóa!', 'Màu đã được xóa.', 'success')
+      Swal.fire('Đã xóa!', 'Chi tiết sản phẩm đã được xóa.', 'success')
     }
+  }
+
+  const handleConfirm = () => {
+    const finalProduct: ListProductDetail = {
+      ...newProduct,
+      productId: `p${products.length + 1}`,
+      productDetails: newProduct.productDetails.map((detail) => ({
+        ...detail,
+        productId: `p${products.length + 1}`
+      })),
+      img: newProduct.productDetails[0]?.images?.[0]?.url || ''
+    }
+    setProducts((prev) => [...prev, finalProduct])
+    Swal.fire('Thành công!', 'Sản phẩm đã được thêm.', 'success')
+    resetProcess()
+  }
+
+  const checkDuplicateDetail = (detail: ProductDetail, details: ProductDetail[]) => {
+    return details.some(
+      (d) =>
+        d.productDetailId !== detail.productDetailId &&
+        d.color.colorId === detail.color.colorId &&
+        d.size.name === detail.size.name
+    )
   }
 
   return (
     <div className='p-6 w-full mx-auto bg-white shadow-lg rounded-xl'>
       <div className='flex justify-between items-center mb-6'>
         <h1 className='text-3xl font-semibold text-blue-800'>Products Management</h1>
+        {step === 0 && (
+          <button
+            onClick={() => setStep(1)}
+            className='bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors'
+          >
+            <FaPlus size={16} />
+            Add New Product
+          </button>
+        )}
       </div>
-      <div className='flex gap-4 mb-6'>
-        <div className='relative w-1/3'>
-          <span className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400'>
-            <FaSearch />
-          </span>
-          <input
-            type='text'
-            placeholder='Search product...'
-            className='pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
-          />
-        </div>
 
-        <div>
-          <select className='px-10 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300'>
-            <option value='All'>All categories</option>
-            <option value='Admin'>Pen</option>
-            <option value='User'>Table</option>
-            <option value='Moderator'>Book</option>
-          </select>
-        </div>
-      </div>
-      <div className='bg-white rounded-lg shadow-md overflow-hidden'>
-        <div className='overflow-x-auto rounded-xl shadow-lg'>
-          <table className='w-full border-collapse border border-blue-200'>
-            <thead className='bg-blue-600 text-white text-left'>
-              <tr>
-                {tableHeaderTitleList.map((title) => (
-                  <th key={title} className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>
-                    {title}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-gray-200'>
-              {products.map((p, index) => {
-                const isSelected = selectedProduct.includes(p._id)
-                return (
-                  <Fragment key={p._id}>
-                    <tr onClick={() => handleRowClick(p)} className='hover:bg-gray-50 cursor-pointer transition-colors'>
-                      {/* {(currentPage - 1) * 10 + index + 1} */}
-                      <td className='px-4 py-3 text-sm'>{index}</td>
-                      <td className='px-4 py-3'>
-                        <img className='w-12 h-12 rounded object-cover' src={p.primaryImage.url} alt={p.title} />
-                      </td>
-                      <td className='px-4 py-3 text-sm max-w-[200px]'>
-                        <p className='line-clamp-2' title={p.title}>
-                          {p.title}
-                        </p>
-                      </td>
-                      <td className='px-4 py-3 text-sm'>{p.brand}</td>
-                      <td className='px-4 py-3 text-sm'>{p.series.title}</td>
-                      <td className='px-4 py-3 text-sm'>{formatNumber(p.discountPrice)}đ</td>
-                      <td className='px-4 py-3 text-sm'>{formatNumber(p.quantity)}</td>
-                      <td className='px-4 py-3 text-sm'>{formatNumber(p.soldQuantity)}</td>
-                      <td className='px-4 py-3 text-sm'>{p.totalRating}</td>
-                      <td className='px-4 py-3 text-sm'>{moment(p.createdAt).format('DD/MM/YYYY HH:mm')}</td>
-                      <td className='px-4 py-3'>
-                        <div className='flex items-center gap-3'>
-                          <Link
-                            to={`/admin/manage/products/create-color/${p.slug}`}
-                            className='bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-colors'
-                          >
-                            <IoMdAddCircleOutline className='text-lg' />
-                          </Link>
-                          <Link
-                            to={`/admin/manage/products/edit/${p.slug}`}
-                            className='bg-teal-500 text-white p-2 rounded-lg hover:bg-teal-600 transition-colors'
-                          >
-                            <FaEdit className='text-lg' />
-                          </Link>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              deleteProduct(p._id)
-                            }}
-                            className='bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors'
-                          >
-                            <FaTrash className='text-lg' />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    {isSelected && (
-                      <tr className='bg-gray-50'>
-                        <td colSpan={11} className='p-0'>
-                          <div className='overflow-x-auto'>
-                            <table className='w-full'>
-                              <thead className='bg-gray-500 text-white text-left'>
-                                <tr>
-                                  <th className='px-4 py-2 text-sm'>#</th>
-                                  <th className='px-4 py-2 text-sm'>Color</th>
-                                  <th className='px-4 py-2 text-sm'>Image</th>
-                                  <th className='px-4 py-2 text-sm'>Quantity</th>
-                                  <th className='px-4 py-2 text-sm'>Sold</th>
-                                  <th className='px-4 py-2 text-sm'>Actions</th>
-                                </tr>
-                              </thead>
-                              <tbody className='divide-y divide-gray-200'>
-                                {p.colors.map((color, idx) => (
-                                  <tr key={color._id} className='hover:bg-gray-100'>
-                                    <td className='px-4 py-2 text-sm'>{idx + 1}</td>
-                                    <td className='px-4 py-2 text-sm'>{color.color}</td>
-                                    <td className='px-4 py-2'>
-                                      <img
-                                        className='w-10 h-10 rounded object-cover'
-                                        src={color.primaryImage.url}
-                                        alt={color.color}
-                                      />
-                                    </td>
-                                    <td className='px-4 py-2 text-sm'>{formatNumber(color.quantity)}</td>
-                                    <td className='px-4 py-2 text-sm'>{formatNumber(color.soldQuantity)}</td>
-                                    <td className='px-4 py-2'>
-                                      <div className='flex gap-3'>
-                                        <Link
-                                          to={`/admin/manage/products/edit-color/${p.slug}/${color._id}`}
-                                          className='bg-teal-500 text-white p-2 rounded-lg hover:bg-teal-600 transition-colors'
-                                        >
-                                          <FaEdit className='text-lg' />
-                                        </Link>
-                                        <button
-                                          onClick={() =>
-                                            deleteProductColor({
-                                              pId: p._id,
-                                              cId: color._id
-                                            })
-                                          }
-                                          className='bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors'
-                                        >
-                                          <FaTrash className='text-lg' />
-                                        </button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
+      {step > 0 && <ProgressBar step={step} />}
+
+      {step === 1 && (
+        <AddProductForm
+          initialProduct={newProduct}
+          onSubmit={(product) => {
+            setNewProduct((prev) => ({ ...prev, ...product }))
+            setStep(2)
+          }}
+          onCancel={resetProcess}
+        />
+      )}
+
+      {step === 2 && (
+        <AddProductDetailsForm
+          productDetails={newProduct.productDetails}
+          fetchColors={newProduct.fetchColor}
+          onAddDetail={(detail) => {
+            setNewProduct((prev) => {
+              // Kiểm tra trùng lặp
+              if (checkDuplicateDetail(detail, prev.productDetails)) {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Lỗi',
+                  text: 'Chi tiết sản phẩm với màu và kích thước này đã tồn tại.'
+                })
+                return prev
+              }
+
+              // Tìm màu sắc trong fetchColor
+              const existingColor = prev.fetchColor.find(
+                (fc) =>
+                  fc.hex === detail.color.hex &&
+                  fc.slug === `color-${detail.color.name.toLowerCase().replace(/\s/g, '-')}`
+              )
+
+              const newDetailWithColorId = {
+                ...detail,
+                color: {
+                  ...detail.color,
+                  colorId: existingColor ? existingColor.colorId : detail.color.colorId
+                }
+              }
+
+              const newDetails = [...prev.productDetails, newDetailWithColorId]
+              const newFetchColor = existingColor
+                ? prev.fetchColor
+                : [
+                    ...prev.fetchColor,
+                    {
+                      colorId: detail.color.colorId,
+                      hex: detail.color.hex,
+                      slug: `color-${detail.color.name.toLowerCase().replace(/\s/g, '-')}`
+                    }
+                  ]
+
+              return {
+                ...prev,
+                productDetail: newDetails,
+                fetchColor: newFetchColor,
+                minPrice: newDetails.length > 0 ? Math.min(...newDetails.map((d) => d.discountPrice)) : 0,
+                quantity: newDetails.reduce((sum, d) => sum + d.stockQuantity, 0),
+                soldQuantity: newDetails.reduce((sum, d) => sum + d.soldQuantity, 0),
+                totalRating:
+                  newDetails.length > 0 ? newDetails.reduce((sum, d) => sum + d.totalRating, 0) / newDetails.length : 0,
+                img: newDetails[0]?.images?.[0]?.url || prev.img
+              }
+            })
+          }}
+          onUpdateDetail={(detail) => {
+            setNewProduct((prev) => {
+              // Kiểm tra trùng lặp
+              if (checkDuplicateDetail(detail, prev.productDetails)) {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Lỗi',
+                  text: 'Chi tiết sản phẩm với màu và kích thước này đã tồn tại.'
+                })
+                return prev
+              }
+
+              // Tìm màu sắc trong fetchColor
+              const existingColor = prev.fetchColor.find(
+                (fc) =>
+                  fc.hex === detail.color.hex &&
+                  fc.slug === `color-${detail.color.name.toLowerCase().replace(/\s/g, '-')}`
+              )
+
+              const newDetailWithColorId = {
+                ...detail,
+                color: {
+                  ...detail.color,
+                  colorId: existingColor ? existingColor.colorId : detail.color.colorId
+                }
+              }
+
+              const newDetails = prev.productDetails.map((d) =>
+                d.productDetailId === detail.productDetailId ? newDetailWithColorId : d
+              )
+
+              // Cập nhật fetchColor nếu màu mới
+              const newFetchColor = existingColor
+                ? prev.fetchColor
+                : [
+                    ...prev.fetchColor,
+                    {
+                      colorId: detail.color.colorId,
+                      hex: detail.color.hex,
+                      slug: `color-${detail.color.name.toLowerCase().replace(/\s/g, '-')}`
+                    }
+                  ]
+
+              return {
+                ...prev,
+                productDetail: newDetails,
+                fetchColor: newFetchColor,
+                minPrice: newDetails.length > 0 ? Math.min(...newDetails.map((d) => d.discountPrice)) : 0,
+                quantity: newDetails.reduce((sum, d) => sum + d.stockQuantity, 0),
+                soldQuantity: newDetails.reduce((sum, d) => sum + d.soldQuantity, 0),
+                totalRating:
+                  newDetails.length > 0 ? newDetails.reduce((sum, d) => sum + d.totalRating, 0) / newDetails.length : 0,
+                img: newDetails[0]?.images?.[0]?.url || prev.img
+              }
+            })
+          }}
+          onDeleteDetail={(detailId) => {
+            setNewProduct((prev) => {
+              const newDetails = prev.productDetails.filter((d) => d.productDetailId !== detailId)
+              // Chỉ giữ lại các màu sắc còn được sử dụng trong productDetail
+              const usedColorIds = new Set(newDetails.map((d) => d.color.colorId))
+              const newFetchColor = prev.fetchColor.filter((fc) => usedColorIds.has(fc.colorId))
+
+              return {
+                ...prev,
+                productDetail: newDetails,
+                fetchColor: newFetchColor,
+                minPrice: newDetails.length > 0 ? Math.min(...newDetails.map((d) => d.discountPrice)) : 0,
+                quantity: newDetails.reduce((sum, d) => sum + d.stockQuantity, 0),
+                soldQuantity: newDetails.reduce((sum, d) => sum + d.soldQuantity, 0),
+                totalRating:
+                  newDetails.length > 0 ? newDetails.reduce((sum, d) => sum + d.totalRating, 0) / newDetails.length : 0,
+                img: newDetails[0]?.images?.[0]?.url || ''
+              }
+            })
+          }}
+          onFinish={() => {
+            if (newProduct.productDetails.length === 0) {
+              Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Vui lòng thêm ít nhất một chi tiết sản phẩm trước khi tiếp tục.'
+              })
+              return
+            }
+            setStep(3)
+          }}
+          onCancel={resetProcess}
+        />
+      )}
+
+      {step === 3 && (
+        <ConfirmProductForm
+          product={newProduct}
+          productDetails={newProduct.productDetails}
+          fetchColors={newProduct.fetchColor}
+          onConfirm={handleConfirm}
+          onBack={() => setStep(2)}
+          onCancel={resetProcess}
+        />
+      )}
+
+      {step === 0 && (
+        <ProductList
+          // products={products}
+          onDeleteProduct={deleteProduct}
+          onDeleteProductDetail={deleteProductDetail}
+          onViewProductDetail={(product) => {
+            dispatch(
+              modalActions.toggleModal({
+                isOpenModal: true,
+                childrenModal: (
+                  <ProductDetailViewModal
+                    isOpen={true}
+                    product={product}
+                    details={product.productDetails}
+                    fetchColors={product.fetchColor || []}
+                    onClose={() =>
+                      dispatch(
+                        modalActions.toggleModal({
+                          isOpenModal: false,
+                          childrenModal: null
+                        })
+                      )
+                    }
+                  />
                 )
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Pagination would go here */}
+              })
+            )
+          }}
+          onEditProduct={(updatedProduct) => {
+            setProducts(products.map((p) => (p.productId === updatedProduct.productId ? updatedProduct : p)))
+            console.log('Updated product:', updatedProduct)
+          }}
+          onEditProductDetail={(pId, updatedDetail) => {
+            setProducts(
+              products.map((p) =>
+                p.productId === pId
+                  ? {
+                      ...p,
+                      productDetail: p.productDetails.map((d) =>
+                        d.productDetailId === updatedDetail.productDetailId ? updatedDetail : d
+                      )
+                    }
+                  : p
+              )
+            )
+            console.log(`Updated detail for product ${pId}:`, updatedDetail)
+          }}
+        />
+      )}
     </div>
   )
 }

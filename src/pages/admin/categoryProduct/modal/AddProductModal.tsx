@@ -129,12 +129,6 @@ const ProductModal = ({ isOpen, isEdit, product, onClose, onSubmit }: Props) => 
           <TextInput label='Series' name='series' value={form.series.title} onChange={handleChange} />
           <TextInput label='Price' name='discountPrice' value={form.discountPrice.toString()} onChange={handleChange} />
           <TextInput label='Quantity' name='quantity' value={form.quantity.toString()} onChange={handleChange} />
-          <TextInput
-            label='Sold Quantity'
-            name='soldQuantity'
-            value={form.soldQuantity.toString()}
-            onChange={handleChange}
-          />
         </div>
 
         <div className='flex justify-end gap-3 mt-6'>

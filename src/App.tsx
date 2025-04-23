@@ -25,7 +25,6 @@ import Service from './pages/public/service/Service'
 import { departmentPath } from './constance/paths'
 import DepartmentLayout from './pages/department/DepartmentLayout'
 import Dashboard from './pages/department/dashboard/Dashboard'
-import Product from './pages/department/product/Product'
 import PurchaseGuidePage from './pages/public/support/PurchaseGuidePage'
 import WarrantyPolicyPage from './pages/public/support/WarrantyPolicyPage'
 import NotFound from './pages/public/notfound/NotFound'
@@ -58,7 +57,7 @@ function App() {
         </Route>
         <Route path={departmentPath.DASHBOARD} element={<DepartmentLayout />}>
           <Route index element={<Dashboard />} />
-          <Route path={departmentPath.PRODUCT} element={<Product />} />
+          {/* <Route path={departmentPath.PRODUCT} element={<Product />} /> */}
         </Route>
         <Route path={adminPaths.ADMIN} element={<AdminLayout />}>
           <Route index element={<DashBoard />} />

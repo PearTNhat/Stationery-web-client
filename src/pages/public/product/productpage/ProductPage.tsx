@@ -4,7 +4,7 @@ import { ProductList } from './ProductList'
 import Filters from './Filters'
 import { showToastError } from '~/utils/alert'
 import { Product } from '~/types/product'
-import { apiGetAllProducts } from '~/api/product'
+import { apiGetAllProductsWithDefaultPD } from '~/api/product'
 import { ProductSearchParams } from '~/types/filter'
 import { useSearchParams } from 'react-router-dom'
 import Pagination from '~/components/pagination/Pagination'
@@ -28,7 +28,15 @@ const ProductPage: React.FC = () => {
     limit = limit || '10'
 
     try {
-      const response = await apiGetAllProducts({ page, limit, minPrice, maxPrice, sortBy, categoryId, search })
+      const response = await apiGetAllProductsWithDefaultPD({
+        page,
+        limit,
+        minPrice,
+        maxPrice,
+        sortBy,
+        categoryId,
+        search
+      })
       if (response.code == 200) {
         setProducts(response.result.content)
         setTotalPageCount(response.result.page.totalPages)

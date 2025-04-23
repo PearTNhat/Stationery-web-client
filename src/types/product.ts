@@ -1,10 +1,10 @@
 import { Review } from './comment'
-import { ProductPromotion, Promotion } from './promotion'
+import { ProductPromotion } from './promotion'
 
 interface Size {
   sizeId: string
   name: string
-  piority: number
+  priority: number
 }
 
 export interface ProductDetail {
@@ -30,11 +30,13 @@ interface Image {
   url: string
   priority: number
 }
+
 interface Color {
   colorId: string
   name: string
   hex: string
 }
+
 interface ProductColor {
   productColorId: string
   color: Color
@@ -42,11 +44,13 @@ interface ProductColor {
   images: Image[]
   sizes: Size[]
 }
+
 interface FetchColor {
   colorId: string
   hex: string
   slug: string
 }
+
 interface Product {
   productId: string
   description: string
@@ -65,8 +69,14 @@ interface Product {
   img: string
   createdAt: string
 }
+
 interface ProductDeatilResponse extends Product {
   image: Image[]
   reviews: Review[]
 }
-export type { Product, Color, ProductColor, ProductDeatilResponse, Image, Size, FetchColor }
+
+interface ListProductDetail extends Omit<Product, 'productDetail'> {
+  productDetails: ProductDetail[]
+}
+
+export type { Product, Color, ProductColor, ProductDeatilResponse, Image, Size, FetchColor, ListProductDetail }

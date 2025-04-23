@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AxiosError } from 'axios'
-import { apiGetAllProducts } from '~/api/product'
+import { apiGetAllProductsWithDefaultPD } from '~/api/product'
 import ProductSection from '~/components/productSection/ProductSection'
 import { showToastError } from '~/utils/alert'
 import { Product } from '~/types/product'
@@ -9,9 +9,9 @@ const NewProduct = () => {
   const [products, setProducts] = useState<Product[]>([])
   const getNewProducts = async () => {
     try {
-      const response = await apiGetAllProducts({
-        page: 0,
-        limit: 10,
+      const response = await apiGetAllProductsWithDefaultPD({
+        page: '0',
+        limit: '10',
         sortBy: 'createdAt'
       })
       if (response.code == 200) {

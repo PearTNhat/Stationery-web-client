@@ -16,17 +16,21 @@ export const apiGetCartItems = async (accessToken: string): Promise<CartItem[] |
 }
 
 export const apiAddItemToCart = async ({
-  productId,
+  productDetailId,
   quantity,
+  colorId,
+  sizeId,
   accessToken
 }: {
-  productId: string
+  productDetailId: string
   quantity: number
+  colorId?: string
+  sizeId?: string
   accessToken: string
 }): Promise<CartItem | string> => {
   try {
     const config = { headers: { Authorization: `Bearer ${accessToken}` } }
-    const body = { productId, quantity }
+    const body = { productDetailId, quantity, colorId, sizeId }
     const response = await http.post('/carts', body, config)
     return response.data
   } catch (error) {
