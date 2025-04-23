@@ -10,7 +10,8 @@ import { calculatePercent, formatNumber } from '~/utils/helper'
 import { DefaultProduct } from '~/assets/images'
 import ColorSelector from '../product_attributes/ColorSelector'
 import { apiAddItemToCart } from '~/api/cart'
-import { showAlertError, showAlertSucess } from '~/utils/alert'
+import { useAppSelector } from '~/hooks/redux'
+import { showToastError, showToastSuccess } from '~/utils/alert'
 
 interface ProductCardProps {
   product: Product
@@ -19,7 +20,8 @@ interface ProductCardProps {
   onAddToCart?: () => Promise<void>
 }
 
-const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, accessToken }) => {
+const Card: React.FC<ProductCardProps> = ({ product }) => {
+  const { accessToken } = useAppSelector((state) => state.user)
   const [selectedColor, setSelectedColor] = useState<string>(product.productDetail.color?.colorId ?? '')
   const [selectedSize, setSelectedSize] = useState<string>(product.productDetail.size?.sizeId ?? '')
   const [productDetail, setProductDetail] = useState<ProductDetail | null>(null)
@@ -41,16 +43,18 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, accessToken 
       const response = await apiAddItemToCart({
         productDetailId: product.productDetail.productDetailId,
         quantity: 1,
-        accessToken
+        accessToken: accessToken ?? ''
       })
 
+      console.log(product.productDetail.productDetailId)
+
       if (typeof response === 'string') {
-        showAlertError(response)
+        showToastError(response)
       } else {
-        showAlertSucess('Added to cart successfully!')
+        showToastSuccess('Added to cart successfully!')
       }
-    } catch (error) {
-      showAlertError('Added to cart failed!')
+    } catch {
+      showToastError('Added to cart failed!')
     }
   }
 
@@ -95,11 +99,11 @@ const Card: React.FC<ProductCardProps> = ({ product, onViewDetails, accessToken 
         <span>Sold: {product.soldQuantity}</span>
       </div>
 
-      <ColorSelector
+      {/* <ColorSelector
         colors={colors}
         selectedColor={selectedColor}
         onColorSelect={(colorId) => setSelectedColor(colorId)}
-      />
+      /> */}
 
       {/* Thêm Size Selector nếu cần */}
       {/* <SizeSelector

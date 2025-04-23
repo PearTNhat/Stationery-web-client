@@ -2,7 +2,13 @@ import { AxiosError } from 'axios'
 import { CartItem } from '~/types/cart'
 import { http } from '~/utils/http'
 
-export const apiGetCartItems = async (accessToken: string): Promise<CartItem[] | string> => {
+interface CartApiResponse {
+  code: number
+  message: string
+  result: CartItem[]
+}
+
+export const apiGetCartItems = async (accessToken: string): Promise<CartApiResponse | string> => {
   try {
     const config = { headers: { Authorization: `Bearer ${accessToken}` } }
     const res = await http.get('/carts', config)
@@ -18,19 +24,15 @@ export const apiGetCartItems = async (accessToken: string): Promise<CartItem[] |
 export const apiAddItemToCart = async ({
   productDetailId,
   quantity,
-  colorId,
-  sizeId,
   accessToken
 }: {
   productDetailId: string
   quantity: number
-  colorId?: string
-  sizeId?: string
   accessToken: string
 }): Promise<CartItem | string> => {
   try {
     const config = { headers: { Authorization: `Bearer ${accessToken}` } }
-    const body = { productDetailId, quantity, colorId, sizeId }
+    const body = { productDetailId, quantity }
     const response = await http.post('/carts', body, config)
     return response.data
   } catch (error) {

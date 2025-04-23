@@ -1,6 +1,6 @@
 // pages/ProductDetail.tsx
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 
 import { ProductImages } from './ProductImages'
 import { ProductInfo } from './ProductInfo'
@@ -8,60 +8,43 @@ import { ProductTabs } from './ProductTabs'
 import { SimilarProducts } from './SimilarProducts'
 import { apiFetchColorSizeProductDetail, apiGetAllProducts, apiGetDetailProduct } from '~/api/product'
 import { useAppSelector } from '~/hooks/redux'
-import { showToastError } from '~/utils/alert'
-import { Image, Product, ProductDeatilResponse } from '~/types/product'
+import { showToastError, showToastSuccess } from '~/utils/alert'
+import { Product, ProductDeatilResponse } from '~/types/product'
 import AxiosError from 'axios'
 import { apiGetReviewOfProduct } from '~/api/review'
 import { Review } from '~/types/comment'
 import { ColorSize } from '~/types/color'
+import { apiAddItemToCart } from '~/api/cart'
 
 export default function ProductDetail() {
   const { slug } = useParams()
   const { accessToken } = useAppSelector((state) => state.user)
   const [product, setProduct] = useState<Product | null>(null)
-  const [images, setImages] = useState<Image[]>([])
   const [fechAgain, setFetchAgain] = useState(false)
   const [similarProducts, setSimilarProducts] = useState<ProductDeatilResponse[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
   const [colorSize, setColorSize] = useState<ColorSize[]>([])
-  const navigate = useNavigate()
-
-  const handleBuyNow = (productId: string, colorId: string, sizeId: string, quantity: number) => {
-    const selectedColor = 'red' //product?.productColors.find((c) => c.color.colorId === colorId)
-    const selectedProductDetail = 'red' //selectedColor?.productDetails.find((d) => d.size.sizeId === sizeId)
-    const selectedImage = 'red' //selectedColor?.images?.[0]?.url || ''
-    const price = 0 //selectedProductDetail?.discountPrice || 0
-
-    const order = {
-      orderId: 'ORDER' + Date.now(),
-      items: [
-        {
-          id: Date.now(),
-          name: product?.name || '',
-          price,
-          quantity,
-          image: selectedImage
-          // color: selectedColor?.color.name || '',
-          // size: selectedProductDetail?.size.name || ''
-        }
-      ],
-      totalAmount: price * quantity
-    }
-    console.log('order', order)
-    navigate(`/products/payment-confirnation`, { state: { order } })
-  }
 
   const handleViewDetails = (id: number) => {
     console.log(`Xem chi tiết sản phẩm ${id}`)
   }
 
-  const handleAddToCart = async (
-    productId: string,
-    colorId: string,
-    sizeId: string,
-    quantity: number
-  ): Promise<void> => {
-    console.log(`Added product ${productId} with color ${colorId}, size ${sizeId}, and quantity ${quantity} to cart`)
+  const handleAddToCart = async (productDetailId: string): Promise<void> => {
+    try {
+      const response = await apiAddItemToCart({
+        productDetailId: productDetailId,
+        quantity: 1,
+        accessToken: accessToken ?? ''
+      })
+
+      if (typeof response === 'string') {
+        showToastError(response)
+      } else {
+        showToastSuccess('Added to cart successfully!')
+      }
+    } catch {
+      showToastError('Added to cart failed!')
+    }
   }
 
   const getProductDetail = async () => {
@@ -157,7 +140,6 @@ export default function ProductDetail() {
           totalRating={product?.totalRating}
           productDetailId={product?.productDetail?.productDetailId}
           accessToken={accessToken || ''}
-          onBuyNow={handleBuyNow}
         />
       </div>
       <ProductTabs

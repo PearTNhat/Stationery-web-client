@@ -14,6 +14,7 @@ interface CartProps {
 
 const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken, onRefresh }) => {
   const navigate = useNavigate()
+  const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null)
   const handleQuantityChange = async (productDetailId: string, newQuantity: number) => {
     if (newQuantity < 1) return
@@ -49,16 +50,24 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken, on
     onRefresh()
   }
 
+  const toggleSelectItem = (productDetailId: string) => {
+    setSelectedItems((prev) =>
+      prev.includes(productDetailId) ? prev.filter((id) => id !== productDetailId) : [...prev, productDetailId]
+    )
+  }
+
   const handleCheckout = () => {
-    const orderItems = cartItems.map((item) => ({
-      id: parseInt(item.productId),
-      name: item.productName,
-      price: item.discountPrice,
-      quantity: item.quantity,
-      image: item.imageUrl,
-      color: item.colorName,
-      size: item.sizeName
-    }))
+    const orderItems = cartItems
+      .filter((item) => selectedItems.includes(item.productDetailId))
+      .map((item) => ({
+        id: parseInt(item.productId),
+        name: item.productName,
+        price: item.discountPrice,
+        quantity: item.quantity,
+        image: item.imageUrl,
+        color: item.colorName,
+        size: item.sizeName
+      }))
 
     const order = {
       orderId: 'ORDER' + Date.now(),
@@ -68,10 +77,12 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken, on
 
     console.log('orderDetails check-out', order)
     onClose()
-    navigate(`/products/payment-confirnation`, { state: { order } })
+    navigate(`/products/payment-confirmation`, { state: { order } })
   }
 
-  const totalPrice = cartItems.reduce((total, item) => total + item.discountPrice * item.quantity, 0)
+  const totalPrice = cartItems
+    .filter((item) => selectedItems.includes(item.productDetailId))
+    .reduce((total, item) => total + item.discountPrice * item.quantity, 0)
 
   return (
     <>
@@ -100,6 +111,12 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken, on
                     loadingItemId === item.productDetailId ? 'opacity-50 pointer-events-none' : ''
                   }`}
                 >
+                  <input
+                    type='checkbox'
+                    checked={selectedItems.includes(item.productDetailId)}
+                    onChange={() => toggleSelectItem(item.productDetailId)}
+                    className='mt-2 accent-blue-600'
+                  />
                   <div className='w-20 h-20 border rounded overflow-hidden'>
                     <img src={item.imageUrl} alt={item.productName} className='w-full h-full object-cover' />
                   </div>

@@ -65,11 +65,12 @@ function Header() {
   const fetchCart = async () => {
     try {
       if (isLoggedIn && accessToken) {
-        const items = await apiGetCartItems(accessToken)
-        if (Array.isArray(items)) {
-          setCartItems(items)
+        const response = await apiGetCartItems(accessToken)
+        console.log('Cart response:', response)
+        if (typeof response !== 'string' && response && Array.isArray(response.result)) {
+          setCartItems(response.result)
         } else {
-          console.error('Unexpected response format:', items)
+          console.error('Unexpected response format:', response)
         }
       }
     } catch (err) {
