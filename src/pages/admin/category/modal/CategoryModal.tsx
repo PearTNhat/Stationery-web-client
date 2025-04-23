@@ -38,7 +38,7 @@ const CategoryModal = ({ isOpen, isEdit, category, onClose, onSubmit }: Props) =
         <TextInput label='Category Name' name='categoryName' value={form.categoryName} onChange={handleChange} />
 
         {/* Icon */}
-        <TextInput label='Icon (e.g. 🎮)' name='icon' value={form.icon} onChange={handleChange} />
+        <TextInput label='Icon (e.g. 🎮)' name='icon' value={form.icon || ''} onChange={handleChange} />
 
         {/* Chọn màu */}
         <div className='flex flex-col gap-2 mt-4'>

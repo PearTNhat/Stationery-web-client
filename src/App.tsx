@@ -5,7 +5,6 @@ import Login from './pages/public/auth/Login'
 import Register from './pages/public/auth/Register'
 import DashBoard from './pages/admin/dashBoard/DashBoard'
 import AdminLayout from './pages/admin/AdminLayout'
-import ManageDepartments from './pages/admin/department/ManageDepartments'
 import UserManagement from './pages/admin/user/UserManagement'
 import ProductsManagement from './pages/admin/product/ProductsManagement'
 import Modal from './components/model/Modal'
@@ -30,7 +29,10 @@ import WarrantyPolicyPage from './pages/public/support/WarrantyPolicyPage'
 import NotFound from './pages/public/notfound/NotFound'
 import ReturnExchangePolicy from './pages/public/support/ReturnExchangePolicy'
 import ShippingPolicyPage from './pages/public/support/ShippingPolicyPage'
-import CategoriesProductManagement from './pages/admin/categoryProduct/CategoriesProductManagement'
+import CategoriesProductManagement from './pages/admin/category/CategoriesProductManagement'
+import ColorManagement from './pages/admin/color/ColorManagement'
+import SizeManagement from './pages/admin/size/SizeManagement'
+import OrderManagement from './pages/admin/order/OrderManagement'
 
 function App() {
   const { childrenModal, isOpenModal } = useAppSelector((state) => state.modal)
@@ -63,8 +65,10 @@ function App() {
           <Route index element={<DashBoard />} />
           <Route path={adminPaths.USER} element={<UserManagement />} />
           <Route path={adminPaths.PRODUCT_CATEGORY} element={<CategoriesProductManagement />} />
+          <Route path={adminPaths.COLOR} element={<ColorManagement />} />
+          <Route path={adminPaths.SIZE} element={<SizeManagement />} />
           <Route path={adminPaths.PRODUCT} element={<ProductsManagement />} />
-          <Route path={adminPaths.DEPARTMENT} element={<ManageDepartments />} />
+          <Route path={adminPaths.ORDER} element={<OrderManagement />} />
           <Route path={adminPaths.VOUCHER} element={<VoucherManagement />} />
         </Route>
         <Route path='*' element={<NotFound />} />

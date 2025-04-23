@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAppDispatch } from '~/hooks/redux'
 import { modalActions } from '~/store/slices/modal'
-import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaSearch, FaExclamationCircle } from 'react-icons/fa'
+import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaSearch, FaEye } from 'react-icons/fa'
 import UserModal from './modal/UserModal'
 import { DetailModal } from './modal/DetailModal'
 import { fakeUsers } from '~/constance/seed/user'
@@ -179,6 +179,12 @@ const UserManagement = () => {
                 </td>
                 <td className='px-4 py-3 flex gap-2'>
                   <button
+                    className='bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-colors'
+                    onClick={() => handleViewUserDetails(user)}
+                  >
+                    <FaEye size={16} />
+                  </button>
+                  <button
                     className='bg-yellow-400 text-white p-2 rounded-lg hover:bg-yellow-500 transition-colors'
                     aria-label={`Edit user ${user.firstName} ${user.lastName}`}
                     onClick={() => handleEditUser(user)}
@@ -190,12 +196,6 @@ const UserManagement = () => {
                     onClick={() => handleConfirmDelele(user)}
                   >
                     <FaTrash size={16} />
-                  </button>
-                  <button
-                    className='bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-colors'
-                    onClick={() => handleViewUserDetails(user)}
-                  >
-                    <FaExclamationCircle size={16} />
                   </button>
                 </td>
               </tr>

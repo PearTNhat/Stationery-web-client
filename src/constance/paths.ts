@@ -30,8 +30,10 @@ const adminPaths = {
   ADMIN: '/admin',
   USER: '/admin/users',
   PRODUCT_CATEGORY: '/admin/product-categories',
+  COLOR: '/admin/product-colors',
+  SIZE: '/admin/product-sizes',
   PRODUCT: '/admin/products',
-  DEPARTMENT: '/admin/departments',
+  ORDER: '/admin/orders',
   VOUCHER: '/admin/vouchers'
 }
 export { publicPaths, userPaths, departmentPath, adminPaths }

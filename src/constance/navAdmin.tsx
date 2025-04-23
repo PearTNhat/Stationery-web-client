@@ -5,6 +5,9 @@ import { BsTicketPerforatedFill } from 'react-icons/bs'
 import { RiProductHuntLine } from 'react-icons/ri'
 import { adminPaths } from './paths'
 import { IoHome } from 'react-icons/io5'
+import { IoMdColorFill } from 'react-icons/io'
+import { BiFontSize } from 'react-icons/bi'
+
 const navItems: NavItem[] = [
   {
     icon: <IoHome />,
@@ -22,6 +25,16 @@ const navItems: NavItem[] = [
     path: '/admin/product-categories'
   },
   {
+    icon: <IoMdColorFill />,
+    name: 'Colors',
+    path: '/admin/product-colors'
+  },
+  {
+    icon: <BiFontSize />,
+    name: 'Sizes',
+    path: '/admin/product-sizes'
+  },
+  {
     icon: <RiProductHuntLine />,
     name: 'Products',
     path: '/admin/products'
@@ -29,7 +42,7 @@ const navItems: NavItem[] = [
   {
     icon: <FaShoppingCart />,
     name: 'Orders',
-    path: '/admin/departments'
+    path: '/admin/orders'
   },
   {
     icon: <BsTicketPerforatedFill />,
