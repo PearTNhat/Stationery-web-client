@@ -5,7 +5,7 @@ import NumberToStart from '~/components/numberToStar/NumberToStart'
 import QuantitySelector from '~/components/product_attributes/QuantitySelector'
 import { ColorSize, SizeSlug } from '~/types/color'
 import { ProductDetail } from '~/types/product'
-import { showAlertError, showToastSuccess } from '~/utils/alert'
+import { showAlertError, showToastError, showToastSuccess } from '~/utils/alert'
 import { calculatePercent, formatNumber, priceInPromotion } from '~/utils/helper'
 import Voucher from '~/components/voucher/Voucher'
 import { apiAddItemToCart } from '~/api/cart' // Import API
@@ -16,7 +16,6 @@ type ProductInfoProps = {
   name?: string
   totalRating?: number
   accessToken: string // Thêm accessToken
-  onBuyNow: (productDetailId: string, colorId: string, sizeId: string, quantity: number) => void
   productDetailId?: string // Đổi tên prop cho rõ ràng
 }
 
@@ -26,7 +25,6 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
   productDetail,
   totalRating,
   accessToken,
-  onBuyNow,
   productDetailId
 }) => {
   const navigate = useNavigate()
@@ -46,12 +44,6 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
 
   const handleAddToCart = async () => {
     if (!productDetailId) {
-      showAlertError('Không tìm thấy sản phẩm!')
-      return
-    }
-
-    if (!selectedColor || !selectedSize) {
-      showAlertError('Vui lòng chọn màu sắc và kích thước trước khi thêm vào giỏ hàng!')
       return
     }
 
@@ -59,34 +51,45 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
       const response = await apiAddItemToCart({
         productDetailId: productDetailId,
         quantity,
-        colorId: selectedColor,
-        sizeId: selectedSize,
         accessToken
       })
 
       if (typeof response === 'string') {
-        showAlertError(response)
+        showToastError(response)
         return
       }
 
       showToastSuccess('Added to cart successfully!')
     } catch {
-      showAlertError('Added to cart failed!')
+      showToastError('Added to cart failed!')
     }
   }
 
   const handleBuyNow = () => {
-    if (!productDetailId) {
-      showAlertError('Không tìm thấy sản phẩm!')
+    if (!productDetailId || !productDetail) {
+      showAlertError('Missing product information')
       return
     }
 
-    if (!selectedColor || !selectedSize) {
-      showAlertError('Vui lòng chọn màu sắc và kích thước trước khi mua!')
-      return
+    const order = {
+      orderId: 'ORDER' + Date.now(),
+      items: [
+        {
+          id: parseInt(productDetail.productDetailId),
+          name: productDetail.name,
+          price: productDetail.discountPrice,
+          quantity,
+          image: productDetail.images,
+          color: productDetail.color?.name ?? '',
+          size: productDetail.size?.name ?? ''
+        }
+      ],
+      totalAmount: productDetail.discountPrice * quantity
     }
 
-    onBuyNow(productDetailId, selectedColor, selectedSize, quantity)
+    console.log('Order Nguyễn Quốc Khoa:', order)
+
+    navigate(`/products/payment-confirmation`, { state: { order } }) // fixed typo
   }
 
   return (
