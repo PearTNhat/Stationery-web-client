@@ -5,6 +5,7 @@ import { sideBarReducer } from './slices/sideBar'
 import { userReducer } from './slices/user'
 import { modalReducer } from './slices/modal'
 import { categoryReducer } from './slices/category'
+import { voucherReducer } from './slices/promotion'
 const persistConfig = {
   key: 'stationery/user',
   storage,
@@ -16,7 +17,8 @@ const store = configureStore({
     user: persistedReducer,
     sideBar: sideBarReducer,
     modal: modalReducer,
-    category: categoryReducer
+    category: categoryReducer,
+    voucher: voucherReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

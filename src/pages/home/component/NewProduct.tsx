@@ -29,7 +29,7 @@ const NewProduct = () => {
   useEffect(() => {
     getNewProducts()
   }, [])
-
+  console.log(products)
   return <ProductSection title='New Products' products={products} />
 }
 

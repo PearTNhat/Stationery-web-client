@@ -4,7 +4,8 @@ import CategoryFilter from '~/components/filter/CategoryFilter'
 import PriceRange from '~/components/filter/PriceRange'
 import SortByPrice from '~/components/filter/SortByPrice'
 import TagFilter from '~/components/filter/TagFilter'
-import Voucher from '~/components/voucher/Voucher'
+import ListVouchers from '~/components/voucher/ListVouchers'
+import Voucher from '~/components/voucher/ListVouchers'
 import { ProductSearchParams } from '~/types/filter'
 
 type FiltersProps = {
@@ -23,7 +24,7 @@ const Filters: React.FC<FiltersProps> = ({ coupons, appliedCoupon, onApplyDiscou
       <PriceRange currentParams={currentParams} />
       <TagFilter currentParams={currentParams} />
 
-      <Voucher coupons={coupons} onApplyDiscount={onApplyDiscount} />
+      <ListVouchers coupons={coupons} onApplyDiscount={onApplyDiscount} />
       {appliedCoupon && (
         <div className='mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg'>
           Applied Coupon: <strong>{appliedCoupon}</strong>

@@ -12,6 +12,7 @@ import { fetchCategories } from '~/store/actions/category'
 import { ProductSearchParams } from '~/types/filter'
 import { CartItem } from '~/types/cart'
 import { apiGetCartItems } from '~/api/cart'
+import { fetchMyVocher } from '~/store/actions/promotion'
 
 function Header() {
   const navigate = useNavigate()
@@ -82,6 +83,7 @@ function Header() {
     if (isLoggedIn && accessToken && userData?.userId) {
       fetchCart()
       dispatch(fetchCategories())
+      dispatch(fetchMyVocher({ accessToken }))
     }
   }, [isLoggedIn, accessToken])
 

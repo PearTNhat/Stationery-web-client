@@ -9,7 +9,7 @@ type ProductListProps = {
 
 export const ProductList: React.FC<ProductListProps> = ({ products, onViewDetails }) => {
   return (
-    <div className='w-4/5'>
+    <div className='w-full'>
       <h1 className='text-4xl font-bold text-blue-800 mb-6 text-center'>Product List</h1>
       <div className='flex flex-wrap gap-3'>
         {products?.map((product) => (

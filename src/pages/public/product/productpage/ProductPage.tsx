@@ -7,6 +7,7 @@ import { Product } from '~/types/product'
 import { apiGetAllProducts } from '~/api/product'
 import { ProductSearchParams } from '~/types/filter'
 import { useSearchParams } from 'react-router-dom'
+import Pagination from '~/components/pagination/Pagination'
 const coupons = [
   { id: 1, discount: 200000, minOrder: 1300000, code: '0325SALE200', expiry: '31/03/2025' },
   { id: 2, discount: 100000, minOrder: 800000, code: 'DISCOUNT100', expiry: '15/04/2025' },
@@ -17,13 +18,20 @@ const ProductPage: React.FC = () => {
   const [searchParams] = useSearchParams()
   const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as ProductSearchParams, [searchParams])
   const [products, setProducts] = useState<Product[] | null>(null)
+  const [totalPageCount, setTotalPageCount] = useState<number>(0)
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null)
+
   const getAllProduct = async (searchParams: ProductSearchParams) => {
     const { minPrice, maxPrice, sortBy, categoryId, search } = searchParams
+    let { page, limit } = searchParams
+    page = page || '0'
+    limit = limit || '10'
+
     try {
-      const response = await apiGetAllProducts({ minPrice, maxPrice, sortBy, categoryId, search })
+      const response = await apiGetAllProducts({ page, limit, minPrice, maxPrice, sortBy, categoryId, search })
       if (response.code == 200) {
         setProducts(response.result.content)
+        setTotalPageCount(response.result.page.totalPages)
       } else {
         showToastError(response.message || response.error)
       }
@@ -45,8 +53,8 @@ const ProductPage: React.FC = () => {
 
   useEffect(() => {
     getAllProduct(currentParams)
+    window.scrollTo(0, 0)
   }, [currentParams])
-  // console.log(products)
   return (
     <section className='mx-auto p-10 flex gap-10 mt-16'>
       <Filters
@@ -55,7 +63,10 @@ const ProductPage: React.FC = () => {
         appliedCoupon={appliedCoupon}
         onApplyDiscount={applyDiscount}
       />
-      <ProductList products={products} onViewDetails={handleViewDetails} />
+      <div className='flex-1'>
+        <ProductList products={products} onViewDetails={handleViewDetails} />
+        <Pagination totalPageCount={totalPageCount} />
+      </div>
     </section>
   )
 }

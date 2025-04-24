@@ -6,12 +6,13 @@ import QuantitySelector from '~/components/product_attributes/QuantitySelector'
 import { ColorSize, SizeSlug } from '~/types/color'
 import { ProductDetail } from '~/types/product'
 import { showAlertError, showToastError, showToastSuccess } from '~/utils/alert'
-import { calculatePercent, formatNumber } from '~/utils/helper'
+import { calculatePercent, formatNumber, priceInPromotion } from '~/utils/helper'
 import { apiAddItemToCart } from '~/api/cart' // Import API
+import Voucher from '~/components/voucher/Voucher'
 
 type ProductInfoProps = {
   colorSize: ColorSize[] | []
-  productDetail?: ProductDetail
+  productDetail: ProductDetail
   name?: string
   totalRating?: number
   accessToken: string // Thêm accessToken
@@ -31,7 +32,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
   const [selectedSize, setSelectedSize] = useState<string>(productDetail?.size?.sizeId ?? '') // Sửa lỗi
   const [sizes, setSizes] = useState<SizeSlug[]>([])
   const [quantity, setQuantity] = useState(1)
-
+  console.log(selectedColor, selectedSize, 'selectedColor')
   useEffect(() => {
     setSelectedColor(productDetail?.color?.colorId ?? '')
     setSelectedSize(productDetail?.size?.sizeId ?? '')
@@ -96,32 +97,34 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
     <div className='w-full md:w-1/2'>
       <h1 className='text-2xl font-bold text-blue-700'>{name}</h1>
       <div>
+        {/* Giá đã giảm */}
         <p className='text-[19px] max-sm:text-xs font-semibold text-blue-500'>
           {formatNumber(productDetail?.discountPrice ?? 0)} ₫
         </p>
-        <div className='flex items-center'>
+        <div className='flex items-center '>
+          {/* Giá chưa giảm */}
           {productDetail?.originalPrice !== 0 && (
             <>
               <p className='line-through text-[#6b7280] text-sm'>{formatNumber(productDetail?.originalPrice ?? 0)}₫</p>
               <p className={`ml-1 text-red-400 text-sm font-bold`}>
-                - {calculatePercent(productDetail?.originalPrice, productDetail?.discountPrice)}%
+                - {calculatePercent(productDetail?.originalPrice, priceInPromotion(productDetail))}%
               </p>
             </>
           )}
         </div>
-      </div>
-      <div className='flex items-center text-sm'>
-        <NumberToStart number={totalRating ?? 0} />
+        <div className='flex items-center text-sm'>
+          <NumberToStart number={totalRating ?? 0} />
+        </div>
       </div>
       <p className='mt-2'>
         Status:
         <span
-          className={`mt-2 font-semibold ${(productDetail?.stockQuantity ?? 0) > 0 ? 'text-blue-600' : 'text-red-600'}`}
+          className={`mt-2 font-semibold ${(productDetail?.stockQuantity ?? 0 > 0) ? 'text-blue-600' : 'text-red-600'}`}
         >
-          {(productDetail?.stockQuantity ?? 0) > 0 ? ' In Stock' : ' Out of Stock'}
+          {(productDetail?.stockQuantity ?? 0 > 0) ? ' In Stock' : ' Out of Stock'}
         </span>
       </p>
-      {/* Size Selector */}
+      {/* size */}
       <div className='mt-4'>
         <label className='block text-gray-700 font-semibold'>Choose size:</label>
         <div className='flex gap-2 mt-2'>
@@ -175,6 +178,9 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
         >
           Add to Cart
         </button>
+      </div>
+      <div className='mt-4'>
+        <Voucher promotion={productDetail?.productPromotions[0]?.promotion} isActive />
       </div>
     </div>
   )

@@ -19,7 +19,7 @@ const YourRating: FC<YourRatingProps> = ({ comment, handleShowModalUpdateRating,
       <div className='flex gap-1'>
         <img
           className='w-7 h-7 rounded-full'
-          src={comment.user?.avatar?.url || DefaultUser}
+          src={comment.user?.avatar || DefaultUser}
           alt={comment?.user?.lastName || 'User'}
         />
         <p>

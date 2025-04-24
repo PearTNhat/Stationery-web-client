@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
-import { FaEdit, FaSave, FaCamera, FaEnvelope } from 'react-icons/fa'
+import { FaEdit, FaSave, FaCamera } from 'react-icons/fa'
 import { apiUpdateUserInfo } from '~/api/users'
 import InputForm from '~/components/input/InputForm'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
@@ -28,6 +28,7 @@ const ProfileHeader: React.FC = () => {
       phone: userData?.phone || ''
     }
   })
+  console.log(userData)
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -66,16 +67,18 @@ const ProfileHeader: React.FC = () => {
     setIsEditing(false)
   }
 
-  const handleEditToggle = () => {
+  const handleEditToggle = async () => {
     if (isEditing) {
       const data = getValues()
-      handleSaveProfile(data, file)
+      await handleSaveProfile(data, file)
       setIsEditing(false)
     } else {
       setIsEditing(true)
     }
   }
-
+  useEffect(() => {
+    setPreviewAvatar(userData?.avatar || null)
+  }, [userData])
   return (
     <div className='bg-white/70 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-4xl mx-auto border border-gray-200'>
       <div className='flex justify-between items-center mb-8 border-b pb-4'>
@@ -94,18 +97,20 @@ const ProfileHeader: React.FC = () => {
       </div>
 
       <div className='flex items-center space-x-6 mb-10'>
-        <div className='relative group'>
-          <img
-            src={previewAvatar || 'https://via.placeholder.com/100'}
-            alt='Avatar'
-            className='w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg transition-transform group-hover:scale-105'
-          />
-          {isEditing && (
-            <label className='absolute bottom-1 right-1 bg-blue-600 p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-all shadow-md'>
-              <FaCamera className='text-white text-sm' />
-              <input type='file' accept='image/*' onChange={handleAvatarChange} className='hidden' />
-            </label>
-          )}
+        <div className='group relative'>
+          <label htmlFor='profile-avatar'>
+            <img
+              src={previewAvatar || 'https://via.placeholder.com/100'}
+              alt='Avatar'
+              className='w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg transition-transform group-hover:scale-105'
+            />
+            <input type='file' id='profile-avatar' onChange={handleAvatarChange} className='hidden' />
+            {isEditing && (
+              <div className='absolute bottom-1 right-1 bg-blue-600 p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-all shadow-md'>
+                <FaCamera className='text-white text-sm' />
+              </div>
+            )}
+          </label>
         </div>
         <div>
           <h3 className='text-2xl font-semibold text-gray-900'>
@@ -122,9 +127,7 @@ const ProfileHeader: React.FC = () => {
             <label className='block text-sm font-semibold text-gray-700 mb-2'>First Name</label>
             {isEditing ? (
               <InputForm
-                iconLeft={<FaEnvelope className='absolute top-3 left-3 text-gray-500' />}
                 id='firstName'
-                cssInput='pl-10'
                 placeholder='First name'
                 register={register}
                 validate={{
@@ -148,9 +151,7 @@ const ProfileHeader: React.FC = () => {
             <label className='block text-sm font-semibold text-gray-700 mb-2'>Last Name</label>
             {isEditing ? (
               <InputForm
-                iconLeft={<FaEnvelope className='absolute top-3 left-3 text-gray-500' />}
                 id='lastName'
-                cssInput='pl-10'
                 placeholder='Last name'
                 register={register}
                 validate={{
@@ -174,9 +175,7 @@ const ProfileHeader: React.FC = () => {
             <label className='block text-sm font-semibold text-gray-700 mb-2'>Email</label>
             {isEditing ? (
               <InputForm
-                iconLeft={<FaEnvelope className='absolute top-3 left-3 text-gray-500' />}
                 id='email'
-                cssInput='pl-10'
                 placeholder='Email'
                 register={register}
                 validate={{
@@ -200,9 +199,7 @@ const ProfileHeader: React.FC = () => {
             <label className='block text-sm font-semibold text-gray-700 mb-2'>Date of Birth</label>
             {isEditing ? (
               <InputForm
-                iconLeft={<FaEnvelope className='absolute top-3 left-3 text-gray-500' />}
                 id='dob'
-                cssInput='pl-10'
                 placeholder='Dob'
                 type='date'
                 register={register}
@@ -221,9 +218,7 @@ const ProfileHeader: React.FC = () => {
             <label className='block text-sm font-semibold text-gray-700 mb-2'>Phone Number</label>
             {isEditing ? (
               <InputForm
-                iconLeft={<FaEnvelope className='absolute top-3 left-3 text-gray-500' />}
                 id='phone'
-                cssInput='pl-10'
                 placeholder='Phone'
                 register={register}
                 validate={{

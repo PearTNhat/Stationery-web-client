@@ -2,8 +2,7 @@ type User = {
   userId: string
   firstName: string
   lastName: string
-  avatar?: {
-    url: string
+  avatar: string | null
   }
 }
 interface Review {
