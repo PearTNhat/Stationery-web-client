@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import ProfileHeader from './component/ProfileHeader'
 import PasswordChange from './PasswordChange'
-import OrderTabs from './OrderTab'
+import OrderTabs from './order/OrderTab'
 import Sidebar from './component/Sidebar'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { useNavigate } from 'react-router-dom'
