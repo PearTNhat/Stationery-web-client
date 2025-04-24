@@ -9,7 +9,6 @@ import { showAlertError, showToastError, showToastSuccess } from '~/utils/alert'
 import { calculatePercent, formatNumber, priceInPromotion } from '~/utils/helper'
 import Voucher from '~/components/voucher/Voucher'
 import { apiAddItemToCart } from '~/api/cart' // Import API
-
 type ProductInfoProps = {
   colorSize: ColorSize[] | []
   productDetail: ProductDetail
@@ -32,6 +31,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
   const [selectedSize, setSelectedSize] = useState<string>(productDetail?.size?.sizeId ?? '') // Sửa lỗi
   const [sizes, setSizes] = useState<SizeSlug[]>([])
   const [quantity, setQuantity] = useState(1)
+
   useEffect(() => {
     setSelectedColor(productDetail?.color?.colorId ?? '')
     setSelectedSize(productDetail?.size?.sizeId ?? '')
@@ -102,6 +102,11 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
         </p>
         <div className='flex items-center flex-1'>
           {/* Giá chưa giảm */}
+      <div>
+        <p className='text-[19px] max-sm:text-xs font-semibold text-blue-500'>
+          {formatNumber(productDetail?.discountPrice ?? 0)} ₫
+        </p>
+        <div className='flex items-center'>
           {productDetail?.originalPrice !== 0 && (
             <>
               <p className='line-through text-[#6b7280] text-sm'>{formatNumber(productDetail?.originalPrice ?? 0)}₫</p>
@@ -117,6 +122,19 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
       </div>
       <p className='mt-2'>Stock: {productDetail?.stockQuantity}</p>
       {/* size */}
+
+      <div className='flex items-center text-sm'>
+        <NumberToStart number={totalRating ?? 0} />
+      </div>
+      <p className='mt-2'>
+        Status:
+        <span
+          className={`mt-2 font-semibold ${(productDetail?.stockQuantity ?? 0) > 0 ? 'text-blue-600' : 'text-red-600'}`}
+        >
+          {(productDetail?.stockQuantity ?? 0) > 0 ? ' In Stock' : ' Out of Stock'}
+        </span>
+      </p>
+      {/* Size Selector */}
       <div className='mt-4'>
         <label className='block text-gray-700 font-semibold'>Choose size:</label>
         <div className='flex gap-2 mt-2'>

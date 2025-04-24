@@ -1,12 +1,10 @@
 import { useState } from 'react'
 import { FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa'
-import { IoMdAddCircleOutline } from 'react-icons/io'
 import { useAppDispatch } from '~/hooks/redux'
 import { modalActions } from '~/store/slices/modal'
 import { fakeCategories } from '~/constance/seed/category'
 import { Category } from '~/types/category'
 import CategoryModal from './modal/CategoryModal'
-import ProductModal from './modal/AddProductModal'
 import { DeleteModal } from './modal/DeleteModal'
 
 const CategoriesProductManagement = () => {
@@ -51,27 +49,6 @@ const CategoriesProductManagement = () => {
                 prev.map((c) => (c.categoryId === updatedCategory.categoryId ? updatedCategory : c))
               )
               closeModal() // Đóng modal sau khi submit
-            }}
-          />
-        )
-      })
-    )
-  }
-
-  const handleAddProduct = (categoryId: string) => {
-    dispatch(
-      modalActions.toggleModal({
-        isOpenModal: true,
-        childrenModal: (
-          <ProductModal
-            isEdit={false}
-            isOpen={true}
-            categoryId={categoryId}
-            onClose={closeModal}
-            onSubmit={(newProduct) => {
-              console.log('New product:', newProduct)
-              // TODO: setProduct() hoặc gọi API lưu sản phẩm nếu cần
-              closeModal()
             }}
           />
         )
@@ -149,13 +126,6 @@ const CategoriesProductManagement = () => {
                   {category.bgColor}
                 </td>
                 <td className='px-4 py-3 flex gap-2'>
-                  <button
-                    onClick={() => handleAddProduct(category.categoryId)}
-                    className='bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-colors'
-                  >
-                    <IoMdAddCircleOutline size={16} />
-                  </button>
-
                   <button
                     onClick={() => handleEditCategory(category)}
                     className='bg-yellow-400 text-white p-2 rounded-lg hover:bg-yellow-500 transition-colors'

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { FiCamera } from 'react-icons/fi'
 import { TextInput } from '~/components/styles/TextInput'
 
 type Props = {
@@ -49,19 +50,28 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isEdit }: Props) => {
         </h2>
         <div className='flex flex-col gap-6'>
           {/* Avatar Upload & Preview */}
-          <div className='flex flex-col items-center'>
+          <div className='relative w-32 h-32 mx-auto'>
             {formData.avatar ? (
               <img
                 src={formData.avatar}
                 alt='Avatar'
-                className='w-24 h-24 rounded-full object-cover border-4 border-blue-500 shadow-md'
+                className='w-full h-full rounded-full object-cover border-4 border-blue-500 shadow-md'
               />
             ) : (
-              <div className='w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center text-xl text-gray-600'>
+              <div className='w-full h-full rounded-full bg-gray-300 flex items-center justify-center text-xl text-gray-600'>
                 No Avatar
               </div>
             )}
-            <input type='file' accept='image/*' onChange={handleImageChange} className='mt-3 text-sm' />
+            {/* Upload Icon Overlay */}
+            <label className='absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-2 cursor-pointer shadow-md hover:bg-blue-700 transition'>
+              <FiCamera size={18} />
+              <input
+                type='file'
+                accept='image/*'
+                onChange={handleImageChange}
+                className='absolute inset-0 w-full h-full opacity-0 cursor-pointer'
+              />
+            </label>
           </div>
 
           {/* Grid input fields */}

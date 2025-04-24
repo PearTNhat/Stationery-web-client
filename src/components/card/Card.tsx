@@ -8,7 +8,6 @@ import { FetchColor, Product, ProductDetail } from '~/types/product'
 import NumberToStart from '~/components/numberToStar/NumberToStart'
 import { calculatePercent, formatNumber } from '~/utils/helper'
 import { DefaultProduct } from '~/assets/images'
-import ColorSelector from '../product_attributes/ColorSelector'
 import { apiAddItemToCart } from '~/api/cart'
 import { useAppSelector } from '~/hooks/redux'
 import { showToastError, showToastSuccess } from '~/utils/alert'
@@ -70,7 +69,9 @@ const Card: React.FC<ProductCardProps> = ({ product }) => {
           transition={{ duration: 0.5 }}
         />
       </Link>
-      <h3 className='text-lg font-bold text-center'>{product?.name}</h3>
+      <div className='w-full min-h-[60px] max-h-[60px] overflow-hidden'>
+        <h3 className='text-lg font-bold text-center line-clamp-2'>{product?.name}</h3>
+      </div>
       <div className='flex items-center justify-between w-full px-4'>
         <div>
           <p className='text-[19px] max-sm:text-xs font-semibold text-blue-500'>
