@@ -1,5 +1,5 @@
 import { Review } from './comment'
-import { ProductPromotion, Promotion } from './promotion'
+import { ProductPromotion } from './promotion'
 
 interface Size {
   sizeId: string

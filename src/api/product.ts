@@ -8,7 +8,8 @@ const apiGetAllProducts = async ({
   minPrice,
   maxPrice,
   categoryId,
-  search
+  search,
+  accessToken
 }: {
   page?: string
   limit?: string
@@ -17,26 +18,37 @@ const apiGetAllProducts = async ({
   maxPrice?: string
   categoryId?: string
   search?: string
+  accessToken?: string
 }) => {
   try {
-    const params = {
-      page,
-      limit,
-      sortBy,
-      minPrice,
-      maxPrice,
-      categoryId,
-      search
+    const config = {
+      params: {
+        page,
+        limit,
+        sortBy,
+        minPrice,
+        maxPrice,
+        categoryId,
+        search
+      },
+      headers: {} as Record<string, string>
     }
-    const response = await http.get('/products', { params })
+
+    // Chỉ thêm Authorization header nếu có accessToken
+    if (accessToken) {
+      config.headers['Authorization'] = `Bearer ${accessToken}`
+    }
+
+    const response = await http.get('/products', config)
     return response.data
   } catch (error) {
     if (error instanceof AxiosError && error.response) {
-      return error.response.data // Return server error response if available
+      return error.response.data
     }
-    return error // Avoid undefined error
+    return error
   }
 }
+
 const apiGetDetailProduct = async (slug?: string) => {
   try {
     const response = await http.get('/products/' + slug)

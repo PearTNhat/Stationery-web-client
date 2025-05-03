@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
-import { ShoppingCart, Search, Menu, X } from 'lucide-react'
-import { useNavigate, NavLink, Link, useSearchParams, createSearchParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { ShoppingCart, Menu, X } from 'lucide-react'
+import { useNavigate, NavLink, Link } from 'react-router-dom'
 import { publicPaths } from '~/constance/paths'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { userActions } from '~/store/slices/user'
@@ -9,16 +9,13 @@ import { dropDownProfile } from '~/constance/dropdown'
 import Cart from '~/pages/public/cart/Cart'
 import { apiLogout } from '~/api/authenticate'
 import { fetchCategories } from '~/store/actions/category'
-import { ProductSearchParams } from '~/types/filter'
 import { CartItem } from '~/types/cart'
 import { apiGetCartItems } from '~/api/cart'
 import { fetchMyVocher } from '~/store/actions/promotion'
+import SearchWithSuggestions from '../search/SearchWithSuggestions'
 
 function Header() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as ProductSearchParams, [searchParams])
-  const [search, setSearch] = useState<string>('')
   const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'light')
   const dispatch = useAppDispatch()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -26,8 +23,10 @@ function Header() {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [cartItems, setCartItems] = useState<CartItem[]>([])
 
+  console.log(userData)
+
   const handleCartToggle = () => {
-    setIsCartOpen(!isCartOpen) // Mở hoặc đóng giỏ hàng
+    setIsCartOpen(!isCartOpen)
   }
 
   useEffect(() => {
@@ -56,13 +55,7 @@ function Header() {
       showToastError('Logout failed. Please try again.')
     }
   }
-  const handleSearchProduct = () => {
-    const newParams = { ...currentParams, search }
-    navigate({
-      pathname: publicPaths.PRODUCT,
-      search: createSearchParams(newParams).toString()
-    })
-  }
+
   const fetchCart = async () => {
     try {
       if (isLoggedIn && accessToken) {
@@ -88,18 +81,20 @@ function Header() {
   }, [isLoggedIn, accessToken])
 
   return (
-    <nav className='fixed top-0 left-0 right-0 z-50 shadow-md bg-white px-6 py-3 flex items-center justify-between md:px-10'>
+    <nav className='fixed top-0 left-0 right-0 z-50 shadow-md bg-white px-6 py-3 flex items-center justify-between md:px-10 dark:bg-gray-800'>
       {/* Logo */}
       <Link to='/'>
-        <div className='text-2xl font-bold text-blue-600 cursor-pointer'>Stationery's P</div>
+        <div className='text-2xl font-bold text-blue-600 cursor-pointer dark:text-blue-400'>Stationery's P</div>
       </Link>
 
-      {/* Menu trên màn hình lớn */}
-      <div className='hidden md:flex space-x-6 text-gray-700'>
+      {/* Desktop Menu */}
+      <div className='hidden md:flex space-x-6 text-gray-700 dark:text-gray-300'>
         <NavLink
           to={publicPaths.PUBLIC}
           className={({ isActive }) =>
-            isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+            isActive
+              ? 'text-blue-600 font-bold dark:text-blue-400'
+              : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
           }
         >
           Home
@@ -107,7 +102,9 @@ function Header() {
         <NavLink
           to={publicPaths.ABOUT}
           className={({ isActive }) =>
-            isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+            isActive
+              ? 'text-blue-600 font-bold dark:text-blue-400'
+              : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
           }
         >
           About
@@ -115,7 +112,9 @@ function Header() {
         <NavLink
           to={publicPaths.PRODUCT}
           className={({ isActive }) =>
-            isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+            isActive
+              ? 'text-blue-600 font-bold dark:text-blue-400'
+              : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
           }
         >
           Product
@@ -123,7 +122,9 @@ function Header() {
         <NavLink
           to={publicPaths.SERVICE}
           className={({ isActive }) =>
-            isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+            isActive
+              ? 'text-blue-600 font-bold dark:text-blue-400'
+              : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
           }
         >
           Service
@@ -131,54 +132,52 @@ function Header() {
         <NavLink
           to={publicPaths.CONTACT}
           className={({ isActive }) =>
-            isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+            isActive
+              ? 'text-blue-600 font-bold dark:text-blue-400'
+              : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
           }
         >
           Contact
         </NavLink>
       </div>
 
-      {/* Thanh tìm kiếm */}
-      <div className='hidden md:flex relative w-80'>
-        <input
-          type='text'
-          placeholder='Search product...'
-          className='w-full pl-10 pr-4 py-2 border rounded-lg focus:ring focus:ring-blue-200'
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleSearchProduct()
-            }
-          }}
-        />
-        <button type='button' onClick={() => handleSearchProduct()} className='absolute top-2.5 left-3 text-gray-500'>
-          <Search size={20} />
-        </button>
+      {/* Search Component */}
+      <div className='hidden md:block'>
+        <SearchWithSuggestions />
       </div>
 
-      {/* Biểu tượng giỏ hàng & đổi giao diện & Đăng nhập */}
+      {/* Icons Section */}
       <div className='flex items-center space-x-4'>
-        {/* Giỏ hàng */}
+        {/* Cart */}
         <div className='relative cursor-pointer' onClick={handleCartToggle}>
-          <ShoppingCart size={24} className='text-gray-700 hover:text-blue-500 transition' />
+          <ShoppingCart
+            size={24}
+            className='text-gray-700 hover:text-blue-500 transition dark:text-gray-300 dark:hover:text-blue-400'
+          />
           <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>
             {cartItems.length}
           </span>
         </div>
 
-        {/* Chuyển đổi chế độ sáng/tối */}
-        <button onClick={toggleTheme} className='p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition'>
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className='p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition dark:bg-gray-700 dark:hover:bg-gray-600'
+          aria-label='Toggle dark mode'
+        >
           {theme === 'light' ? '🌞' : '🌙'}
         </button>
 
-        {/* Đăng Nhập & Đăng Ký */}
+        {/* User Profile */}
         {isLoggedIn ? (
-          <div className=' d-dropdown d-dropdown-hover  d-dropdown-end '>
+          <div className='d-dropdown d-dropdown-hover d-dropdown-end'>
             <div tabIndex={0} className='w-10 h-10 rounded-full overflow-hidden'>
-              <img src={userData?.avatar} alt={userData?.lastName} />
+              <img src={userData?.avatar} alt={userData?.lastName} className='w-full h-full object-cover' />
             </div>
-            <ul tabIndex={0} className='d-dropdown-content d-menu bg-base-100 rounded-md z-10 w-52 p-2 shadow-md'>
+            <ul
+              tabIndex={0}
+              className='d-dropdown-content d-menu bg-base-100 rounded-md z-10 w-52 p-2 shadow-md dark:bg-gray-700'
+            >
               {dropDownProfile.map((item) => {
                 let Comp: React.ElementType = 'button'
                 if (item.to) {
@@ -189,7 +188,11 @@ function Header() {
                     <Comp
                       {...(item.to ? { to: item.to } : {})}
                       onClick={item?.onClick ? handleLogout : undefined}
-                      className={`flex items-center w-full px-4 py-2 ${item.style ? item.style : ' text-gray-700 hover:bg-gray-100 transition'}`}
+                      className={`flex items-center w-full px-4 py-2 ${
+                        item.style
+                          ? item.style
+                          : 'text-gray-700 hover:bg-gray-100 transition dark:text-gray-300 dark:hover:bg-gray-600'
+                      }`}
                     >
                       {item.icon}
                       {item.name}
@@ -203,92 +206,123 @@ function Header() {
           <div className='hidden md:flex space-x-3'>
             <button
               onClick={() => navigate('/auth?mode=login')}
-              className='px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition'
+              className='px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-500'
             >
               Login
             </button>
             <button
               onClick={() => navigate('/auth?mode=register')}
-              className='px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition'
+              className='px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition dark:bg-blue-500 dark:hover:bg-blue-600'
             >
               Register
             </button>
           </div>
         )}
 
-        {/* Menu mobile */}
-        <button className='md:hidden' onClick={() => setIsMenuOpen(!isMenuOpen)}>
+        {/* Mobile Menu Button */}
+        <button className='md:hidden' onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label='Toggle menu'>
           {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>
 
-      {/* Menu Mobile */}
+      {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className='absolute top-16 left-0 w-full bg-white shadow-md md:hidden z-[999999]'>
-          <div className='flex flex-col space-y-4 p-4 text-gray-700'>
+        <div className='absolute top-16 left-0 w-full bg-white shadow-md md:hidden z-[999999] dark:bg-gray-700'>
+          <div className='flex flex-col space-y-4 p-4 text-gray-700 dark:text-gray-300'>
             <NavLink
               to={publicPaths.PUBLIC}
               className={({ isActive }) =>
-                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+                isActive
+                  ? 'text-blue-600 font-bold dark:text-blue-400'
+                  : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
               }
+              onClick={() => setIsMenuOpen(false)}
             >
               Home
             </NavLink>
             <NavLink
               to={publicPaths.ABOUT}
               className={({ isActive }) =>
-                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+                isActive
+                  ? 'text-blue-600 font-bold dark:text-blue-400'
+                  : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
               }
+              onClick={() => setIsMenuOpen(false)}
             >
               About
             </NavLink>
             <NavLink
               to={publicPaths.PRODUCT}
               className={({ isActive }) =>
-                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+                isActive
+                  ? 'text-blue-600 font-bold dark:text-blue-400'
+                  : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
               }
+              onClick={() => setIsMenuOpen(false)}
             >
               Product
             </NavLink>
             <NavLink
               to={publicPaths.SERVICE}
               className={({ isActive }) =>
-                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+                isActive
+                  ? 'text-blue-600 font-bold dark:text-blue-400'
+                  : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
               }
+              onClick={() => setIsMenuOpen(false)}
             >
               Service
             </NavLink>
             <NavLink
               to={publicPaths.CONTACT}
               className={({ isActive }) =>
-                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition'
+                isActive
+                  ? 'text-blue-600 font-bold dark:text-blue-400'
+                  : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
               }
+              onClick={() => setIsMenuOpen(false)}
             >
               Contact
             </NavLink>
-            <div className='flex items-center space-x-4 border-t pt-4'>
-              <ShoppingCart size={24} />
-              <button onClick={toggleTheme} className='p-2 rounded-full bg-gray-200'>
+            <div className='flex items-center space-x-4 border-t pt-4 dark:border-gray-600'>
+              <div className='relative cursor-pointer' onClick={handleCartToggle}>
+                <ShoppingCart size={24} className='text-gray-700 dark:text-gray-300' />
+                <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>
+                  {cartItems.length}
+                </span>
+              </div>
+              <button onClick={toggleTheme} className='p-2 rounded-full bg-gray-200 dark:bg-gray-600'>
                 {theme === 'light' ? '🌞' : '🌙'}
               </button>
             </div>
-            {/* Đăng Nhập & Đăng Ký trên mobile */}
-            <button
-              onClick={() => navigate('/auth?mode=login')}
-              className='px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition'
-            >
-              Login
-            </button>
-            <button
-              onClick={() => navigate('/auth?mode=register')}
-              className='px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition'
-            >
-              Register
-            </button>
+            {/* Mobile Login/Register */}
+            {!isLoggedIn && (
+              <>
+                <button
+                  onClick={() => {
+                    navigate('/auth?mode=login')
+                    setIsMenuOpen(false)
+                  }}
+                  className='px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-500'
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => {
+                    navigate('/auth?mode=register')
+                    setIsMenuOpen(false)
+                  }}
+                  className='px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition dark:bg-blue-500 dark:hover:bg-blue-600'
+                >
+                  Register
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
-      {/* Giỏ hàng Modal */}
+
+      {/* Cart Modal */}
       <Cart
         isOpen={isCartOpen}
         onClose={handleCartToggle}
