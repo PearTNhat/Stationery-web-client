@@ -9,9 +9,11 @@ import { showAlertError, showToastError, showToastSuccess } from '~/utils/alert'
 import { calculatePercent, formatNumber, priceInPromotion } from '~/utils/helper'
 import Voucher from '~/components/voucher/Voucher'
 import { apiAddItemToCart } from '~/api/cart' // Import API
+import { useAppDispatch } from '~/hooks/redux'
+import { fetchMyCart } from '~/store/actions/cart'
 type ProductInfoProps = {
   colorSize: ColorSize[] | []
-  productDetail: ProductDetail
+  productDetail?: ProductDetail
   name?: string
   totalRating?: number
   accessToken: string // Thêm accessToken
@@ -27,6 +29,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
   productDetailId
 }) => {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const [selectedColor, setSelectedColor] = useState<string>(productDetail?.color?.colorId ?? '')
   const [selectedSize, setSelectedSize] = useState<string>(productDetail?.size?.sizeId ?? '') // Sửa lỗi
   const [sizes, setSizes] = useState<SizeSlug[]>([])
@@ -58,30 +61,36 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
         showToastError(response)
         return
       }
-
+      dispatch(fetchMyCart({ accessToken })) // Cập nhật lại giỏ hàng sau khi thêm sản phẩm
       showToastSuccess('Added to cart successfully!')
     } catch {
       showToastError('Added to cart failed!')
     }
   }
 
-  const handleBuyNow = () => {
+  const handleBuyNow = ({ quantity }: { quantity: number }) => {
     if (!productDetailId || !productDetail) {
       showAlertError('Missing product information')
       return
     }
 
     const order = {
-      orderId: 'ORDER' + Date.now(),
       items: [
         {
-          id: parseInt(productDetail.productDetailId),
-          name: productDetail.name,
-          price: productDetail.discountPrice,
+          productDetailId: productDetailId,
           quantity,
-          image: productDetail.images,
-          color: productDetail.color?.name ?? '',
-          size: productDetail.size?.name ?? ''
+          colorId: productDetail.color?.colorId,
+          colorName: productDetail.color?.name,
+          sizeId: productDetail.size?.sizeId,
+          sizeName: productDetail.size?.name,
+          imageUrl: productDetail.images?.[0]?.url ?? '',
+          productName: productDetail.name,
+          originalPrice: productDetail.originalPrice,
+          discountPrice: productDetail.discountPrice,
+          productId: productDetail.productId,
+          productPromotion: productDetail.productPromotions[0]?.promotion
+            ? [productDetail.productPromotions[0].promotion]
+            : null
         }
       ],
       totalAmount: productDetail.discountPrice * quantity
@@ -96,44 +105,29 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
     <div className='w-full md:w-1/2'>
       <h1 className='text-2xl font-bold text-blue-700'>{name}</h1>
       <div className='flex'>
-        {/* Giá đã giảm */}
-        <p className='text-[20px] max-sm:text-xs font-semibold text-blue-500 mr-1'>
-          {formatNumber(priceInPromotion(productDetail))} ₫
-        </p>
-        <div className='flex items-center flex-1'>
-          {/* Giá chưa giảm */}
-      <div>
-        <p className='text-[19px] max-sm:text-xs font-semibold text-blue-500'>
-          {formatNumber(productDetail?.discountPrice ?? 0)} ₫
-        </p>
-        <div className='flex items-center'>
-          {productDetail?.originalPrice !== 0 && (
-            <>
-              <p className='line-through text-[#6b7280] text-sm'>{formatNumber(productDetail?.originalPrice ?? 0)}₫</p>
-              <p className={`ml-1 text-red-400 text-sm font-bold`}>
-                - {calculatePercent(productDetail?.originalPrice, priceInPromotion(productDetail))}%
-              </p>
-            </>
-          )}
+        {/* Giá chưa giảm */}
+        <div className='flex-1 flex gap-3'>
+          <p className='text-[19px] max-sm:text-xs font-semibold text-blue-500'>
+            {formatNumber(priceInPromotion(productDetail))} ₫
+          </p>
+          <div className='lex-1 flex items-center'>
+            {productDetail?.originalPrice !== 0 && (
+              <>
+                <p className='line-through text-[#6b7280] text-sm'>
+                  {formatNumber(productDetail?.originalPrice ?? 0)}₫
+                </p>
+                <p className={`ml-1 text-red-400 text-sm font-bold`}>
+                  - {calculatePercent(productDetail?.originalPrice, priceInPromotion(productDetail))}%
+                </p>
+              </>
+            )}
+          </div>
         </div>
         <div className='flex items-center text-sm'>
           <NumberToStart number={totalRating ?? 0} />
         </div>
       </div>
       <p className='mt-2'>Stock: {productDetail?.stockQuantity}</p>
-      {/* size */}
-
-      <div className='flex items-center text-sm'>
-        <NumberToStart number={totalRating ?? 0} />
-      </div>
-      <p className='mt-2'>
-        Status:
-        <span
-          className={`mt-2 font-semibold ${(productDetail?.stockQuantity ?? 0) > 0 ? 'text-blue-600' : 'text-red-600'}`}
-        >
-          {(productDetail?.stockQuantity ?? 0) > 0 ? ' In Stock' : ' Out of Stock'}
-        </span>
-      </p>
       {/* Size Selector */}
       <div className='mt-4'>
         <label className='block text-gray-700 font-semibold'>Choose size:</label>
@@ -179,7 +173,10 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
       <QuantitySelector quantity={quantity} onQuantityChange={setQuantity} />
 
       <div className='mt-4 flex gap-4'>
-        <button className='bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg w-1/2' onClick={handleBuyNow}>
+        <button
+          className='bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg w-1/2'
+          onClick={() => handleBuyNow({ quantity })}
+        >
           Buy Now
         </button>
         <button

@@ -3,17 +3,19 @@ import { X, Trash2, Plus, Minus } from 'lucide-react'
 import { CartItem } from '~/types/cart'
 import { apiRemoveCartItem, apiUpdateCartItem } from '~/api/cart'
 import { useNavigate } from 'react-router-dom'
+import { fetchMyCart } from '~/store/actions/cart'
+import { useAppDispatch } from '~/hooks/redux'
 
 interface CartProps {
   isOpen: boolean
   onClose: () => void
   cartItems: CartItem[]
   accessToken: string
-  onRefresh: () => void
 }
 
-const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken, onRefresh }) => {
+const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken }) => {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null)
   const handleQuantityChange = async (productDetailId: string, newQuantity: number) => {
@@ -21,7 +23,6 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken, on
     setLoadingItemId(productDetailId)
 
     const item = cartItems.find((i) => i.productDetailId === productDetailId)
-    console.log('Item found in cartItems:', item)
 
     if (!item) {
       console.error('Item not found in cartItems')
@@ -39,7 +40,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken, on
 
     setLoadingItemId(null)
     if (typeof res !== 'string') {
-      onRefresh()
+      dispatch(fetchMyCart({ accessToken }))
     }
   }
 
@@ -47,7 +48,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken, on
     setLoadingItemId(productDetailId)
     await apiRemoveCartItem({ productDetailId: productDetailId, accessToken })
     setLoadingItemId(null)
-    onRefresh()
+    dispatch(fetchMyCart({ accessToken }))
   }
 
   const toggleSelectItem = (productDetailId: string) => {
@@ -57,25 +58,12 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken, on
   }
 
   const handleCheckout = () => {
-    const orderItems = cartItems
-      .filter((item) => selectedItems.includes(item.productDetailId))
-      .map((item) => ({
-        id: parseInt(item.productId),
-        name: item.productName,
-        price: item.discountPrice,
-        quantity: item.quantity,
-        image: item.imageUrl,
-        color: item.colorName,
-        size: item.sizeName
-      }))
-
+    const orderItems = cartItems.filter((item) => selectedItems.includes(item.productDetailId))
     const order = {
-      orderId: 'ORDER' + Date.now(),
       items: orderItems,
       totalAmount: totalPrice
     }
 
-    console.log('orderDetails check-out', order)
     onClose()
     navigate(`/products/payment-confirmation`, { state: { order } })
   }

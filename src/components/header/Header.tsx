@@ -10,21 +10,21 @@ import Cart from '~/pages/public/cart/Cart'
 import { apiLogout } from '~/api/authenticate'
 import { fetchCategories } from '~/store/actions/category'
 import { ProductSearchParams } from '~/types/filter'
-import { CartItem } from '~/types/cart'
-import { apiGetCartItems } from '~/api/cart'
 import { fetchMyVocher } from '~/store/actions/promotion'
+import { fetchCurrentUser } from '~/store/actions/user'
+import { fetchMyCart } from '~/store/actions/cart'
 
 function Header() {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const [searchParams] = useSearchParams()
   const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as ProductSearchParams, [searchParams])
+  const { myCart } = useAppSelector((state) => state.cart)
   const [search, setSearch] = useState<string>('')
   const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'light')
-  const dispatch = useAppDispatch()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { isLoggedIn, userData, accessToken } = useAppSelector((state) => state.user)
   const [isCartOpen, setIsCartOpen] = useState(false)
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
 
   const handleCartToggle = () => {
     setIsCartOpen(!isCartOpen) // Mở hoặc đóng giỏ hàng
@@ -63,27 +63,13 @@ function Header() {
       search: createSearchParams(newParams).toString()
     })
   }
-  const fetchCart = async () => {
-    try {
-      if (isLoggedIn && accessToken) {
-        const response = await apiGetCartItems(accessToken)
-        console.log('Cart response:', response)
-        if (typeof response !== 'string' && response && Array.isArray(response.result)) {
-          setCartItems(response.result)
-        } else {
-          console.error('Unexpected response format:', response)
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch cart:', err)
-    }
-  }
 
   useEffect(() => {
     if (isLoggedIn && accessToken && userData?.userId) {
-      fetchCart()
       dispatch(fetchCategories())
+      dispatch(fetchCurrentUser({ token: accessToken }))
       dispatch(fetchMyVocher({ accessToken }))
+      dispatch(fetchMyCart({ accessToken }))
     }
   }, [isLoggedIn, accessToken])
 
@@ -163,7 +149,7 @@ function Header() {
         <div className='relative cursor-pointer' onClick={handleCartToggle}>
           <ShoppingCart size={24} className='text-gray-700 hover:text-blue-500 transition' />
           <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>
-            {cartItems.length}
+            {myCart.length}
           </span>
         </div>
 
@@ -289,13 +275,7 @@ function Header() {
         </div>
       )}
       {/* Giỏ hàng Modal */}
-      <Cart
-        isOpen={isCartOpen}
-        onClose={handleCartToggle}
-        cartItems={cartItems}
-        accessToken={accessToken || ''}
-        onRefresh={fetchCart}
-      />
+      <Cart isOpen={isCartOpen} onClose={handleCartToggle} cartItems={myCart} accessToken={accessToken || ''} />
     </nav>
   )
 }

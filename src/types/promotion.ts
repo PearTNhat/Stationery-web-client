@@ -20,4 +20,9 @@ interface UserPromotion {
 }
 type DiscountType = 'PERCENTATE' | 'VALUE'
 
-export type { DiscountType, Promotion, ProductPromotion, UserPromotion }
+interface SelectedPromotion {
+  promotionId: string
+  code: string
+}
+
+export type { DiscountType, Promotion, ProductPromotion, UserPromotion, SelectedPromotion }

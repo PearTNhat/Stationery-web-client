@@ -1,37 +1,31 @@
 import { AxiosError } from 'axios'
+import { CreateOrderParams } from '~/types/order'
 import { http } from '~/utils/http'
-
-interface CreateOrderParams {
-  orderDetails: {
-    productDetailId: string
-    quantity: number
-  }[]
-  userPromotionId?: string
-  accessToken: string
-}
-
-export const apiCreateOrder = async ({
+//  ddang lam info
+export const apiCreateOrderWithPayment = async ({
   orderDetails,
   userPromotionId,
+  addressId,
+  recipient,
+  amount,
+  note,
   accessToken
-}: CreateOrderParams): Promise<any> => {
+}: CreateOrderParams) => {
   try {
     const config = {
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
     }
-
-    const body: any = {
-      orderDetails
+    const body = {
+      orderDetails,
+      userPromotionId,
+      addressId,
+      amount,
+      note,
+      recipient
     }
-
-    if (userPromotionId) {
-      body.userPromotionId = userPromotionId
-    }
-
-    const response = await http.post('/purchase-orders', body, config)
-    console.log('Order Response:', response.data)
+    const response = await http.post('/purchase-orders/payment-momo', body, config)
     return response.data
   } catch (error) {
     if (error instanceof AxiosError && error.response) {

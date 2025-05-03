@@ -5,13 +5,13 @@ import { Promotion } from '~/types/promotion'
 import { formatNumber } from '~/utils/helper'
 
 interface VoucherProps {
-  promotion: Promotion
+  promotion?: Promotion
+  hanleApplyDiscount?: (code: string) => void
   isActive?: boolean
 }
 
-const Voucher: React.FC<VoucherProps> = ({ promotion, isActive = false }) => {
+const Voucher: React.FC<VoucherProps> = ({ promotion, isActive = false, hanleApplyDiscount }) => {
   if (!promotion) return null
-
   const labelColor = isActive ? 'text-yellow-900' : 'text-blue-100'
   const valueColor = isActive ? 'text-blue-800 font-semibold' : 'text-white'
 
@@ -75,10 +75,9 @@ const Voucher: React.FC<VoucherProps> = ({ promotion, isActive = false }) => {
           className={`w-full px-3 py-2 rounded-lg text-sm font-semibold transition ${
             isActive ? 'bg-yellow-600 text-white cursor-not-allowed' : 'bg-yellow-400 text-blue-900 hover:bg-yellow-500'
           }`}
-          disabled={isActive}
-          // onClick={() => onApplyDiscount(promotion.promoCode)}
+          onClick={() => hanleApplyDiscount && hanleApplyDiscount(promotion.promoCode)}
         >
-          {isActive ? 'Đã áp dụng' : 'Áp dụng'}
+          {isActive ? 'Remove' : 'Apply'}
         </button>
       </div>
     </div>

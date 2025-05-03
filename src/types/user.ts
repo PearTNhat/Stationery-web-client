@@ -1,9 +1,5 @@
-type Address = {
-  addressID: string
-  addressName?: string
-  phone?: string
-  isDefault?: boolean
-}
+import { Address } from './address'
+
 type Role = {
   roleId: string
   roleName: string

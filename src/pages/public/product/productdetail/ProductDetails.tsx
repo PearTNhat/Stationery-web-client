@@ -116,14 +116,12 @@ export default function ProductDetail() {
   useEffect(() => {
     getReviewOfProduct()
   }, [fechAgain])
-
   useEffect(() => {
     fetchColorSize()
-  }, [])
-
+    getSimilarProduct()
+  }, [product?.productId])
   useEffect(() => {
     getProductDetail()
-    getSimilarProduct()
     setTimeout(() => {
       window.scrollTo(0, 0)
     }, 400)

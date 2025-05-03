@@ -4,34 +4,26 @@ import { FaSquarePhone } from 'react-icons/fa6'
 import { TiDelete } from 'react-icons/ti'
 import { apiAddAddress, apiDeleteAddress, apiSetDefaultAddress } from '~/api/address'
 import { useAppSelector } from '~/hooks/redux'
+import { Address } from '~/types/address'
+import { showToastError } from '~/utils/alert'
 
 type Province = { code: number; name: string }
 type District = { code: number; name: string; wards: Ward[] }
 type Ward = { code: number; name: string }
 
-type ShippingAddressType = {
-  addressId: string
-  addressName: string
-  phone: string
-  isDefault: boolean
-}
-
 type ShippingAddressProps = {
-  userData: {
-    addresses?: any[]
-  }
-  setSelectedShippingInfo: (info: { addressName: string; phone: string }) => void
+  addresses: Address[]
+  setSelectedShippingInfo: (info: Address) => void
 }
 
-export const ShippingAddress: React.FC<ShippingAddressProps> = ({ userData, setSelectedShippingInfo }) => {
-  console.log('userData in ShippingAddress', userData)
+export const ShippingAddress: React.FC<ShippingAddressProps> = ({ addresses, setSelectedShippingInfo }) => {
   const [provinces, setProvinces] = useState<Province[]>([])
   const [districts, setDistricts] = useState<District[]>([])
   const [wards, setWards] = useState<Ward[]>([])
   const [error, setError] = useState<string | null>(null)
   const { accessToken } = useAppSelector((state) => state.user)
 
-  const [localAddresses, setLocalAddresses] = useState<ShippingAddressType[]>([])
+  const [localAddresses, setLocalAddresses] = useState<Address[]>([])
   const [selectedAddressId, setSelectedAddressId] = useState('')
   const [isDeleteMode, setIsDeleteMode] = useState(false)
 
@@ -41,27 +33,18 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ userData, setS
   const [street, setStreet] = useState('')
   const [newPhone, setNewPhone] = useState('')
   const [useNewAddress, setUseNewAddress] = useState(false)
-
   useEffect(() => {
-    console.log('userData.addresses in ShippingAddress:', userData?.addresses)
-    if (Array.isArray(userData?.addresses)) {
-      const mapped = userData.addresses.map((addr: any) => ({
-        addressId: addr.addressID ?? addr.addressId ?? '',
-        addressName: addr.addressName ?? '',
-        phone: addr.phone ?? '',
-        isDefault: addr.isDefault ?? addr.default ?? addr.is_default ?? false
-      }))
-      console.log('Mapped localAddresses:', mapped)
-      setLocalAddresses(mapped)
-      const defaultAddress = mapped.find((addr) => addr.isDefault)
-      setSelectedAddressId((prev) => prev || defaultAddress?.addressId || mapped[0]?.addressId || '')
+    if (Array.isArray(addresses)) {
+      setLocalAddresses(addresses)
+      const defaultAddress = addresses.find((addr) => addr.default)
+      setSelectedAddressId(() => defaultAddress?.addressId || addresses[0]?.addressId)
     }
-  }, [userData?.addresses])
+  }, [addresses])
 
   useEffect(() => {
     const selected = localAddresses.find((addr) => addr.addressId === selectedAddressId)
     if (selected) {
-      setSelectedShippingInfo({ addressName: selected.addressName, phone: selected.phone })
+      setSelectedShippingInfo(selected)
     }
   }, [selectedAddressId, localAddresses])
 
@@ -127,16 +110,16 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ userData, setS
       accessToken: accessToken || ''
     })
 
-    if (typeof result === 'string') {
-      alert(`Failed to save address: ${result}`)
+    if (result.code !== 200) {
+      showToastError(result.message)
       return
     }
 
-    const newAddress: ShippingAddressType = {
+    const newAddress: Address = {
       addressId,
       addressName: fullAddress,
       phone: newPhone,
-      isDefault: false
+      default: false
     }
 
     setLocalAddresses((prev) => [...prev, newAddress])
@@ -156,17 +139,15 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ userData, setS
   const handleSetDefault = async (id: string) => {
     const result = await apiSetDefaultAddress({ addressId: id, accessToken: accessToken || '' })
 
-    if (typeof result === 'string') {
-      alert(`Failed to set default: ${result}`)
+    if (result.code !== 200) {
+      showToastError(result.message)
       return
     }
 
-    setLocalAddresses((prev) => prev.map((addr) => ({ ...addr, isDefault: addr.addressId === id })))
+    setLocalAddresses((prev) => prev.map((addr) => ({ ...addr, default: addr.addressId === id })))
+    setLocalAddresses((prev) => prev.sort((a, b) => (b.default ? 1 : 0) - (a.default ? 1 : 0)))
     setSelectedAddressId(id)
   }
-
-  const sortedAddresses = [...localAddresses].sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0))
-
   return (
     <div className='mt-6 bg-gray-100 p-4 rounded-lg'>
       <h2 className='text-xl font-semibold text-gray-800 mb-4 flex justify-between items-center'>
@@ -195,8 +176,8 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ userData, setS
 
       {!useNewAddress ? (
         <div>
-          {sortedAddresses.length > 0 ? (
-            sortedAddresses.map((addr) => (
+          {localAddresses.length > 0 ? (
+            localAddresses.map((addr) => (
               <div
                 key={addr.addressId}
                 className={`relative p-4 border rounded-xl mb-3 transition ${
@@ -216,7 +197,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ userData, setS
                   <div className='flex-1 min-w-0'>
                     <p className='font-medium text-gray-800 flex items-center gap-2 break-words'>
                       {addr.addressName}
-                      {addr.isDefault && (
+                      {addr.default && (
                         <span className='inline-block bg-green-100 text-green-600 px-2 py-0.5 rounded text-xs'>
                           Default
                         </span>
@@ -251,7 +232,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ userData, setS
                         )}
                       </button>
 
-                      {!addr.isDefault && (
+                      {!addr.default && (
                         <button
                           onClick={() => handleSetDefault(addr.addressId)}
                           className='flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700'
