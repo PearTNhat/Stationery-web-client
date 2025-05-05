@@ -6,7 +6,7 @@ import Button from '../button/Button'
 import { Link } from 'react-router-dom'
 import { FetchColor, Product, ProductDetail } from '~/types/product'
 import NumberToStart from '~/components/numberToStar/NumberToStart'
-import { calculatePercent, formatNumber } from '~/utils/helper'
+import { calculatePercent, formatNumber, priceInPromotion } from '~/utils/helper'
 import { DefaultProduct } from '~/assets/images'
 import { apiAddItemToCart } from '~/api/cart'
 import { useAppSelector } from '~/hooks/redux'
@@ -15,7 +15,6 @@ import { showToastError, showToastSuccess } from '~/utils/alert'
 interface ProductCardProps {
   product: Product
   onViewDetails: (id: string) => void
-  accessToken: string // Thêm accessToken vào props
   onAddToCart?: () => Promise<void>
 }
 
@@ -24,7 +23,7 @@ const Card: React.FC<ProductCardProps> = ({ product }) => {
   const [selectedColor, setSelectedColor] = useState<string>(product.productDetail.color?.colorId ?? '')
   const [selectedSize, setSelectedSize] = useState<string>(product.productDetail.size?.sizeId ?? '')
   const [productDetail, setProductDetail] = useState<ProductDetail | null>(null)
-  const [colors, setColors] = useState<FetchColor[]>([])
+  const [, setColors] = useState<FetchColor[]>([])
 
   useEffect(() => {
     setColors(product.fetchColor)
@@ -75,7 +74,7 @@ const Card: React.FC<ProductCardProps> = ({ product }) => {
       <div className='flex items-center justify-between w-full px-4'>
         <div>
           <p className='text-[19px] max-sm:text-xs font-semibold text-blue-500'>
-            {formatNumber(productDetail?.discountPrice ?? 0)} ₫
+            {formatNumber(priceInPromotion(productDetail))} ₫
           </p>
           <div className='flex items-center'>
             {productDetail?.originalPrice !== 0 && (
@@ -84,7 +83,7 @@ const Card: React.FC<ProductCardProps> = ({ product }) => {
                   {formatNumber(productDetail?.originalPrice ?? 0)}₫
                 </p>
                 <p className={`ml-1 text-red-400 text-sm font-bold`}>
-                  - {calculatePercent(productDetail?.originalPrice ?? 0, productDetail?.discountPrice ?? 0)}%
+                  - {calculatePercent(productDetail?.originalPrice ?? 0, priceInPromotion(productDetail))}%
                 </p>
               </>
             )}

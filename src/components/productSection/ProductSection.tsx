@@ -1,16 +1,26 @@
 import { Product, ProductDetail } from '~/types/product'
 import Card from '../card/Card'
-import { useEffect } from 'react'
+import { Dispatch, SetStateAction, useEffect } from 'react'
 import { showToastError, showToastSuccess } from '~/utils/alert'
 import { apiAddItemToCart } from '~/api/cart'
 import { useAppSelector } from '~/hooks/redux'
+import PaginationNoSearchParams from '../pagination/PaginationNoSearchParams'
 
 interface ProductSectionProps {
   title: string
   products?: Product[]
+  totalPageCount: number
+  currentPage: number
+  setCurrentPage: Dispatch<SetStateAction<number>>
 }
 
-const ProductSection: React.FC<ProductSectionProps> = ({ title, products }) => {
+const ProductSection: React.FC<ProductSectionProps> = ({
+  title,
+  products,
+  totalPageCount,
+  currentPage,
+  setCurrentPage
+}) => {
   const { accessToken } = useAppSelector((state) => state.user)
   // Hàm xử lý thêm vào giỏ hàng
   const handleAddToCart = async (productDetailId: string, colorId: string, sizeId: string, quantity: number) => {
@@ -50,6 +60,11 @@ const ProductSection: React.FC<ProductSectionProps> = ({ title, products }) => {
           />
         ))}
       </div>
+      <PaginationNoSearchParams
+        totalPageCount={totalPageCount}
+        currentPage={currentPage}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
     </section>
   )
 }

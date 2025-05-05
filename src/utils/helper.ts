@@ -11,7 +11,7 @@ const formatNumber = (number: number | string) => {
   }
   return numberParse.toLocaleString('de-DE')
 }
-const priceInPromotion = (productDetail?: ProductDetail): number => {
+const priceInPromotion = (productDetail: ProductDetail | null): number => {
   if (!productDetail) return 0
   console.log('productDetail pass')
   if (productDetail?.productPromotions.length == 0) {

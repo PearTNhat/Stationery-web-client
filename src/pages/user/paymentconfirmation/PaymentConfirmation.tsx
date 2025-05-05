@@ -5,18 +5,17 @@ import CustomerInfo from './component/CustomerInfo'
 import OrderSummary from './component/OrderSummary'
 import DiscountSection from './component/DiscountSection'
 import PaymentMethod from './component/PaymentMethod'
-import { useAppSelector, useAppDispatch } from '~/hooks/redux'
+import { useAppSelector } from '~/hooks/redux'
 import { ShippingAddress } from './component/ShippingAddress'
 import { OrderDetails, UserInfoOrder } from '~/types/order'
 import { SelectedPromotion } from '~/types/promotion'
 import { apiCreateOrderWithPayment } from '~/api/orders'
-import { showAlertError, showToastError, showToastSuccess } from '~/utils/alert'
+import { showAlertError, showToastError } from '~/utils/alert'
 import { AxiosError } from 'axios'
 import { Address } from '~/types/address'
 
 export default function PaymentConfirmation() {
   const { state } = useLocation()
-  const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const [selectedPayment, setSelectedPayment] = useState('COD')
   const [selectedCoupon, setSelectdCoupon] = useState<SelectedPromotion | null>(null)
