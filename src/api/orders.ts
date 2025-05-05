@@ -1,8 +1,7 @@
 import { AxiosError } from 'axios'
 import { CreateOrderParams } from '~/types/order'
 import { http } from '~/utils/http'
-//  ddang lam info
-export const apiCreateOrderWithPayment = async ({
+const apiCreateOrderWithPayment = async ({
   orderDetails,
   userPromotionId,
   addressId,
@@ -34,3 +33,21 @@ export const apiCreateOrderWithPayment = async ({
     return (error as Error).message
   }
 }
+
+const apiCheckTransactionStatus = async ({ orderId, accessToken }: { orderId: string; accessToken: string }) => {
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+    const response = await http.get(`/purchase-orders/payment-momo/transaction-status/${orderId}`, config)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data
+    }
+    return (error as Error).message
+  }
+}
+export { apiCreateOrderWithPayment, apiCheckTransactionStatus }

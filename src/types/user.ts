@@ -17,6 +17,7 @@ type User = {
   role: Role
   carts: any[] // Replace `any` with the appropriate type for cart items if available
   dob: string // Date of birth in ISO format (e.g., "2012-11-11")
+  searchHistory: any[]
 }
 
 interface UserProfileForm {

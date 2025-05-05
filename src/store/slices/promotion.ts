@@ -17,7 +17,6 @@ const voucherSlice = createSlice({
       state.isLoading = false
     })
     builder.addCase(fetchMyVocher.fulfilled, (state, action: PayloadAction<UserPromotion[]>) => {
-      console.log('data', action.payload)
       state.isLoading = false
       state.myVouchers = action.payload
     })

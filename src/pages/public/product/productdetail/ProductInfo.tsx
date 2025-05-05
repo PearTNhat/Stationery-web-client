@@ -73,7 +73,8 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
       showAlertError('Missing product information')
       return
     }
-
+    const discountPrice = priceInPromotion(productDetail)
+    console.log('Discount Price:', discountPrice)
     const order = {
       items: [
         {
@@ -86,14 +87,13 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
           imageUrl: productDetail.images?.[0]?.url ?? '',
           productName: productDetail.name,
           originalPrice: productDetail.originalPrice,
-          discountPrice: productDetail.discountPrice,
+          discountPrice: discountPrice,
+          discountValue: productDetail.discountPrice - discountPrice,
           productId: productDetail.productId,
-          productPromotion: productDetail.productPromotions[0]?.promotion
-            ? [productDetail.productPromotions[0].promotion]
-            : null
+          productPromotion: productDetail.productPromotions.length > 0 ? productDetail.productPromotions : null
         }
       ],
-      totalAmount: productDetail.discountPrice * quantity
+      totalAmount: discountPrice * quantity
     }
 
     console.log('Order Nguyễn Quốc Khoa:', order)

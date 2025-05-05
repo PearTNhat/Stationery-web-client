@@ -8,6 +8,7 @@ import { apiGetAllProductsWithDefaultPD } from '~/api/product'
 import { ProductSearchParams } from '~/types/filter'
 import { useSearchParams } from 'react-router-dom'
 import Pagination from '~/components/pagination/Pagination'
+import { useAppSelector } from '~/hooks/redux'
 const coupons = [
   { id: 1, discount: 200000, minOrder: 1300000, code: '0325SALE200', expiry: '31/03/2025' },
   { id: 2, discount: 100000, minOrder: 800000, code: 'DISCOUNT100', expiry: '15/04/2025' },
@@ -20,6 +21,7 @@ const ProductPage: React.FC = () => {
   const [products, setProducts] = useState<Product[] | null>(null)
   const [totalPageCount, setTotalPageCount] = useState<number>(0)
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null)
+  const { accessToken } = useAppSelector((state) => state.user)
 
   const getAllProduct = async (searchParams: ProductSearchParams) => {
     const { minPrice, maxPrice, sortBy, categoryId, search } = searchParams

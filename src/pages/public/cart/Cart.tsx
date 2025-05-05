@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { X, Trash2, Plus, Minus } from 'lucide-react'
 import { CartItem } from '~/types/cart'
 import { apiRemoveCartItem, apiUpdateCartItem } from '~/api/cart'
@@ -18,6 +18,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken }) 
   const dispatch = useAppDispatch()
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null)
+  const [totalPrice, setTotalPrice] = useState(0)
   const handleQuantityChange = async (productDetailId: string, newQuantity: number) => {
     if (newQuantity < 1) return
     setLoadingItemId(productDetailId)
@@ -64,14 +65,18 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken }) 
       totalAmount: totalPrice
     }
 
+    console.log('cart__', order)
     onClose()
     navigate(`/products/payment-confirmation`, { state: { order } })
   }
-
-  const totalPrice = cartItems
-    .filter((item) => selectedItems.includes(item.productDetailId))
-    .reduce((total, item) => total + item.discountPrice * item.quantity, 0)
-
+  useEffect(() => {
+    const totalPrice = cartItems
+      .filter((item) => selectedItems.includes(item.productDetailId))
+      .reduce((total, item) => {
+        return total + item.discountPrice * item.quantity
+      }, 0)
+    setTotalPrice(totalPrice)
+  }, [selectedItems, cartItems])
   return (
     <>
       {isOpen && <div className='fixed inset-0 bg-black bg-opacity-50 z-40' onClick={onClose} />}

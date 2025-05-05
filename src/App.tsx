@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useParams } from 'react-router-dom'
 import { useAppSelector } from './hooks/redux'
 import { adminPaths, publicPaths, userPaths } from './constance/paths'
 import Login from './pages/public/auth/Login'
@@ -36,6 +36,7 @@ import OrderManagement from './pages/admin/order/OrderManagement'
 
 function App() {
   const { childrenModal, isOpenModal } = useAppSelector((state) => state.modal)
+
   return (
     <div className='bg-baseBackground h-screen text-baseText'>
       <Modal isOpen={isOpenModal}>{childrenModal}</Modal>

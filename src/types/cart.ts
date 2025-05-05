@@ -13,5 +13,6 @@ export interface CartItem {
   sizeId: string
   originalPrice: number
   discountPrice: number
+  discountValue: number
   createdAt: string
 }

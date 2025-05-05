@@ -2,6 +2,12 @@ import { http } from '~/utils/http'
 import { AxiosError } from 'axios'
 import { ForgotPasswordRequest, ResetPasswordRequest } from '~/types/auth'
 
+declare global {
+  interface Window {
+    gapi: any
+  }
+}
+
 interface ApiResponse<T> {
   message: string
   result: T

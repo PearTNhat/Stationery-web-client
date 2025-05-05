@@ -41,8 +41,11 @@ export default function PaymentConfirmation() {
     const orderDetails = order.items.map((item) => ({
       productDetailId: item.productDetailId,
       quantity: item.quantity,
-      promotionId: item.productPromotion?.length > 0 ? item.productPromotion[0].productPromotionId : null
+      productPromotionId: item.productPromotion?.length > 0 ? item.productPromotion[0].productPromotionId : null
     }))
+    console.log('order', order)
+    console.log('orderDetails', orderDetails)
+    // return
     try {
       if (!accessToken) {
         showAlertError('Please login to continue')
@@ -67,7 +70,7 @@ export default function PaymentConfirmation() {
         accessToken
       })
       if (res.code === 200) {
-        showToastSuccess('Create order successfully')
+        window.location.href = res.result.payUrl
       } else {
         showToastError(res.message)
       }

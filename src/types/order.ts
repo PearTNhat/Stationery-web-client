@@ -5,7 +5,7 @@ type OrderDetails = { items: CartItem[]; totalAmount: number }
 interface OrderItem {
   productDetailId: string
   quantity: number
-  promotionId: string | null
+  productPromotionId: string | null
 }
 interface CreateOrderParams {
   orderDetails: OrderItem[]

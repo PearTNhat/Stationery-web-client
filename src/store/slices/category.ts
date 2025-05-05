@@ -17,7 +17,6 @@ const categorySlice = createSlice({
       state.isLoading = false
     })
     builder.addCase(fetchCategories.fulfilled, (state, action: PayloadAction<Category[]>) => {
-      console.log(action.payload)
       state.isLoading = false
       state.categories = action.payload
     })
