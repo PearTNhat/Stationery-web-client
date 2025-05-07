@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import moment from 'moment'
 import { FetchColor, ListProductDetail, ProductDetail } from '~/types/product'
-import { FaArrowLeft, FaArrowRight, FaStar, FaStarHalfAlt, FaRegStar } from 'react-icons/fa'
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa'
+import NumberToStart from '~/components/numberToStar/NumberToStart'
 
 interface ProductDetailViewModalProps {
   isOpen: boolean
@@ -9,30 +10,6 @@ interface ProductDetailViewModalProps {
   details: ProductDetail[]
   fetchColors: FetchColor[]
   onClose: () => void
-}
-
-// Hàm hiển thị ngôi sao dựa trên rating
-const renderStars = (rating: number) => {
-  const fullStars = Math.floor(rating)
-  const hasHalfStar = rating % 1 >= 0.5
-  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0)
-
-  return (
-    <div className='flex items-center gap-1 text-yellow-400'>
-      {Array(fullStars)
-        .fill(0)
-        .map((_, idx) => (
-          <FaStar key={`full-${idx}`} size={16} />
-        ))}
-      {hasHalfStar && <FaStarHalfAlt size={16} />}
-      {Array(emptyStars)
-        .fill(0)
-        .map((_, idx) => (
-          <FaRegStar key={`empty-${idx}`} size={16} />
-        ))}
-      <span className='ml-2 text-gray-600 text-sm'>({rating.toFixed(1)})</span>
-    </div>
-  )
 }
 
 const ProductDetailViewModal: React.FC<ProductDetailViewModalProps> = ({
@@ -138,7 +115,8 @@ const ProductDetailViewModal: React.FC<ProductDetailViewModalProps> = ({
                   {product.soldQuantity.toLocaleString('vi-VN')}
                 </p>
                 <p>
-                  <span className='font-semibold text-gray-700'>Rating:</span> {renderStars(product.totalRating)}
+                  <span className='font-semibold text-gray-700'>Rating:</span>{' '}
+                  <NumberToStart number={product.totalRating} />
                 </p>
                 <p>
                   <span className='font-semibold text-gray-700'>Created:</span>{' '}
@@ -215,8 +193,7 @@ const ProductDetailViewModal: React.FC<ProductDetailViewModalProps> = ({
                                 {detail.discountPrice.toLocaleString('vi-VN')} VND
                               </p>
                               <p className='text-base'>
-                                <span className='font-medium text-gray-600'>Rating:</span>{' '}
-                                {renderStars(detail.totalRating)}
+                                <span className='font-medium text-gray-600'>Rating:</span>
                               </p>
                             </div>
                             {/* Carousel ảnh */}

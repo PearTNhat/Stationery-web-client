@@ -1,6 +1,6 @@
 // pages/ProductDetail.tsx
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { ProductImages } from './ProductImages'
 import { ProductInfo } from './ProductInfo'
 import { ProductTabs } from './ProductTabs'

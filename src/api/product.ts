@@ -72,16 +72,16 @@ const apiGetProductDetailsByProductId = async ({ productId }: { productId: strin
   }
 }
 const apiGetAllProducts = async ({
-  page = '0',
-  limit = '10',
+  page,
+  limit,
   sortBy,
   minPrice,
   maxPrice,
   categoryId,
   search
 }: {
-  page?: string
-  limit?: string
+  page: string
+  limit: string
   sortBy?: string
   minPrice?: string
   maxPrice?: string

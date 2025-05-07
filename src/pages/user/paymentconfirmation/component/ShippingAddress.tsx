@@ -3,7 +3,8 @@ import { FaHome, FaCheckCircle, FaRegCircle } from 'react-icons/fa'
 import { FaSquarePhone } from 'react-icons/fa6'
 import { TiDelete } from 'react-icons/ti'
 import { apiAddAddress, apiDeleteAddress, apiSetDefaultAddress } from '~/api/address'
-import { useAppSelector } from '~/hooks/redux'
+import { useAppDispatch, useAppSelector } from '~/hooks/redux'
+import { fetchCurrentUser } from '~/store/actions/user'
 import { Address } from '~/types/address'
 import { showToastError } from '~/utils/alert'
 
@@ -17,11 +18,12 @@ type ShippingAddressProps = {
 }
 
 export const ShippingAddress: React.FC<ShippingAddressProps> = ({ addresses, setSelectedShippingInfo }) => {
+  const { accessToken } = useAppSelector((state) => state.user)
+  const dispatch = useAppDispatch()
   const [provinces, setProvinces] = useState<Province[]>([])
   const [districts, setDistricts] = useState<District[]>([])
   const [wards, setWards] = useState<Ward[]>([])
   const [error, setError] = useState<string | null>(null)
-  const { accessToken } = useAppSelector((state) => state.user)
 
   const [localAddresses, setLocalAddresses] = useState<Address[]>([])
   const [selectedAddressId, setSelectedAddressId] = useState('')
@@ -32,6 +34,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ addresses, set
   const [selectedWard, setSelectedWard] = useState('')
   const [street, setStreet] = useState('')
   const [newPhone, setNewPhone] = useState('')
+  const [name, setName] = useState('')
   const [useNewAddress, setUseNewAddress] = useState(false)
   useEffect(() => {
     if (Array.isArray(addresses)) {
@@ -106,6 +109,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ addresses, set
       addressId,
       addressName: fullAddress,
       phone: newPhone,
+      recipient: name,
       isDefault: false,
       accessToken: accessToken || ''
     })
@@ -114,16 +118,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ addresses, set
       showToastError(result.message)
       return
     }
-
-    const newAddress: Address = {
-      addressId,
-      addressName: fullAddress,
-      phone: newPhone,
-      default: false
-    }
-
-    setLocalAddresses((prev) => [...prev, newAddress])
-    setSelectedAddressId(addressId)
+    dispatch(fetchCurrentUser({ token: accessToken || '' }))
     resetNewAddressForm()
   }
 
@@ -134,6 +129,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ addresses, set
     setSelectedWard('')
     setStreet('')
     setNewPhone('')
+    setName('')
   }
 
   const handleSetDefault = async (id: string) => {
@@ -143,7 +139,6 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ addresses, set
       showToastError(result.message)
       return
     }
-
     setLocalAddresses((prev) => prev.map((addr) => ({ ...addr, default: addr.addressId === id })))
     setLocalAddresses((prev) => prev.sort((a, b) => (b.default ? 1 : 0) - (a.default ? 1 : 0)))
     setSelectedAddressId(id)
@@ -153,7 +148,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ addresses, set
       <h2 className='text-xl font-semibold text-gray-800 mb-4 flex justify-between items-center'>
         Shipping Addresses
         <div className='space-x-2'>
-          {!isDeleteMode && (
+          {!isDeleteMode && !useNewAddress && (
             <button
               onClick={() => setIsDeleteMode(true)}
               className='px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200'
@@ -161,7 +156,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ addresses, set
               Delete
             </button>
           )}
-          {isDeleteMode && (
+          {isDeleteMode && !useNewAddress && (
             <button
               onClick={() => setIsDeleteMode(false)}
               className='px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300'
@@ -192,25 +187,31 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ addresses, set
                     <TiDelete />
                   </button>
                 )}
-
                 <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4'>
                   <div className='flex-1 min-w-0'>
-                    <p className='font-medium text-gray-800 flex items-center gap-2 break-words'>
+                    <p className='flex font-medium text-gray-800 break-words'>
+                      <span className='flex items-center justify-center w-6'>📍</span>
                       {addr.addressName}
-                      {addr.default && (
-                        <span className='inline-block bg-green-100 text-green-600 px-2 py-0.5 rounded text-xs'>
-                          Default
-                        </span>
-                      )}
                     </p>
-                    <p className='text-gray-600 flex items-center gap-1 mt-1'>
-                      <FaSquarePhone className='text-sm' />
+                    <p className='flex font-medium text-gray-800 break-words'>
+                      <span className='flex items-center justify-center w-6'> 👤</span>
+                      {addr.recipient}
+                    </p>
+                    <p className='flex font-medium text-gray-800 break-words'>
+                      <span className='flex items-center justify-center w-6'>
+                        <FaSquarePhone className='text-base' />
+                      </span>
                       {addr.phone}
                     </p>
                   </div>
 
                   {!isDeleteMode && (
-                    <div className='flex flex-wrap gap-2'>
+                    <div className='flex flex-col gap-2'>
+                      {addr.default && (
+                        <span className='inline-block bg-green-100 text-green-600 px-2 py-0.5 rounded text-xs text-center'>
+                          Default
+                        </span>
+                      )}
                       <button
                         onClick={() => setSelectedAddressId(addr.addressId)}
                         className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium border transition ${
@@ -296,7 +297,13 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ addresses, set
               </option>
             ))}
           </select>
-
+          <input
+            type='text'
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className='w-full p-2 border rounded-lg mb-2'
+            placeholder='Recipient name'
+          />
           <input
             type='text'
             value={street}
