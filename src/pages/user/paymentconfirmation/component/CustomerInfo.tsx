@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { FaEdit, FaSave } from 'react-icons/fa'
-import { useAppDispatch } from '~/hooks/redux'
 import { UserInfoOrder } from '~/types/order'
 
 interface CustomerInfoProps {

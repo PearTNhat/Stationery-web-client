@@ -27,13 +27,13 @@ export default function PaymentConfirmation() {
   const handleCreateOrder = async ({
     order,
     address,
-    info,
+    note,
     userPromotionId,
     accessToken
   }: {
     order: OrderDetails
     address: Address
-    info: UserInfoOrder
+    note: string | null
     userPromotionId: string | null
     accessToken: string
   }) => {
@@ -51,17 +51,13 @@ export default function PaymentConfirmation() {
       }
 
       const addressId = address.addressId
-      const name = info.name
-      const phone = info.phone
-      const note = info.note
-      if (!addressId || !name || !phone) {
+
+      if (!addressId) {
         showAlertError('Please fill in all required fields')
         return
       }
-      const recipient = name + ', ' + phone
       const res = await apiCreateOrderWithPayment({
         orderDetails,
-        recipient,
         addressId,
         note,
         userPromotionId,
@@ -113,8 +109,8 @@ export default function PaymentConfirmation() {
           onClick={() =>
             handleCreateOrder({
               order: order,
+              note: userInfo.note,
               address: selectedShippingInfo || ({} as Address),
-              info: userInfo,
               userPromotionId: selectedCoupon?.promotionId || null,
               accessToken: accessToken || ''
             })

@@ -5,7 +5,6 @@ const apiCreateOrderWithPayment = async ({
   orderDetails,
   userPromotionId,
   addressId,
-  recipient,
   amount,
   note,
   accessToken
@@ -21,8 +20,7 @@ const apiCreateOrderWithPayment = async ({
       userPromotionId,
       addressId,
       amount,
-      note,
-      recipient
+      note
     }
     const response = await http.post('/purchase-orders/payment-momo', body, config)
     return response.data
