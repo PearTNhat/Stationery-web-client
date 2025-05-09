@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { FaEdit, FaSave } from 'react-icons/fa'
-import { useAppDispatch } from '~/hooks/redux'
 import { UserInfoOrder } from '~/types/order'
 
 interface CustomerInfoProps {
@@ -21,17 +20,6 @@ export default function CustomerInfo({ selectedShippingInfo, userInfo, setUserIn
 
   const handleSave = () => {
     setIsEditing(false)
-
-    // dispatch({
-    //   type: 'user/updateCustomerInfo',
-    //   payload: {
-    //     name: customerName,
-    //     phone: customerPhone,
-    //     note: customerNote
-    //   }
-    // })
-
-    // console.log('Saved:', { customerName, customerPhone, customerNote })
   }
 
   return (
@@ -48,43 +36,6 @@ export default function CustomerInfo({ selectedShippingInfo, userInfo, setUserIn
           {isEditing ? 'Save' : 'Edit'}
         </button>
       </div>
-
-      {/* Full Name */}
-      <div className='flex justify-between p-2 border rounded-lg bg-white'>
-        <span className='font-semibold'>Full Name:</span>
-        {isEditing ? (
-          <input
-            type='text'
-            value={userInfo.name}
-            onChange={(e) => setUserInfo((prev) => ({ ...prev, name: e.target.value }))}
-            className='ml-2 border border-gray-300 rounded-md px-2 py-1 w-1/2'
-          />
-        ) : (
-          <span className='text-gray-800'>{userInfo.name || 'N/A'}</span>
-        )}
-      </div>
-
-      {/* Phone Number */}
-      <div className='flex justify-between p-2 border rounded-lg bg-white mt-2'>
-        <span className='font-semibold'>Phone:</span>
-        {isEditing ? (
-          <input
-            type='text'
-            value={userInfo.phone}
-            onChange={(e) => setUserInfo((prev) => ({ ...prev, phone: e.target.value }))}
-            className='ml-2 border border-gray-300 rounded-md px-2 py-1 w-1/2'
-          />
-        ) : (
-          <span className='text-gray-800'>{userInfo.phone || 'N/A'}</span>
-        )}
-      </div>
-
-      {/* Email (readonly) */}
-      <div className='flex justify-between p-2 border rounded-lg bg-white mt-2'>
-        <span className='font-semibold'>Email:</span>
-        <span className='text-gray-700'>{userInfo.email || 'N/A'}</span>
-      </div>
-
       {/* Note */}
       <div className='mt-2'>
         <label className='block font-semibold mb-1'>Note (optional):</label>

@@ -11,7 +11,6 @@ interface CreateOrderParams {
   orderDetails: OrderItem[]
   userPromotionId: string | null
   addressId: string
-  recipient: string
   amount: number
   note: string | null
   accessToken: string

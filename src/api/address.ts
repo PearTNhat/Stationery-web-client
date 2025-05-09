@@ -4,6 +4,7 @@ import { http } from '~/utils/http' // đổi path nếu cần
 type AddAddressParams = {
   addressId: string
   addressName: string
+  recipient: string
   phone: string
   isDefault?: boolean // mặc định false nếu không truyền
   accessToken: string
@@ -12,6 +13,7 @@ type AddAddressParams = {
 export const apiAddAddress = async ({
   addressId,
   addressName,
+  recipient,
   phone,
   isDefault = false,
   accessToken
@@ -25,6 +27,7 @@ export const apiAddAddress = async ({
     const body = {
       addressId,
       addressName,
+      recipient,
       phone,
       isDefault
     }

@@ -1,19 +1,15 @@
 import { useState } from 'react'
 import Swal from 'sweetalert2'
-import { useDispatch } from 'react-redux'
 import ProgressBar from './component/ProgressBar'
 import AddProductForm from './addproduct/AddProductForm'
 import AddProductDetailsForm from './addproduct/AddProductDetailsForm'
 import ConfirmProductForm from './addproduct/ConfirmProductForm'
 import ProductList from './component/ProductList'
-import { modalActions } from '~/store/slices/modal'
 import { FaPlus } from 'react-icons/fa'
 import { ListProductDetail, ProductDetail } from '~/types/product'
 import { mockProducts } from '~/constance/seed/mockProducts'
-import ProductDetailViewModal from './modal/ProductDetailViewModal'
 
 function ProductsManagement() {
-  const dispatch = useDispatch()
   const [products, setProducts] = useState<ListProductDetail[]>(mockProducts)
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
   const [newProduct, setNewProduct] = useState<ListProductDetail>({
@@ -149,7 +145,6 @@ function ProductsManagement() {
         d.size.name === detail.size.name
     )
   }
-
   return (
     <div className='p-6 w-full mx-auto bg-white shadow-lg rounded-xl'>
       <div className='flex justify-between items-center mb-6'>
@@ -338,35 +333,10 @@ function ProductsManagement() {
 
       {step === 0 && (
         <ProductList
-          // products={products}
           onDeleteProduct={deleteProduct}
           onDeleteProductDetail={deleteProductDetail}
-          onViewProductDetail={(product) => {
-            dispatch(
-              modalActions.toggleModal({
-                isOpenModal: true,
-                childrenModal: (
-                  <ProductDetailViewModal
-                    isOpen={true}
-                    product={product}
-                    details={product.productDetails}
-                    fetchColors={product.fetchColor || []}
-                    onClose={() =>
-                      dispatch(
-                        modalActions.toggleModal({
-                          isOpenModal: false,
-                          childrenModal: null
-                        })
-                      )
-                    }
-                  />
-                )
-              })
-            )
-          }}
           onEditProduct={(updatedProduct) => {
             setProducts(products.map((p) => (p.productId === updatedProduct.productId ? updatedProduct : p)))
-            console.log('Updated product:', updatedProduct)
           }}
           onEditProductDetail={(pId, updatedDetail) => {
             setProducts(

@@ -5,18 +5,17 @@ import CustomerInfo from './component/CustomerInfo'
 import OrderSummary from './component/OrderSummary'
 import DiscountSection from './component/DiscountSection'
 import PaymentMethod from './component/PaymentMethod'
-import { useAppSelector, useAppDispatch } from '~/hooks/redux'
+import { useAppSelector } from '~/hooks/redux'
 import { ShippingAddress } from './component/ShippingAddress'
 import { OrderDetails, UserInfoOrder } from '~/types/order'
 import { SelectedPromotion } from '~/types/promotion'
 import { apiCreateOrderWithPayment } from '~/api/orders'
-import { showAlertError, showToastError, showToastSuccess } from '~/utils/alert'
+import { showAlertError, showToastError } from '~/utils/alert'
 import { AxiosError } from 'axios'
 import { Address } from '~/types/address'
 
 export default function PaymentConfirmation() {
   const { state } = useLocation()
-  const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const [selectedPayment, setSelectedPayment] = useState('COD')
   const [selectedCoupon, setSelectdCoupon] = useState<SelectedPromotion | null>(null)
@@ -28,13 +27,13 @@ export default function PaymentConfirmation() {
   const handleCreateOrder = async ({
     order,
     address,
-    info,
+    note,
     userPromotionId,
     accessToken
   }: {
     order: OrderDetails
     address: Address
-    info: UserInfoOrder
+    note: string | null
     userPromotionId: string | null
     accessToken: string
   }) => {
@@ -52,17 +51,13 @@ export default function PaymentConfirmation() {
       }
 
       const addressId = address.addressId
-      const name = info.name
-      const phone = info.phone
-      const note = info.note
-      if (!addressId || !name || !phone) {
+
+      if (!addressId) {
         showAlertError('Please fill in all required fields')
         return
       }
-      const recipient = name + ', ' + phone
       const res = await apiCreateOrderWithPayment({
         orderDetails,
-        recipient,
         addressId,
         note,
         userPromotionId,
@@ -114,8 +109,8 @@ export default function PaymentConfirmation() {
           onClick={() =>
             handleCreateOrder({
               order: order,
+              note: userInfo.note,
               address: selectedShippingInfo || ({} as Address),
-              info: userInfo,
               userPromotionId: selectedCoupon?.promotionId || null,
               accessToken: accessToken || ''
             })

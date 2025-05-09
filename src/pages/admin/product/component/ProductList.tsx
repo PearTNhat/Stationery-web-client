@@ -1,20 +1,23 @@
 import moment from 'moment'
 import { AxiosError } from 'axios'
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useMemo, useState } from 'react'
 import { FaEdit, FaExclamationCircle, FaSearch, FaTrash } from 'react-icons/fa'
 import Select from 'react-select'
-import { categoryOptions } from '~/constance/seed/option'
 import { ListProductDetail, ProductDetail } from '~/types/product'
 import EditProductModal from '../modal/EditProductModal'
 import EditProductDetailModal from '../modal/EditProductDetailModal'
 import { apiGetAllProducts, apiGetProductDetailsByProductId } from '~/api/product'
 import { showToastError } from '~/utils/alert'
-
+import { modalActions } from '~/store/slices/modal'
+import { useAppDispatch, useAppSelector } from '~/hooks/redux'
+import ProductDetailViewModal from '../modal/ProductDetailViewModal'
+import Pagination from '~/components/pagination/Pagination'
+import { categoriesToOptions } from '~/utils/optionSelect'
+import { ProductSearchParams } from '~/types/filter'
+import { useSearchParams } from 'react-router-dom'
 interface ProductListProps {
-  // products: ListProductDetail[]
   onDeleteProduct: (id: string) => void
   onDeleteProductDetail: (pId: string, detailId: string) => void
-  onViewProductDetail: (product: ListProductDetail) => void
   onEditProduct: (product: ListProductDetail) => void
   onEditProductDetail: (pId: string, detail: ProductDetail) => void
 }
@@ -32,17 +35,21 @@ const tableHeaderTitleList = [
   'Actions'
 ]
 const ProductList: React.FC<ProductListProps> = ({
-  // products,
   onDeleteProduct,
   onDeleteProductDetail,
-  onViewProductDetail,
   onEditProduct,
   onEditProductDetail
 }) => {
+  const { categories } = useAppSelector((state) => state.category)
   const [products, setProducts] = useState<ListProductDetail[]>([])
+  const [searchParams, setSearchParams] = useSearchParams()
+  const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as ProductSearchParams, [searchParams])
+  const dispatch = useAppDispatch()
   const [selectedProduct, setSelectedProduct] = useState<string[]>([])
   const [editProduct, setEditProduct] = useState<ListProductDetail | null>(null)
   const [editProductDetail, setEditProductDetail] = useState<{ pId: string; detail: ProductDetail } | null>(null)
+  const [totalPageCount, setTotalPageCount] = useState(0)
+  const [listCategories, setListCategories] = useState<{ label: string; value: string }[]>([])
 
   const handleEditProduct = (product: ListProductDetail) => {
     setEditProduct(product)
@@ -51,7 +58,29 @@ const ProductList: React.FC<ProductListProps> = ({
   const handleEditProductDetail = (pId: string, detail: ProductDetail) => {
     setEditProductDetail({ pId, detail })
   }
-
+  const onViewProductDetail = (product: ListProductDetail) => {
+    dispatch(
+      modalActions.toggleModal({
+        isOpenModal: true,
+        childrenModal: (
+          <ProductDetailViewModal
+            isOpen={true}
+            product={product}
+            details={product.productDetails}
+            fetchColors={product.fetchColor || []}
+            onClose={() =>
+              dispatch(
+                modalActions.toggleModal({
+                  isOpenModal: false,
+                  childrenModal: null
+                })
+              )
+            }
+          />
+        )
+      })
+    )
+  }
   const handleRowClick = (product: ListProductDetail) => {
     setSelectedProduct((prev) =>
       prev.includes(product.productId) ? prev.filter((id) => id !== product.productId) : [...prev, product.productId]
@@ -75,14 +104,18 @@ const ProductList: React.FC<ProductListProps> = ({
     }
     return []
   }
-  const getAllProducts = async () => {
+  const getAllProducts = async (currentParams: ProductSearchParams) => {
     try {
+      const { page, search, categoryId } = currentParams
       const response = await apiGetAllProducts({
-        page: '0',
+        page: page || '0',
+        search: search,
+        categoryId: categoryId,
         limit: '10'
       })
       if (response.code == 200) {
         setProducts(response.result.content)
+        setTotalPageCount(response.result.page.totalPages)
       } else {
         showToastError(response.message || response.error)
       }
@@ -93,10 +126,15 @@ const ProductList: React.FC<ProductListProps> = ({
     }
   }
   useEffect(() => {
-    getAllProducts()
-  }, [])
+    getAllProducts(currentParams)
+  }, [currentParams])
+  useEffect(() => {
+    setListCategories(categoriesToOptions(categories))
+  }, [categories])
+  useEffect(() => {}, [currentParams])
+
   return (
-    <>
+    <div>
       <div className='flex gap-4 mb-6'>
         <div className='relative w-1/3'>
           <span className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400'>
@@ -104,19 +142,38 @@ const ProductList: React.FC<ProductListProps> = ({
           </span>
           <input
             type='text'
+            value={currentParams.search || ''}
             placeholder='Search product...'
+            onChange={(e) => {
+              if (e.target.value.trim().length === 0) {
+                setSearchParams(() => {
+                  const newParams = { ...currentParams }
+                  delete newParams.search
+                  return new URLSearchParams(newParams as Record<string, string>)
+                })
+              } else {
+                setSearchParams(() => ({ ...currentParams, search: e.target.value }))
+              }
+            }}
             className='pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
           />
         </div>
         <div className='w-1/4'>
           <Select
-            options={categoryOptions}
-            defaultValue={categoryOptions[0]}
-            className='basic-single'
-            classNamePrefix='select'
-            isSearchable={false}
-            onChange={(selectedOption) => {
-              console.log('Selected category:', selectedOption?.value)
+            options={listCategories}
+            isSearchable
+            isClearable
+            value={listCategories.find((item) => item.value === currentParams.categoryId) || null}
+            onChange={(data) => {
+              if (data) {
+                setSearchParams(() => ({ ...currentParams, categoryId: data.value }))
+              } else {
+                setSearchParams(() => {
+                  const newParams = { ...currentParams }
+                  delete newParams.categoryId
+                  return new URLSearchParams(newParams as Record<string, string>)
+                })
+              }
             }}
           />
         </div>
@@ -277,6 +334,7 @@ const ProductList: React.FC<ProductListProps> = ({
           </table>
         </div>
       </div>
+      <Pagination totalPageCount={totalPageCount} />
 
       {/* Modal chỉnh sửa sản phẩm */}
       {editProduct && (
@@ -298,7 +356,7 @@ const ProductList: React.FC<ProductListProps> = ({
           onSave={onEditProductDetail}
         />
       )}
-    </>
+    </div>
   )
 }
 

@@ -9,15 +9,18 @@ import { useAppSelector } from '~/hooks/redux'
 const NewProduct = () => {
   const [products, setProducts] = useState<Product[]>([])
   const { accessToken } = useAppSelector((state) => state.user)
-  const getNewProducts = async () => {
+  const [totalPageCount, setTotalPageCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const getNewProducts = async ({ currentPage }: { currentPage: string }) => {
     try {
       const response = await apiGetAllProductsWithDefaultPD({
-        page: '0',
-        limit: '10',
+        page: currentPage,
+        limit: '4',
         sortBy: 'createdAt'
       })
       if (response.code == 200) {
         setProducts(response.result.content)
+        setTotalPageCount(response.result.page.totalPages)
       } else {
         showToastError(response.message || response.error)
       }
@@ -29,10 +32,17 @@ const NewProduct = () => {
   }
 
   useEffect(() => {
-    getNewProducts()
-  }, [])
-  console.log(products)
-  return <ProductSection title='New Products' products={products} />
+    getNewProducts({ currentPage })
+  }, [currentPage])
+  return (
+    <ProductSection
+      title='New Products'
+      products={products}
+      totalPageCount={totalPageCount}
+      currentPage={currentPage}
+      setCurrentPage={setCurrentPage}
+    />
+  )
 }
 
 export default NewProduct
