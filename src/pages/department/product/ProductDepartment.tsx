@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AxiosError } from 'axios'
-import { ProductList } from './ProductList'
-import Filters from './Filters'
 import { showToastError } from '~/utils/alert'
 import { Product } from '~/types/product'
 import { apiGetAllProductsWithDefaultPD } from '~/api/product'
@@ -9,13 +7,16 @@ import { ProductSearchParams } from '~/types/filter'
 import { useSearchParams } from 'react-router-dom'
 import Pagination from '~/components/pagination/Pagination'
 import { useAppSelector } from '~/hooks/redux'
+import { ProductListDepartment } from './ProductListDepartment'
+import FiltersDepartment from './FiltersDepartment'
+
 const coupons = [
   { id: 1, discount: 200000, minOrder: 1300000, code: '0325SALE200', expiry: '31/03/2025' },
   { id: 2, discount: 100000, minOrder: 800000, code: 'DISCOUNT100', expiry: '15/04/2025' },
   { id: 3, discount: 100000, minOrder: 800000, code: 'GIAMGIA100', expiry: '15/04/2025' }
 ]
 
-const ProductPage: React.FC = () => {
+const ProductDepartment: React.FC = () => {
   const [searchParams] = useSearchParams()
   const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as ProductSearchParams, [searchParams])
   const [products, setProducts] = useState<Product[] | null>(null)
@@ -40,7 +41,7 @@ const ProductPage: React.FC = () => {
         search,
         accessToken: accessToken ?? undefined
       })
-      if (response.code == 200) {
+      if (response.code === 200) {
         setProducts(response.result.content)
         setTotalPageCount(response.result.page.totalPages)
       } else {
@@ -66,20 +67,27 @@ const ProductPage: React.FC = () => {
     getAllProduct(currentParams)
     window.scrollTo(0, 0)
   }, [currentParams])
+
   return (
-    <section className='mx-auto p-10 flex gap-10 mt-16'>
-      <Filters
+    <section className='mx-auto p-10 mt-16 ml-64'>
+      <h1 className='text-4xl font-bold text-blue-800 mb-6 text-center'>Products List</h1>
+      <FiltersDepartment
         currentParams={currentParams}
         coupons={coupons}
         appliedCoupon={appliedCoupon}
         onApplyDiscount={applyDiscount}
       />
-      <div className='flex-1'>
-        <ProductList products={products} onViewDetails={handleViewDetails} />
+      <div className='mt-6'>
+        <ProductListDepartment
+          products={products}
+          loading={products === null}
+          error={null}
+          onViewDetails={handleViewDetails}
+        />
         <Pagination totalPageCount={totalPageCount} />
       </div>
     </section>
   )
 }
 
-export default ProductPage
+export default ProductDepartment

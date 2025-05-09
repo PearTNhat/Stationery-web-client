@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ShoppingCart, Menu, X } from 'lucide-react'
-import { useNavigate, NavLink, Link, createSearchParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, NavLink, Link } from 'react-router-dom'
 import { publicPaths } from '~/constance/paths'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { userActions } from '~/store/slices/user'
@@ -13,15 +13,11 @@ import { fetchMyVocher } from '~/store/actions/promotion'
 import { fetchCurrentUser } from '~/store/actions/user'
 import { fetchMyCart } from '~/store/actions/cart'
 import SearchWithSuggestions from '../search/SearchWithSuggestions'
-import { ProductSearchParams } from '~/types/filter'
 
 function Header() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const [searchParams] = useSearchParams()
-  const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as ProductSearchParams, [searchParams])
   const { myCart } = useAppSelector((state) => state.cart)
-  const [search, setSearch] = useState<string>('')
   const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'light')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { isLoggedIn, userData, accessToken } = useAppSelector((state) => state.user)
@@ -56,13 +52,6 @@ function Header() {
       console.error('Logout error:', error)
       showToastError('Logout failed. Please try again.')
     }
-  }
-  const handleSearchProduct = () => {
-    const newParams = { ...currentParams, search }
-    navigate({
-      pathname: publicPaths.PRODUCT,
-      search: createSearchParams(newParams).toString()
-    })
   }
 
   useEffect(() => {

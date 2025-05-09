@@ -1,4 +1,4 @@
-import { Route, Routes, useParams } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import { useAppSelector } from './hooks/redux'
 import { adminPaths, publicPaths, userPaths } from './constance/paths'
 import Login from './pages/public/auth/Login'
@@ -33,6 +33,9 @@ import CategoriesProductManagement from './pages/admin/category/CategoriesProduc
 import ColorManagement from './pages/admin/color/ColorManagement'
 import SizeManagement from './pages/admin/size/SizeManagement'
 import OrderManagement from './pages/admin/order/OrderManagement'
+import ProductDepartment from './pages/department/product/ProductDepartment'
+import CreateRequest from './pages/department/request/CreateRequest'
+import InvoiceAndReport from './pages/department/invoice/InvoiceAndReport'
 
 function App() {
   const { childrenModal, isOpenModal } = useAppSelector((state) => state.modal)
@@ -60,7 +63,9 @@ function App() {
         </Route>
         <Route path={departmentPath.DASHBOARD} element={<DepartmentLayout />}>
           <Route index element={<Dashboard />} />
-          {/* <Route path={departmentPath.PRODUCT} element={<Product />} /> */}
+          <Route path={departmentPath.PRODUCT} element={<ProductDepartment />} />
+          <Route path={departmentPath.CREATE_REQUEST} element={<CreateRequest />} />
+          <Route path={departmentPath.INVOICE} element={<InvoiceAndReport />} />
         </Route>
         <Route path={adminPaths.ADMIN} element={<AdminLayout />}>
           <Route index element={<DashBoard />} />

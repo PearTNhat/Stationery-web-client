@@ -23,7 +23,8 @@ const userPaths = {
 const departmentPath = {
   DASHBOARD: '/department/dashboard',
   PRODUCT: 'product',
-  PROFILE: '/department/profile'
+  CREATE_REQUEST: 'create-request',
+  INVOICE: 'invoice'
 }
 
 const adminPaths = {
