@@ -1,4 +1,3 @@
-// components/product/ProductInfo.tsx
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import NumberToStart from '~/components/numberToStar/NumberToStart'
@@ -8,16 +7,17 @@ import { ProductDetail } from '~/types/product'
 import { showAlertError, showToastError, showToastSuccess } from '~/utils/alert'
 import { calculatePercent, formatNumber, priceInPromotion } from '~/utils/helper'
 import Voucher from '~/components/voucher/Voucher'
-import { apiAddItemToCart } from '~/api/cart' // Import API
+import { apiAddItemToCart } from '~/api/cart'
 import { useAppDispatch } from '~/hooks/redux'
 import { fetchMyCart } from '~/store/actions/cart'
+
 type ProductInfoProps = {
   colorSize: ColorSize[] | []
   productDetail?: ProductDetail
   name?: string
   totalRating?: number
-  accessToken: string // Thêm accessToken
-  productDetailId?: string // Đổi tên prop cho rõ ràng
+  accessToken: string
+  productDetailId?: string
 }
 
 export const ProductInfo: React.FC<ProductInfoProps> = ({
@@ -31,7 +31,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const [selectedColor, setSelectedColor] = useState<string>(productDetail?.color?.colorId ?? '')
-  const [selectedSize, setSelectedSize] = useState<string>(productDetail?.size?.sizeId ?? '') // Sửa lỗi
+  const [selectedSize, setSelectedSize] = useState<string>(productDetail?.size?.sizeId ?? '')
   const [sizes, setSizes] = useState<SizeSlug[]>([])
   const [quantity, setQuantity] = useState(1)
 
@@ -47,6 +47,11 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
 
   const handleAddToCart = async () => {
     if (!productDetailId) {
+      showToastError('Missing product information')
+      return
+    }
+    if (quantity > (productDetail?.stockQuantity ?? 0)) {
+      showToastError(`Cannot add to cart: Only ${productDetail?.stockQuantity} items in stock`)
       return
     }
 
@@ -61,7 +66,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
         showToastError(response)
         return
       }
-      dispatch(fetchMyCart({ accessToken })) // Cập nhật lại giỏ hàng sau khi thêm sản phẩm
+      dispatch(fetchMyCart({ accessToken }))
       showToastSuccess('Added to cart successfully!')
     } catch {
       showToastError('Added to cart failed!')
@@ -73,8 +78,12 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
       showAlertError('Missing product information')
       return
     }
+    if (quantity > (productDetail?.stockQuantity ?? 0)) {
+      showAlertError(`Cannot proceed: Only ${productDetail?.stockQuantity} items in stock`)
+      return
+    }
+
     const discountPrice = priceInPromotion(productDetail)
-    console.log('Discount Price:', discountPrice)
     const order = {
       items: [
         {
@@ -96,16 +105,13 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
       totalAmount: discountPrice * quantity
     }
 
-    console.log('Order Nguyễn Quốc Khoa:', order)
-
-    navigate(`/products/payment-confirmation`, { state: { order } }) // fixed typo
+    navigate(`/products/payment-confirmation`, { state: { order } })
   }
 
   return (
     <div className='w-full md:w-1/2'>
       <h1 className='text-2xl font-bold text-blue-700'>{name}</h1>
       <div className='flex'>
-        {/* Giá chưa giảm */}
         <div className='flex-1 flex gap-3'>
           <p className='text-[19px] max-sm:text-xs font-semibold text-blue-500'>
             {formatNumber(priceInPromotion(productDetail))} ₫
@@ -128,7 +134,6 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
         </div>
       </div>
       <p className='mt-2'>Stock: {productDetail?.stockQuantity}</p>
-      {/* Size Selector */}
       <div className='mt-4'>
         <label className='block text-gray-700 font-semibold'>Choose size:</label>
         <div className='flex gap-2 mt-2'>
@@ -150,19 +155,20 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
           )}
         </div>
       </div>
-      {/* Color Selector */}
       <div className='flex text-gray-500 text-sm gap-2 mt-2'>
         {colorSize?.map((item) => (
           <div key={item.colorId} className='flex gap-3 mt-2'>
             <button
               onClick={() => {
-                setSelectedColor(item.colorId) // Cập nhật selectedColor
+                setSelectedColor(item.colorId)
                 navigate(`/products/${item.sizes[0].slug}`)
               }}
               className={`w-5 h-5 rounded-full border-2 transition-all ${
                 selectedColor === item.colorId
                   ? 'border-black scale-110 ring-1 ring-offset-1 ring-black'
-                  : 'border-transparent'
+                  : item.hex.toLowerCase() === '#ffffff' || item.hex.toLowerCase() === '#fff'
+                    ? 'border-black'
+                    : 'border-transparent'
               }`}
               style={{ backgroundColor: item.hex }}
             ></button>
@@ -170,7 +176,11 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
         ))}
       </div>
 
-      <QuantitySelector quantity={quantity} onQuantityChange={setQuantity} />
+      <QuantitySelector
+        quantity={quantity}
+        onQuantityChange={setQuantity}
+        maxQuantity={productDetail?.stockQuantity ?? 0} // Truyền stockQuantity
+      />
 
       <div className='mt-4 flex gap-4'>
         <button

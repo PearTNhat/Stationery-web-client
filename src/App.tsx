@@ -36,6 +36,8 @@ import OrderManagement from './pages/admin/order/OrderManagement'
 import ProductDepartment from './pages/department/product/ProductDepartment'
 import CreateRequest from './pages/department/request/CreateRequest'
 import InvoiceAndReport from './pages/department/invoice/InvoiceAndReport'
+import NotificationPage from './pages/department/notification/NotificationPage'
+import SupportPage from './pages/department/support/SupportPage'
 
 function App() {
   const { childrenModal, isOpenModal } = useAppSelector((state) => state.modal)
@@ -66,6 +68,8 @@ function App() {
           <Route path={departmentPath.PRODUCT} element={<ProductDepartment />} />
           <Route path={departmentPath.CREATE_REQUEST} element={<CreateRequest />} />
           <Route path={departmentPath.INVOICE} element={<InvoiceAndReport />} />
+          <Route path={departmentPath.NOTIFICATION} element={<NotificationPage />} />
+          <Route path={departmentPath.SUPPORT} element={<SupportPage />} />
         </Route>
         <Route path={adminPaths.ADMIN} element={<AdminLayout />}>
           <Route index element={<DashBoard />} />

@@ -61,8 +61,8 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, selectedYear, selec
         <table className='w-full text-left'>
           <thead>
             <tr className='bg-gradient-to-r from-blue-50 to-blue-100 text-blue-800'>
-              <th className='p-4 text-sm font-semibold'>ID</th>
-              <th className='p-4 text-sm font-semibold'>Số tiền</th>
+              <th className='p-4 text-sm font-semibold'>Mã hóa đơn</th>
+              <th className='p-4 text-sm font-semibold'>Tổng tiền</th>
               <th className='p-4 text-sm font-semibold'>Ngày</th>
               <th className='p-4 text-sm font-semibold'>Hành động</th>
             </tr>

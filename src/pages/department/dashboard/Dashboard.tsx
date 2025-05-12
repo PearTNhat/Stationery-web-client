@@ -15,7 +15,7 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className='min-h-screen bg-base-100 p-8 ml-64'>
+    <div className='min-h-screen bg-base-100 p-10 ml-16'>
       {/* Partner Information - Enhanced Design */}
       <div className='mb-6 bg-gradient-to-r from-blue-50 to-white shadow-xl rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between transform hover:scale-[1.01] transition-all duration-300'>
         <div className='flex items-center mb-4 sm:mb-0'>
@@ -39,7 +39,7 @@ const Dashboard: React.FC = () => {
         </Link>
       </div>
 
-      <h1 className='text-3xl font-bold text-blue-800 mb-6'>Dashboard</h1>
+      <h1 className='text-3xl font-bold text-blue-800 mb-6 ml-1'>Dashboard</h1>
 
       <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
         <div className='md:col-span-2'>

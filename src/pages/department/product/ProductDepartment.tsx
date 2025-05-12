@@ -69,14 +69,15 @@ const ProductDepartment: React.FC = () => {
   }, [currentParams])
 
   return (
-    <section className='mx-auto p-10 mt-16 ml-64'>
-      <h1 className='text-4xl font-bold text-blue-800 mb-6 text-center'>Products List</h1>
+    <section className='mx-auto p-10 ml-14'>
+      <h1 className='text-2xl font-bold text-blue-800 mb-6 ml-2'>Products Filters</h1>
       <FiltersDepartment
         currentParams={currentParams}
         coupons={coupons}
         appliedCoupon={appliedCoupon}
         onApplyDiscount={applyDiscount}
       />
+      <div className='border-b border-gray-300' />
       <div className='mt-6'>
         <ProductListDepartment
           products={products}

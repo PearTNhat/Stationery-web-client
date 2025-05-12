@@ -112,7 +112,7 @@ const OrderTracking: React.FC<OrderTrackingProps> = ({ requests, activeTab, setA
                   <td className='p-4 text-sm'>
                     <button
                       onClick={() => handleViewCancelDetails(request)}
-                      className='text-blue-500 hover:text-blue-700 transition'
+                      className='bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-colors'
                     >
                       <FaInfoCircle size={16} />
                     </button>

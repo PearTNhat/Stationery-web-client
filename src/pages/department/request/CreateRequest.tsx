@@ -86,7 +86,6 @@ const CreateRequest: React.FC = () => {
   const [productSearch, setProductSearch] = useState('')
   const [requests, setRequests] = useState<Request[]>(mockRequests)
   const [activeTab, setActiveTab] = useState<'delivered' | 'cancelled' | 'inTransit'>('delivered')
-  const [isSidebarOpen] = useState(true)
 
   // Filter requests for Pending (main table)
   const pendingRequests = requests.filter((request) => request.status === 'Pending')
@@ -188,15 +187,10 @@ const CreateRequest: React.FC = () => {
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 transition-all duration-300'>
-      <div
-        className={`transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-20'} pt-6 pr-6 pl-6 max-w-10xl mx-auto`}
-      >
+      <div className={`transition-all duration-300 p-10 ml-16 max-w-10xl mx-auto`}>
         {/* Header */}
         <div className='flex items-center justify-between mb-8'>
-          <div className='flex items-center gap-3'>
-            <FaPlusCircle className='text-blue-600' size={28} />
-            <h1 className='text-3xl font-bold text-gray-800'>Quản Lý Yêu Cầu</h1>
-          </div>
+          <h1 className='text-3xl font-bold text-blue-800 mb-6 ml-1'>Create Request</h1>
           <button
             onClick={() => {
               setShowForm(true)
@@ -264,13 +258,13 @@ const CreateRequest: React.FC = () => {
                     <td className='p-4 text-sm flex gap-2'>
                       <button
                         onClick={() => handleEdit(request)}
-                        className='text-blue-500 hover:text-blue-700 transition'
+                        className='bg-yellow-500 text-white p-2 rounded-lg hover:bg-yellow-500 transition-colors'
                       >
                         <FaEdit size={16} />
                       </button>
                       <button
                         onClick={() => handleDelete(request.id)}
-                        className='text-red-500 hover:text-red-700 transition'
+                        className='bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors'
                       >
                         <FaTrash size={16} />
                       </button>

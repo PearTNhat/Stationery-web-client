@@ -1,4 +1,3 @@
-// cái này xài mấy cái biến global khác
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { CartItem } from '~/types/cart'
 import { fetchMyCart } from '../actions/cart'
@@ -7,17 +6,27 @@ interface CartState {
   myCart: CartItem[]
   isLoading: boolean
   isError: boolean
+  isCartOpen: boolean
 }
 
 const initialState: CartState = {
   myCart: [],
   isLoading: false,
-  isError: false
+  isError: false,
+  isCartOpen: false
 }
+
 const cartSlice = createSlice({
   name: 'cart',
   initialState,
-  reducers: {},
+  reducers: {
+    toggleCart(state) {
+      state.isCartOpen = !state.isCartOpen
+    },
+    setCartOpen(state, action: PayloadAction<boolean>) {
+      state.isCartOpen = action.payload
+    }
+  },
   extraReducers: (builder) => {
     builder.addCase(fetchMyCart.pending, (state) => {
       state.isLoading = true
@@ -34,6 +43,6 @@ const cartSlice = createSlice({
     })
   }
 })
-const cartReducer = cartSlice.reducer
-const cartActions = cartSlice.actions
-export { cartReducer, cartActions }
+
+export const cartReducer = cartSlice.reducer
+export const cartActions = cartSlice.actions

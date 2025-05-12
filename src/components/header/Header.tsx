@@ -1,30 +1,31 @@
-import { useEffect, useState } from 'react'
-import { ShoppingCart, Menu, X } from 'lucide-react'
-import { useNavigate, NavLink, Link } from 'react-router-dom'
+import { useEffect, useState, useRef } from 'react'
+import { ShoppingCart, Menu, X, Camera } from 'lucide-react'
+import { useNavigate, NavLink, Link, createSearchParams } from 'react-router-dom'
 import { publicPaths } from '~/constance/paths'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { userActions } from '~/store/slices/user'
 import { showToastError, showToastSuccess } from '~/utils/alert'
 import { dropDownProfile } from '~/constance/dropdown'
-import Cart from '~/pages/public/cart/Cart'
 import { apiLogout } from '~/api/authenticate'
 import { fetchCategories } from '~/store/actions/category'
 import { fetchMyVocher } from '~/store/actions/promotion'
 import { fetchCurrentUser } from '~/store/actions/user'
 import { fetchMyCart } from '~/store/actions/cart'
+import { cartActions } from '~/store/slices/cart' // Import cartActions
 import SearchWithSuggestions from '../search/SearchWithSuggestions'
+import Cart from '~/pages/public/cart/Cart'
 
 function Header() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const { myCart } = useAppSelector((state) => state.cart)
+  const { myCart, isCartOpen } = useAppSelector((state) => state.cart) // Lấy isCartOpen từ Redux
   const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'light')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { isLoggedIn, userData, accessToken } = useAppSelector((state) => state.user)
-  const [isCartOpen, setIsCartOpen] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleCartToggle = () => {
-    setIsCartOpen(!isCartOpen)
+    dispatch(cartActions.toggleCart()) // Sử dụng action toggleCart
   }
 
   useEffect(() => {
@@ -44,13 +45,48 @@ function Header() {
       if (response.code == 200) {
         dispatch(userActions.logout())
         showToastSuccess('Logout successfully')
-        navigate('/auth?mode=login')
+        navigate('/auth?mode=login вы')
       } else {
         showToastError(response.message || 'Logout failed')
       }
     } catch (error) {
       console.error('Logout error:', error)
       showToastError('Logout failed. Please try again.')
+    }
+  }
+
+  const handleImageSearch = async (file: File) => {
+    const formData = new FormData()
+    formData.append('image', file)
+
+    try {
+      const res = await fetch('http://127.0.0.1:5000/predict', {
+        method: 'POST',
+        body: formData
+      })
+      if (!res.ok) throw new Error(`Status ${res.status}`)
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+
+      const newParams = { search: data.label }
+      navigate({
+        pathname: publicPaths.PRODUCT,
+        search: createSearchParams(newParams).toString()
+      })
+    } catch (err: any) {
+      console.error('Image search error:', err)
+      showToastError(`Tìm kiếm bằng ảnh thất bại: ${err.message}`)
+    }
+  }
+
+  const handleCameraClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      handleImageSearch(file)
     }
   }
 
@@ -65,12 +101,10 @@ function Header() {
 
   return (
     <nav className='fixed top-0 left-0 right-0 z-50 shadow-md bg-white px-6 py-3 flex items-center justify-between md:px-10 dark:bg-gray-800'>
-      {/* Logo */}
       <Link to='/'>
         <div className='text-2xl font-bold text-blue-600 cursor-pointer dark:text-blue-400'>Stationery's P</div>
       </Link>
 
-      {/* Desktop Menu */}
       <div className='hidden md:flex space-x-6 text-gray-700 dark:text-gray-300'>
         <NavLink
           to={publicPaths.PUBLIC}
@@ -124,14 +158,20 @@ function Header() {
         </NavLink>
       </div>
 
-      {/* Search Component */}
-      <div className='hidden md:block'>
+      <div className='hidden md:flex items-center space-x-2'>
         <SearchWithSuggestions />
+        <input type='file' accept='image/*' ref={fileInputRef} className='hidden' onChange={handleFileChange} />
+        <button
+          type='button'
+          onClick={handleCameraClick}
+          className='p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400'
+          aria-label='Search by image'
+        >
+          <Camera size={20} />
+        </button>
       </div>
 
-      {/* Icons Section */}
       <div className='flex items-center space-x-4'>
-        {/* Cart */}
         <div className='relative cursor-pointer' onClick={handleCartToggle}>
           <ShoppingCart
             size={24}
@@ -142,7 +182,6 @@ function Header() {
           </span>
         </div>
 
-        {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
           className='p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition dark:bg-gray-70'
@@ -151,7 +190,6 @@ function Header() {
           {theme === 'light' ? '🌞' : '🌙'}
         </button>
 
-        {/* User Profile */}
         {isLoggedIn ? (
           <div className='d-dropdown d-dropdown-hover d-dropdown-end'>
             <div tabIndex={0} className='w-10 h-10 rounded-full overflow-hidden'>
@@ -199,13 +237,11 @@ function Header() {
           </div>
         )}
 
-        {/* Mobile Menu Button */}
         <button className='md:hidden' onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label='Toggle menu'>
           {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>
 
-      {/* Mobile Menu */}
       {isMenuOpen && (
         <div className='absolute top-16 left-0 w-full bg-white shadow-md md:hidden z-[999999] dark:bg-gray-700'>
           <div className='flex flex-col space-y-4 p-4 text-gray-700 dark:text-gray-300'>
@@ -275,7 +311,6 @@ function Header() {
                 {theme === 'light' ? '🌞' : '🌙'}
               </button>
             </div>
-            {/* Mobile Login/Register */}
             {!isLoggedIn && (
               <>
                 <button
@@ -301,7 +336,6 @@ function Header() {
           </div>
         </div>
       )}
-      {/* Giỏ hàng Modal */}
       <Cart isOpen={isCartOpen} onClose={handleCartToggle} cartItems={myCart} accessToken={accessToken || ''} />
     </nav>
   )

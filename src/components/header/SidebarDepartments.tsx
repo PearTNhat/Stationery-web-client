@@ -29,7 +29,7 @@ const Sidebar: React.FC = () => {
     { icon: <FaBox size={18} />, text: 'Products', path: departmentPath.PRODUCT },
     { icon: <FaPlusCircle size={18} />, text: 'Create Request', path: departmentPath.CREATE_REQUEST },
     { icon: <FaClipboardList size={18} />, text: 'Invoice', path: departmentPath.INVOICE },
-    { icon: <FaBell size={18} />, text: 'Alerts', path: departmentPath.ALERTS, badge: 3 },
+    { icon: <FaBell size={18} />, text: 'Notification', path: departmentPath.NOTIFICATION, badge: 3 },
     { icon: <FaHeadset size={18} />, text: 'Support', path: departmentPath.SUPPORT }
   ]
 

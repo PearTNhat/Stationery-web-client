@@ -37,11 +37,7 @@ const sampleInvoices: Invoice[] = [
 
 const MONTHS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 
-interface InvoiceAndReportProps {
-  isOpen: boolean
-}
-
-const InvoiceAndReport: React.FC<InvoiceAndReportProps> = ({ isOpen }) => {
+const InvoiceAndReport: React.FC = () => {
   const currentYear = '2025' // Dựa trên ngày hiện tại: 06/05/2025
   const currentMonth = '05'
   const [selectedYear, setSelectedYear] = useState<string>(currentYear)
@@ -61,13 +57,10 @@ const InvoiceAndReport: React.FC<InvoiceAndReportProps> = ({ isOpen }) => {
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 transition-all duration-300'>
-      <div className={`transition-all duration-300 ${isOpen ? 'ml-64' : 'ml-20'} pt-6 pr-6 pl-6 max-w-10xl mx-auto`}>
+      <div className={`transition-all duration-300 p-10 ml-16 max-w-10xl mx-auto`}>
         {/* Header */}
         <div className='flex items-center justify-between mb-8'>
-          <div className='flex items-center gap-3'>
-            <FaClipboardList className='text-blue-600' size={28} />
-            <h1 className='text-3xl font-bold text-gray-800'>Quản Lý Hóa Đơn</h1>
-          </div>
+          <h1 className='text-3xl font-bold mb-6 text-blue-700'>Quản lý hóa đơn</h1>
           <div className='flex gap-4'>
             <select
               value={selectedYear}

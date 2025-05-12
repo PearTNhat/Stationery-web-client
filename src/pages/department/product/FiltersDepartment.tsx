@@ -23,7 +23,7 @@ type Props = {
 const FiltersDepartment: React.FC<Props> = ({ currentParams }) => {
   return (
     <div className='w-full p-4'>
-      <div className='flex flex-row gap-24 mb-6 justify-center overflow-x-auto'>
+      <div className='flex flex-row gap-16 mb-6 justify-center overflow-x-auto'>
         <div className='min-w-[400px]'>
           <CategoryFilter />
         </div>

@@ -5,10 +5,10 @@ import { ProductImages } from './ProductImages'
 import { ProductInfo } from './ProductInfo'
 import { ProductTabs } from './ProductTabs'
 import { SimilarProducts } from './SimilarProducts'
-import { apiFetchColorSizeProductDetail, apiGetAllProductsWithDefaultPD, apiGetDetailProduct } from '~/api/product'
+import { apiFetchColorSizeProductDetail, apiGetDetailProduct } from '~/api/product'
 import { useAppSelector } from '~/hooks/redux'
 import { showToastError, showToastSuccess } from '~/utils/alert'
-import { Product, ProductDeatilResponse } from '~/types/product'
+import { Product } from '~/types/product'
 import AxiosError from 'axios'
 import { apiGetReviewOfProduct } from '~/api/review'
 import { Review } from '~/types/comment'
@@ -20,7 +20,6 @@ export default function ProductDetail() {
   const { accessToken } = useAppSelector((state) => state.user)
   const [product, setProduct] = useState<Product | null>(null)
   const [fechAgain, setFetchAgain] = useState(false)
-  const [similarProducts, setSimilarProducts] = useState<ProductDeatilResponse[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
   const [colorSize, setColorSize] = useState<ColorSize[]>([])
 
@@ -57,27 +56,6 @@ export default function ProductDetail() {
     } catch (error) {
       if (error instanceof Error || error instanceof AxiosError) {
         // showToastError(error.message)
-      }
-    }
-  }
-
-  const getSimilarProduct = async () => {
-    try {
-      const response = await apiGetAllProductsWithDefaultPD({
-        page: '0',
-        limit: '10',
-        sortBy: 'totalRating'
-      })
-      if (response.code == 200) {
-        setSimilarProducts(response.result.content)
-      } else {
-        showToastError(response.message || response.error)
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        showToastError(error.message)
-      } else {
-        showToastError(error as string)
       }
     }
   }
@@ -118,7 +96,6 @@ export default function ProductDetail() {
   }, [fechAgain])
   useEffect(() => {
     fetchColorSize()
-    getSimilarProduct()
   }, [product?.productId])
   useEffect(() => {
     getProductDetail()
@@ -146,11 +123,7 @@ export default function ProductDetail() {
         reviews={reviews}
         setFetchAgain={setFetchAgain}
       />
-      <SimilarProducts
-        similarProducts={similarProducts}
-        onAddToCart={handleAddToCart}
-        onViewDetails={handleViewDetails}
-      />
+      <SimilarProducts pId={product?.productId} onAddToCart={handleAddToCart} onViewDetails={handleViewDetails} />
     </div>
   )
 }

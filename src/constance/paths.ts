@@ -24,7 +24,9 @@ const departmentPath = {
   DASHBOARD: '/department/dashboard',
   PRODUCT: 'product',
   CREATE_REQUEST: 'create-request',
-  INVOICE: 'invoice'
+  INVOICE: 'invoice',
+  NOTIFICATION: 'notification',
+  SUPPORT: 'support'
 }
 
 const adminPaths = {
