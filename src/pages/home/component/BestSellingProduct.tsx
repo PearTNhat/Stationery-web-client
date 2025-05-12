@@ -14,7 +14,7 @@ const NewProduct = () => {
       const response = await apiGetAllProductsWithDefaultPD({
         page: currentPage,
         limit: '4',
-        sortBy: 'createdAt'
+        sortBy: 'soldQuantity'
       })
       if (response.code == 200) {
         setProducts(response.result.content)
@@ -34,7 +34,7 @@ const NewProduct = () => {
   }, [currentPage])
   return (
     <ProductSection
-      title='New Products'
+      title='Best Sales'
       products={products}
       totalPageCount={totalPageCount}
       currentPage={currentPage}

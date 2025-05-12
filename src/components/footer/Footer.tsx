@@ -7,7 +7,6 @@ const Footer = () => {
   return (
     <footer className='bg-gray-800 text-white py-8'>
       <div className='container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-6 mb-5'>
-
         {/* Thông tin địa chỉ */}
         <div className='space-y-3'>
           <h3 className='font-bold text-xl mb-3'>Address Information</h3>
@@ -63,7 +62,7 @@ const Footer = () => {
             </li>
             <li>
               <Link to={publicPaths.SHIPPING_POLICY} className='hover:text-blue-400 transition'>
-              Shipping Policy
+                Shipping Policy
               </Link>
             </li>
             <li>
@@ -111,9 +110,7 @@ const Footer = () => {
               placeholder='Enter your email'
               className='w-full p-2 rounded text-gray-900 focus:ring focus:ring-blue-400'
             />
-            <button className='bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition'>
-              Subscribe
-            </button>
+            <button className='bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition'>Subscribe</button>
           </div>
         </div>
       </div>

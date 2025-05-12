@@ -5,6 +5,7 @@ import { apiRemoveCartItem, apiUpdateCartItem } from '~/api/cart'
 import { useNavigate } from 'react-router-dom'
 import { fetchMyCart } from '~/store/actions/cart'
 import { useAppDispatch } from '~/hooks/redux'
+import { cartActions } from '~/store/slices/cart' // Import cartActions
 
 interface CartProps {
   isOpen: boolean
@@ -19,6 +20,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken }) 
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null)
   const [totalPrice, setTotalPrice] = useState(0)
+
   const handleQuantityChange = async (productDetailId: string, newQuantity: number) => {
     if (newQuantity < 1) return
     setLoadingItemId(productDetailId)
@@ -69,6 +71,14 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken }) 
     onClose()
     navigate(`/products/payment-confirmation`, { state: { order } })
   }
+
+  useEffect(() => {
+    if (isOpen) {
+      const allIds = cartItems.map((item) => item.productDetailId)
+      setSelectedItems(allIds)
+    }
+  }, [cartItems, isOpen])
+
   useEffect(() => {
     const totalPrice = cartItems
       .filter((item) => selectedItems.includes(item.productDetailId))
@@ -77,6 +87,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken }) 
       }, 0)
     setTotalPrice(totalPrice)
   }, [selectedItems, cartItems])
+
   return (
     <>
       {isOpen && <div className='fixed inset-0 bg-black bg-opacity-50 z-40' onClick={onClose} />}
@@ -88,12 +99,33 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, cartItems, accessToken }) 
         <div className='flex flex-col h-full'>
           <div className='p-4 border-b flex justify-between items-center'>
             <h2 className='text-xl font-bold'>🛒 Shopping Cart</h2>
-            <button onClick={onClose} className='p-1 hover:bg-gray-100 rounded-full'>
+            <button
+              onClick={() => {
+                dispatch(cartActions.toggleCart()) // Toggle giỏ hàng khi đóng
+              }}
+              className='p-1 hover:bg-gray-100 rounded-full'
+            >
               <X size={24} />
             </button>
           </div>
 
           <div className='flex-1 overflow-y-auto p-4 space-y-4'>
+            {cartItems.length > 0 && (
+              <div className='flex justify-end mb-2'>
+                <button
+                  onClick={() => {
+                    if (selectedItems.length === cartItems.length) {
+                      setSelectedItems([])
+                    } else {
+                      setSelectedItems(cartItems.map((item) => item.productDetailId))
+                    }
+                  }}
+                  className='text-sm text-blue-600 hover:underline'
+                >
+                  {selectedItems.length === cartItems.length ? 'Deselect All' : 'Select All'}
+                </button>
+              </div>
+            )}
             {cartItems.length === 0 ? (
               <p className='text-gray-500 text-center'>Your cart is currently empty.</p>
             ) : (

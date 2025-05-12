@@ -25,7 +25,7 @@ export default function CustomerInfo({ selectedShippingInfo, userInfo, setUserIn
   return (
     <div className='mt-6 bg-gray-100 p-4 rounded-lg'>
       <div className='flex items-center justify-between mb-4'>
-        <h2 className='text-lg font-semibold text-gray-800'>Customer Information</h2>
+        <h2 className='text-lg font-semibold text-gray-800'>Additional Note</h2>
         <button
           onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
           className={`flex items-center gap-2 px-4 py-2 rounded-md text-white font-medium transition-all shadow-md ${
@@ -38,7 +38,7 @@ export default function CustomerInfo({ selectedShippingInfo, userInfo, setUserIn
       </div>
       {/* Note */}
       <div className='mt-2'>
-        <label className='block font-semibold mb-1'>Note (optional):</label>
+        <label className='block font-semibold mb-1'>Note:</label>
         {isEditing ? (
           <textarea
             value={userInfo.note || ''}
