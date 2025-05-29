@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Swal from 'sweetalert2'
 import ProgressBar from './component/ProgressBar'
 import AddProductForm from './addproduct/AddProductForm'
@@ -6,145 +6,133 @@ import AddProductDetailsForm from './addproduct/AddProductDetailsForm'
 import ConfirmProductForm from './addproduct/ConfirmProductForm'
 import ProductList from './component/ProductList'
 import { FaPlus } from 'react-icons/fa'
-import { ListProductDetail, ProductDetail } from '~/types/product'
-import { mockProducts } from '~/constance/seed/mockProducts'
+import { ProductDetailForm, ProductForm } from '~/types/product'
+import { showToastError } from '~/utils/alert'
+import { categoriesToOptions, colorToOptions, sizeToOptions } from '~/utils/optionSelect'
+import { apiGetAllSizes } from '~/api/size'
+import { AxiosError } from 'axios'
+import { apiGetAllColors } from '~/api/color'
+import { useAppDispatch, useAppSelector } from '~/hooks/redux'
+import { apiCreateProduct } from '~/api/product'
+import { modalActions } from '~/store/slices/modal'
+import { PacmanLoader } from 'react-spinners'
+import { fetchCategories } from '~/store/actions/category'
 
 function ProductsManagement() {
-  const [products, setProducts] = useState<ListProductDetail[]>(mockProducts)
+  const dispatch = useAppDispatch()
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
-  const [newProduct, setNewProduct] = useState<ListProductDetail>({
-    productId: '',
+  const { accessToken } = useAppSelector((state) => state.user)
+  const [newProduct, setNewProduct] = useState<ProductForm>({
     name: '',
     description: '',
     slug: '',
-    category: { categoryId: '', categoryName: '' },
-    minPrice: 0,
-    quantity: 0,
-    soldQuantity: 0,
-    totalRating: 0,
-    createdAt: new Date().toISOString(),
-    productDetails: [],
-    fetchColor: [],
-    img: ''
+    categoryId: '',
+    productDetails: [] as ProductDetailForm[]
   })
+  const [colors, setColors] = useState<{ value: string; label: string; color: string }[]>([])
+  const [sizes, setSizes] = useState<{ value: string; label: string }[]>([])
+  const { categories } = useAppSelector((state) => state.category)
+  const [listCategories, setListCategories] = useState<
+    {
+      label: string
+      value: string
+    }[]
+  >([])
 
   const resetProcess = () => {
     setStep(0)
     setNewProduct({
-      productId: '',
       name: '',
       description: '',
       slug: '',
-      category: { categoryId: '', categoryName: '' },
-      minPrice: 0,
-      quantity: 0,
-      soldQuantity: 0,
-      totalRating: 0,
-      createdAt: new Date().toISOString(),
-      productDetail: [],
-      fetchColor: [],
-      img: ''
+      categoryId: '',
+      productDetails: []
     })
   }
 
-  const deleteProduct = async (id: string) => {
-    const result = await Swal.fire({
-      title: 'Xác nhận xóa?',
-      text: 'Bạn chắc chắn muốn xóa sản phẩm này?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Xóa',
-      cancelButtonText: 'Hủy'
-    })
+  const handleConfirm = async (newProduct: ProductForm) => {
+    try {
+      if (!accessToken) {
+        showToastError('Vui lòng đăng nhập để thực hiện thao tác này.')
+        return
+      }
+      const formData = new FormData()
 
-    if (result.isConfirmed) {
-      setProducts((prev) => prev.filter((p) => p.productId !== id))
-      Swal.fire('Đã xóa!', 'Sản phẩm đã được xóa.', 'success')
+      newProduct.productDetails.forEach((detail) => {
+        const colorId = detail.colorId
+        detail.images?.forEach((image) => {
+          formData.append(`files_${colorId}`, image.file)
+        })
+      })
+      const productData = {
+        ...newProduct,
+        productDetails: newProduct.productDetails.map((detail) => {
+          // Tạo một object mới với tất cả thuộc tính trừ images
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { images, ...detailWithoutImages } = detail
+          return detailWithoutImages
+        })
+      }
+      formData.append('document', JSON.stringify(productData))
+      dispatch(modalActions.toggleModal({ childrenModal: <PacmanLoader />, isOpenModal: true }))
+      const res = await apiCreateProduct({ data: formData, accessToken })
+      dispatch(modalActions.toggleModal({ childrenModal: null, isOpenModal: false }))
+      if (res.code === 200) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Add product successfully'
+        })
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: res.message
+        })
+      }
+      resetProcess()
+    } catch (error) {
+      if (error instanceof Error || error instanceof AxiosError) {
+        showToastError(error.message)
+      }
     }
   }
 
-  const deleteProductDetail = async (pId: string, detailId: string) => {
-    const result = await Swal.fire({
-      title: 'Xác nhận xóa?',
-      text: 'Bạn chắc chắn muốn xóa chi tiết sản phẩm này?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6'
-    })
-
-    if (result.isConfirmed) {
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.productId === pId
-            ? {
-                ...p,
-                productDetails: p.productDetails.filter((detail: ProductDetail) => detail.productDetailId !== detailId),
-                fetchColor: [
-                  ...new Set(
-                    p.productDetail
-                      .filter((detail: ProductDetail) => detail.productDetailId !== detailId)
-                      .map((detail) => ({
-                        colorId: detail.color.colorId,
-                        hex: detail.color.hex,
-                        slug: `color-${detail.color.name.toLowerCase().replace(/\s/g, '-')}`
-                      }))
-                  )
-                ],
-                minPrice:
-                  p.productDetails.length > 1
-                    ? Math.min(
-                        ...p.productDetails
-                          .filter((detail) => detail.productDetailId !== detailId)
-                          .map((d: ProductDetail) => d.discountPrice)
-                      )
-                    : 0,
-                quantity: p.productDetail
-                  .filter((detail) => detail.productDetailId !== detailId)
-                  .reduce((sum: number, d: ProductDetail) => sum + d.stockQuantity, 0),
-                soldQuantity: p.productDetail
-                  .filter((detail) => detail.productDetailId !== detailId)
-                  .reduce((sum: number, d: ProductDetail) => sum + d.soldQuantity, 0),
-                totalRating:
-                  p.productDetail.length > 1
-                    ? p.productDetail
-                        .filter((detail) => detail.productDetailId !== detailId)
-                        .reduce((sum: number, d: ProductDetail) => sum + d.totalRating, 0) /
-                      p.productDetail.filter((detail) => detail.productDetailId !== detailId).length
-                    : 0
-              }
-            : p
-        )
-      )
-      Swal.fire('Đã xóa!', 'Chi tiết sản phẩm đã được xóa.', 'success')
+  const getAllColors = async () => {
+    try {
+      const response = await apiGetAllColors()
+      if (response.code == 200) {
+        setColors(colorToOptions(response.result))
+      } else {
+        showToastError(response.message)
+      }
+    } catch (error) {
+      if (error instanceof Error || error instanceof AxiosError) {
+        showToastError(error.message)
+      }
     }
   }
-
-  const handleConfirm = () => {
-    const finalProduct: ListProductDetail = {
-      ...newProduct,
-      productId: `p${products.length + 1}`,
-      productDetails: newProduct.productDetails.map((detail) => ({
-        ...detail,
-        productId: `p${products.length + 1}`
-      })),
-      img: newProduct.productDetails[0]?.images?.[0]?.url || ''
+  const getAllSizes = async () => {
+    try {
+      const response = await apiGetAllSizes()
+      if (response.code == 200) {
+        setSizes(sizeToOptions(response.result))
+      } else {
+        showToastError(response.message)
+      }
+    } catch (error) {
+      if (error instanceof Error || error instanceof AxiosError) {
+        showToastError(error.message)
+      }
     }
-    setProducts((prev) => [...prev, finalProduct])
-    Swal.fire('Thành công!', 'Sản phẩm đã được thêm.', 'success')
-    resetProcess()
   }
+  useEffect(() => {
+    getAllColors()
+    getAllSizes()
+    setListCategories(categoriesToOptions(categories))
+    dispatch(fetchCategories())
+  }, [])
 
-  const checkDuplicateDetail = (detail: ProductDetail, details: ProductDetail[]) => {
-    return details.some(
-      (d) =>
-        d.productDetailId !== detail.productDetailId &&
-        d.color.colorId === detail.color.colorId &&
-        d.size.name === detail.size.name
-    )
-  }
   return (
     <div className='p-6 w-full mx-auto bg-white shadow-lg rounded-xl'>
       <div className='flex justify-between items-center mb-6'>
@@ -165,6 +153,7 @@ function ProductsManagement() {
       {step === 1 && (
         <AddProductForm
           initialProduct={newProduct}
+          listCategories={listCategories}
           onSubmit={(product) => {
             setNewProduct((prev) => ({ ...prev, ...product }))
             setStep(2)
@@ -176,144 +165,42 @@ function ProductsManagement() {
       {step === 2 && (
         <AddProductDetailsForm
           productDetails={newProduct.productDetails}
-          fetchColors={newProduct.fetchColor}
+          sizes={sizes}
+          colors={colors}
           onAddDetail={(detail) => {
             setNewProduct((prev) => {
               // Kiểm tra trùng lặp
-              if (checkDuplicateDetail(detail, prev.productDetails)) {
-                Swal.fire({
-                  icon: 'error',
-                  title: 'Lỗi',
-                  text: 'Chi tiết sản phẩm với màu và kích thước này đã tồn tại.'
-                })
-                return prev
-              }
-
-              // Tìm màu sắc trong fetchColor
-              const existingColor = prev.fetchColor.find(
-                (fc) =>
-                  fc.hex === detail.color.hex &&
-                  fc.slug === `color-${detail.color.name.toLowerCase().replace(/\s/g, '-')}`
-              )
-
-              const newDetailWithColorId = {
-                ...detail,
-                color: {
-                  ...detail.color,
-                  colorId: existingColor ? existingColor.colorId : detail.color.colorId
-                }
-              }
-
-              const newDetails = [...prev.productDetails, newDetailWithColorId]
-              const newFetchColor = existingColor
-                ? prev.fetchColor
-                : [
-                    ...prev.fetchColor,
-                    {
-                      colorId: detail.color.colorId,
-                      hex: detail.color.hex,
-                      slug: `color-${detail.color.name.toLowerCase().replace(/\s/g, '-')}`
-                    }
-                  ]
-
               return {
                 ...prev,
-                productDetail: newDetails,
-                fetchColor: newFetchColor,
-                minPrice: newDetails.length > 0 ? Math.min(...newDetails.map((d) => d.discountPrice)) : 0,
-                quantity: newDetails.reduce((sum, d) => sum + d.stockQuantity, 0),
-                soldQuantity: newDetails.reduce((sum, d) => sum + d.soldQuantity, 0),
-                totalRating:
-                  newDetails.length > 0 ? newDetails.reduce((sum, d) => sum + d.totalRating, 0) / newDetails.length : 0,
-                img: newDetails[0]?.images?.[0]?.url || prev.img
+                productDetails: [...prev.productDetails, detail]
               }
             })
           }}
           onUpdateDetail={(detail) => {
             setNewProduct((prev) => {
               // Kiểm tra trùng lặp
-              if (checkDuplicateDetail(detail, prev.productDetails)) {
-                Swal.fire({
-                  icon: 'error',
-                  title: 'Lỗi',
-                  text: 'Chi tiết sản phẩm với màu và kích thước này đã tồn tại.'
-                })
-                return prev
-              }
-
-              // Tìm màu sắc trong fetchColor
-              const existingColor = prev.fetchColor.find(
-                (fc) =>
-                  fc.hex === detail.color.hex &&
-                  fc.slug === `color-${detail.color.name.toLowerCase().replace(/\s/g, '-')}`
-              )
-
-              const newDetailWithColorId = {
-                ...detail,
-                color: {
-                  ...detail.color,
-                  colorId: existingColor ? existingColor.colorId : detail.color.colorId
+              const newDetails = prev.productDetails.map((d) => {
+                if (d.slug === detail.slug) {
+                  return { ...detail }
                 }
-              }
-
-              const newDetails = prev.productDetails.map((d) =>
-                d.productDetailId === detail.productDetailId ? newDetailWithColorId : d
-              )
-
-              // Cập nhật fetchColor nếu màu mới
-              const newFetchColor = existingColor
-                ? prev.fetchColor
-                : [
-                    ...prev.fetchColor,
-                    {
-                      colorId: detail.color.colorId,
-                      hex: detail.color.hex,
-                      slug: `color-${detail.color.name.toLowerCase().replace(/\s/g, '-')}`
-                    }
-                  ]
-
+                return d
+              })
               return {
                 ...prev,
-                productDetail: newDetails,
-                fetchColor: newFetchColor,
-                minPrice: newDetails.length > 0 ? Math.min(...newDetails.map((d) => d.discountPrice)) : 0,
-                quantity: newDetails.reduce((sum, d) => sum + d.stockQuantity, 0),
-                soldQuantity: newDetails.reduce((sum, d) => sum + d.soldQuantity, 0),
-                totalRating:
-                  newDetails.length > 0 ? newDetails.reduce((sum, d) => sum + d.totalRating, 0) / newDetails.length : 0,
-                img: newDetails[0]?.images?.[0]?.url || prev.img
+                productDetails: newDetails
               }
             })
           }}
-          onDeleteDetail={(detailId) => {
+          onDeleteDetail={(slug) => {
             setNewProduct((prev) => {
-              const newDetails = prev.productDetails.filter((d) => d.productDetailId !== detailId)
-              // Chỉ giữ lại các màu sắc còn được sử dụng trong productDetail
-              const usedColorIds = new Set(newDetails.map((d) => d.color.colorId))
-              const newFetchColor = prev.fetchColor.filter((fc) => usedColorIds.has(fc.colorId))
-
+              const newDetails = prev.productDetails.filter((d) => d.slug !== slug)
               return {
                 ...prev,
-                productDetail: newDetails,
-                fetchColor: newFetchColor,
-                minPrice: newDetails.length > 0 ? Math.min(...newDetails.map((d) => d.discountPrice)) : 0,
-                quantity: newDetails.reduce((sum, d) => sum + d.stockQuantity, 0),
-                soldQuantity: newDetails.reduce((sum, d) => sum + d.soldQuantity, 0),
-                totalRating:
-                  newDetails.length > 0 ? newDetails.reduce((sum, d) => sum + d.totalRating, 0) / newDetails.length : 0,
-                img: newDetails[0]?.images?.[0]?.url || ''
+                productDetails: newDetails
               }
             })
           }}
           onFinish={() => {
-            if (newProduct.productDetails.length === 0) {
-              Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Vui lòng thêm ít nhất một chi tiết sản phẩm trước khi tiếp tục.'
-              })
-              return
-            }
             setStep(3)
           }}
           onCancel={resetProcess}
@@ -323,38 +210,17 @@ function ProductsManagement() {
       {step === 3 && (
         <ConfirmProductForm
           product={newProduct}
+          listCategories={listCategories}
+          colors={colors}
+          sizes={sizes}
           productDetails={newProduct.productDetails}
-          fetchColors={newProduct.fetchColor}
-          onConfirm={handleConfirm}
+          onConfirm={() => handleConfirm(newProduct)}
           onBack={() => setStep(2)}
           onCancel={resetProcess}
         />
       )}
 
-      {step === 0 && (
-        <ProductList
-          onDeleteProduct={deleteProduct}
-          onDeleteProductDetail={deleteProductDetail}
-          onEditProduct={(updatedProduct) => {
-            setProducts(products.map((p) => (p.productId === updatedProduct.productId ? updatedProduct : p)))
-          }}
-          onEditProductDetail={(pId, updatedDetail) => {
-            setProducts(
-              products.map((p) =>
-                p.productId === pId
-                  ? {
-                      ...p,
-                      productDetail: p.productDetails.map((d) =>
-                        d.productDetailId === updatedDetail.productDetailId ? updatedDetail : d
-                      )
-                    }
-                  : p
-              )
-            )
-            console.log(`Updated detail for product ${pId}:`, updatedDetail)
-          }}
-        />
-      )}
+      {step === 0 && <ProductList sizes={sizes} colors={colors} />}
     </div>
   )
 }

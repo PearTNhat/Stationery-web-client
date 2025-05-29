@@ -1,10 +1,12 @@
 import React from 'react'
-import { FetchColor, ListProductDetail, ProductDetail } from '~/types/product'
+import { ProductDetailForm, ProductForm } from '~/types/product'
 
 interface ConfirmProductFormProps {
-  product: ListProductDetail
-  productDetails: ProductDetail[]
-  fetchColors: FetchColor[]
+  product: ProductForm
+  listCategories: { value: string; label: string }[]
+  sizes: { value: string; label: string }[]
+  colors: { value: string; label: string; color: string }[]
+  productDetails: ProductDetailForm[]
   onConfirm: () => void
   onBack: () => void
   onCancel: () => void
@@ -12,12 +14,14 @@ interface ConfirmProductFormProps {
 
 const ConfirmProductForm: React.FC<ConfirmProductFormProps> = ({
   product,
+  listCategories,
+  sizes,
+  colors,
   productDetails,
   onConfirm,
   onBack,
   onCancel
 }) => {
-  console.log('Product:', product)
   return (
     <div className='mb-8 p-8 rounded-3xl shadow-xl border border-blue-200 transition-all'>
       <h2 className='text-3xl font-bold text-blue-800 mb-6 text-center'>Confirm Product Details</h2>
@@ -28,7 +32,7 @@ const ConfirmProductForm: React.FC<ConfirmProductFormProps> = ({
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
           <div>
             <img
-              src={product.img || productDetails[0]?.images?.[0]?.url || ''}
+              src={productDetails[0]?.images?.[0]?.url || ''}
               alt={product.name}
               className='w-full h-64 object-contain rounded-lg shadow-md'
             />
@@ -41,13 +45,7 @@ const ConfirmProductForm: React.FC<ConfirmProductFormProps> = ({
               <strong>Slug:</strong> {product.slug}
             </p>
             <p>
-              <strong>Category:</strong> {product.category.categoryName}
-            </p>
-            <p>
-              <strong>Price:</strong> {product.minPrice.toLocaleString('vi-VN')} VND
-            </p>
-            <p>
-              <strong>Quantity:</strong> {product.quantity.toLocaleString('vi-VN')}
+              <strong>Category:</strong> {listCategories.find((c) => c.value == product.categoryId)?.label}
             </p>
             <p>
               <strong>Description:</strong> {product.description}
@@ -75,17 +73,13 @@ const ConfirmProductForm: React.FC<ConfirmProductFormProps> = ({
               </thead>
               <tbody className='divide-y divide-gray-200'>
                 {productDetails.map((detail) => (
-                  <tr key={detail.productDetailId} className='hover:bg-gray-50 transition-colors'>
+                  <tr key={detail.slug} className='hover:bg-gray-50 transition-colors'>
                     <td className='px-4 py-3 text-sm'>
                       <div className='flex items-center gap-2'>
-                        <span
-                          className='w-5 h-5 rounded-full inline-block'
-                          style={{ backgroundColor: detail.color.hex }}
-                        />
-                        {detail.color.name}
+                        {colors.find((c) => c.value == detail.colorId)?.label}
                       </div>
                     </td>
-                    <td className='px-4 py-3 text-sm'>{detail.size.name}</td>
+                    <td className='px-4 py-3 text-sm'>{sizes.find((s) => s.value == detail.sizeId)?.label}</td>
                     <td className='px-4 py-3 text-sm'>{detail.stockQuantity.toLocaleString('vi-VN')}</td>
                     <td className='px-4 py-3 text-sm'>{detail.discountPrice.toLocaleString('vi-VN')} VND</td>
                     <td className='px-4 py-3 text-sm'>

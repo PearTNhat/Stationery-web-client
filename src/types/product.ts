@@ -17,12 +17,12 @@ export interface ProductDetail {
   discountPrice: number
   size: Size
   color: Color
-  totalRating: number
   description: string
   productPromotions: ProductPromotion[]
   images: Image[] | null
   productId: string
   createdAt: string
+  hidden: boolean
 }
 
 interface Image {
@@ -60,7 +60,6 @@ interface Product {
     categoryId: string
     categoryName: string
   }
-  minPrice: number
   soldQuantity: number
   quantity: number
   totalRating: number
@@ -68,15 +67,51 @@ interface Product {
   fetchColor: FetchColor[]
   img: string
   createdAt: string
+  hidden: boolean
 }
 
 interface ProductDeatilResponse extends Product {
   image: Image[]
   reviews: Review[]
+  hidden: boolean
 }
 
 interface ListProductDetail extends Omit<Product, 'productDetail'> {
+  categoryId: string
   productDetails: ProductDetail[]
 }
-
-export type { Product, Color, ProductColor, ProductDeatilResponse, Image, Size, FetchColor, ListProductDetail }
+interface ProductDetailForm {
+  productDetailId?: string
+  slug: string
+  originalPrice: number
+  stockQuantity: number
+  discountPrice: number
+  name: string
+  sizeId: string
+  colorId: string
+  images?: {
+    file: File
+    url: string
+    imageId?: string
+  }[]
+  deleteImages?: string[]
+}
+interface ProductForm {
+  name: string
+  description: string
+  slug: string
+  categoryId: string
+  productDetails: ProductDetailForm[]
+}
+export type {
+  ProductDetailForm,
+  ProductForm,
+  Product,
+  Color,
+  ProductColor,
+  ProductDeatilResponse,
+  Image,
+  Size,
+  FetchColor,
+  ListProductDetail
+}

@@ -1,25 +1,28 @@
 import moment from 'moment'
 import { AxiosError } from 'axios'
 import React, { Fragment, useEffect, useMemo, useState } from 'react'
-import { FaEdit, FaExclamationCircle, FaSearch, FaTrash } from 'react-icons/fa'
+import { FaEdit, FaLock, FaLockOpen, FaSearch } from 'react-icons/fa'
 import Select from 'react-select'
-import { ListProductDetail, ProductDetail } from '~/types/product'
+import { ListProductDetail, ProductDetail, ProductDetailForm } from '~/types/product'
 import EditProductModal from '../modal/EditProductModal'
 import EditProductDetailModal from '../modal/EditProductDetailModal'
-import { apiGetAllProducts, apiGetProductDetailsByProductId } from '~/api/product'
-import { showToastError } from '~/utils/alert'
-import { modalActions } from '~/store/slices/modal'
-import { useAppDispatch, useAppSelector } from '~/hooks/redux'
-import ProductDetailViewModal from '../modal/ProductDetailViewModal'
+import {
+  apiGetAllProductsAdmin,
+  apiGetProductDetailsByProductId,
+  apiUpdateHiddenProduct,
+  apiUpdateProduct
+} from '~/api/product'
+import { showToastError, showToastSuccess } from '~/utils/alert'
+import { useAppSelector } from '~/hooks/redux'
 import Pagination from '~/components/pagination/Pagination'
 import { categoriesToOptions } from '~/utils/optionSelect'
 import { ProductSearchParams } from '~/types/filter'
 import { useSearchParams } from 'react-router-dom'
+import ProductDetailTable from './ProductDetailTable'
+import Swal from 'sweetalert2'
 interface ProductListProps {
-  onDeleteProduct: (id: string) => void
-  onDeleteProductDetail: (pId: string, detailId: string) => void
-  onEditProduct: (product: ListProductDetail) => void
-  onEditProductDetail: (pId: string, detail: ProductDetail) => void
+  sizes: { value: string; label: string }[]
+  colors: { value: string; label: string; color: string }[]
 }
 const tableHeaderTitleList = [
   '#',
@@ -27,27 +30,25 @@ const tableHeaderTitleList = [
   'Name',
   'Description',
   'Category',
-  'Price',
   'Quantity',
   'Sold',
   'Rating',
   'Created Date',
   'Actions'
 ]
-const ProductList: React.FC<ProductListProps> = ({
-  onDeleteProduct,
-  onDeleteProductDetail,
-  onEditProduct,
-  onEditProductDetail
-}) => {
+const ProductList: React.FC<ProductListProps> = ({ sizes, colors }) => {
   const { categories } = useAppSelector((state) => state.category)
+  const { accessToken } = useAppSelector((state) => state.user)
   const [products, setProducts] = useState<ListProductDetail[]>([])
   const [searchParams, setSearchParams] = useSearchParams()
   const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as ProductSearchParams, [searchParams])
-  const dispatch = useAppDispatch()
   const [selectedProduct, setSelectedProduct] = useState<string[]>([])
   const [editProduct, setEditProduct] = useState<ListProductDetail | null>(null)
-  const [editProductDetail, setEditProductDetail] = useState<{ pId: string; detail: ProductDetail } | null>(null)
+  const [editProductDetail, setEditProductDetail] = useState<{
+    pId: string
+    pdId: string
+    detail: ProductDetailForm
+  } | null>(null)
   const [totalPageCount, setTotalPageCount] = useState(0)
   const [listCategories, setListCategories] = useState<{ label: string; value: string }[]>([])
 
@@ -55,36 +56,47 @@ const ProductList: React.FC<ProductListProps> = ({
     setEditProduct(product)
   }
 
-  const handleEditProductDetail = (pId: string, detail: ProductDetail) => {
-    setEditProductDetail({ pId, detail })
+  const handleEditProductDetail = (pId: string, pdId: string, detail: ProductDetailForm) => {
+    setEditProductDetail({ pId, pdId, detail })
   }
-  const onViewProductDetail = (product: ListProductDetail) => {
-    dispatch(
-      modalActions.toggleModal({
-        isOpenModal: true,
-        childrenModal: (
-          <ProductDetailViewModal
-            isOpen={true}
-            product={product}
-            details={product.productDetails}
-            fetchColors={product.fetchColor || []}
-            onClose={() =>
-              dispatch(
-                modalActions.toggleModal({
-                  isOpenModal: false,
-                  childrenModal: null
-                })
-              )
-            }
-          />
-        )
-      })
-    )
-  }
+
   const handleRowClick = (product: ListProductDetail) => {
     setSelectedProduct((prev) =>
       prev.includes(product.productId) ? prev.filter((id) => id !== product.productId) : [...prev, product.productId]
     )
+  }
+
+  const hanleEditProduct = async (data: {
+    productId: string
+    name: string
+    description: string
+    categoryId: string
+  }) => {
+    try {
+      if (!accessToken) {
+        showToastError('Please login to perform this action.')
+        return
+      }
+      const response = await apiUpdateProduct({ data, accessToken })
+      if (response.code == 200) {
+        showToastSuccess('Update product successfully')
+        setProducts(
+          products.map((p) => {
+            if (p.productId == response.result.productId) {
+              return response.result
+            } else {
+              return p
+            }
+          })
+        )
+      } else {
+        showToastError(response.message)
+      }
+    } catch (error) {
+      if (error instanceof Error || error instanceof AxiosError) {
+        showToastError(error.message)
+      }
+    }
   }
   const getAllProducDetails = async ({ productId }: { productId: string }): Promise<ProductDetail[] | []> => {
     try {
@@ -106,12 +118,17 @@ const ProductList: React.FC<ProductListProps> = ({
   }
   const getAllProducts = async (currentParams: ProductSearchParams) => {
     try {
+      if (!accessToken) {
+        showToastError('Please login to perform this action.')
+        return
+      }
       const { page, search, categoryId } = currentParams
-      const response = await apiGetAllProducts({
+      const response = await apiGetAllProductsAdmin({
         page: page || '0',
         search: search,
         categoryId: categoryId,
-        limit: '10'
+        limit: '10',
+        accessToken
       })
       if (response.code == 200) {
         setProducts(response.result.content)
@@ -125,13 +142,45 @@ const ProductList: React.FC<ProductListProps> = ({
       }
     }
   }
+  const handleUpdateHidden = async (productId: string, hidden: boolean) => {
+    try {
+      if (!accessToken) {
+        showToastError('Please login to perform this action.')
+        return
+      }
+      const result = await Swal.fire({
+        title: 'Do you want to change the hidden status?',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'Hủy',
+        confirmButtonText: 'Đồng ý'
+      })
+      if (result.isDismissed) return
+      const response = await apiUpdateHiddenProduct({
+        productId,
+        hidden,
+        accessToken
+      })
+      if (response.code == 200) {
+        setProducts((prev) => prev.map((item) => (item.productId === productId ? { ...item, hidden } : item)))
+        showToastSuccess(`Product ${hidden ? 'hidden' : 'unhidden'} successfully`)
+      } else {
+        showToastError(response.message)
+      }
+    } catch (error) {
+      if (error instanceof Error || error instanceof AxiosError) {
+        showToastError(error.message)
+      }
+    }
+  }
   useEffect(() => {
     getAllProducts(currentParams)
   }, [currentParams])
   useEffect(() => {
     setListCategories(categoriesToOptions(categories))
   }, [categories])
-  useEffect(() => {}, [currentParams])
 
   return (
     <div>
@@ -223,19 +272,12 @@ const ProductList: React.FC<ProductListProps> = ({
                         </p>
                       </td>
                       <td className='px-4 py-3 text-sm'>{p.category.categoryName}</td>
-                      <td className='px-4 py-3 text-sm'>{p.minPrice.toLocaleString('vi-VN')}đ</td>
                       <td className='px-4 py-3 text-sm'>{p.quantity.toLocaleString('vi-VN')}</td>
                       <td className='px-4 py-3 text-sm'>{p.soldQuantity.toLocaleString('vi-VN')}</td>
                       <td className='px-4 py-3 text-sm'>{p.totalRating}</td>
                       <td className='px-4 py-3 text-sm'>{moment(p.createdAt).format('DD/MM/YYYY HH:mm')}</td>
                       <td className='px-4 py-3'>
                         <div className='flex items-center gap-3'>
-                          <button
-                            className='bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-colors'
-                            onClick={() => onViewProductDetail(p)}
-                          >
-                            <FaExclamationCircle size={16} />
-                          </button>
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
@@ -246,86 +288,30 @@ const ProductList: React.FC<ProductListProps> = ({
                             <FaEdit size={16} />
                           </button>
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onDeleteProduct(p.productId)
-                            }}
-                            className='bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors'
+                            onClick={() => handleUpdateHidden(p.productId, !p.hidden)}
+                            className={`p-2.5 rounded-md transition-all shadow-sm hover:shadow flex items-center justify-center group relative ${
+                              p.hidden
+                                ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                                : 'bg-green-100 text-green-600 hover:bg-green-200'
+                            }`}
+                            title={p.hidden ? 'Unhide product' : 'Hide product'}
                           >
-                            <FaTrash size={16} />
+                            {p.hidden ? (
+                              <FaLock size={16} className='group-hover:scale-110 transition-transform' />
+                            ) : (
+                              <FaLockOpen size={16} className='group-hover:scale-110 transition-transform' />
+                            )}
                           </button>
                         </div>
                       </td>
                     </tr>
                     {isSelected && p.productDetails?.length > 0 && (
-                      <tr className='bg-blue-50'>
-                        <td colSpan={11} className='p-0'>
-                          <div className='overflow-x-auto'>
-                            <table className='w-full'>
-                              <thead className='bg-gray-500 text-white text-left'>
-                                <tr>
-                                  <th className='px-4 py-2 text-sm uppercase tracking-wider'>#</th>
-                                  <th className='px-4 py-2 text-sm uppercase tracking-wider'>Color</th>
-                                  <th className='px-4 py-2 text-sm uppercase tracking-wider'>Size</th>
-                                  <th className='px-4 py-2 text-sm uppercase tracking-wider'>Images</th>
-                                  <th className='px-4 py-2 text-sm uppercase tracking-wider'>Quantity</th>
-                                  <th className='px-4 py-2 text-sm uppercase tracking-wider'>Sold</th>
-                                  <th className='px-4 py-2 text-sm uppercase tracking-wider'>Actions</th>
-                                </tr>
-                              </thead>
-                              <tbody className='divide-y divide-gray-200'>
-                                {p.productDetails.map((detail, detailIndex) => (
-                                  <tr key={detail.productDetailId} className='hover:bg-gray-100'>
-                                    <td className='px-4 py-2 text-sm'>{detailIndex + 1}</td>
-                                    <td className='px-4 py-2 text-sm'>{detail.color?.name || 'No color'}</td>
-                                    <td className='px-4 py-2 text-sm'>{detail.size?.name || 'No size'}</td>
-                                    <td className='px-4 py-2'>
-                                      <div className='flex items-center gap-2'>
-                                        {(detail.images || []).slice(0, 3).map((img, imgIdx) => (
-                                          <div key={img.imageId} className='relative w-10 h-10'>
-                                            <img
-                                              className='w-10 h-10 rounded object-cover'
-                                              src={img.url}
-                                              alt={`${detail.color?.name || 'No color'}-${imgIdx}`}
-                                            />
-                                            {imgIdx === 2 && (detail.images || []).length > 3 && (
-                                              <div className='absolute inset-0 bg-black bg-opacity-50 rounded flex items-center justify-center'>
-                                                <span className='text-sm font-medium text-white'>
-                                                  +{(detail.images || []).length - 3}
-                                                </span>
-                                              </div>
-                                            )}
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </td>
-                                    <td className='px-4 py-2 text-sm'>
-                                      {detail.stockQuantity.toLocaleString('vi-VN')}
-                                    </td>
-                                    <td className='px-4 py-2 text-sm'>{detail.soldQuantity.toLocaleString('vi-VN')}</td>
-                                    <td className='px-4 py-2'>
-                                      <div className='flex gap-3'>
-                                        <button
-                                          onClick={() => handleEditProductDetail(p.productId, detail)}
-                                          className='bg-yellow-400 text-white p-2 rounded-lg hover:bg-yellow-500 transition-colors'
-                                        >
-                                          <FaEdit size={16} />
-                                        </button>
-                                        <button
-                                          onClick={() => onDeleteProductDetail(p.productId, detail.productDetailId)}
-                                          className='bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors'
-                                        >
-                                          <FaTrash size={16} />
-                                        </button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </td>
-                      </tr>
+                      <ProductDetailTable
+                        p={p}
+                        accessToken={accessToken || ''}
+                        setProducts={setProducts}
+                        handleEditProductDetail={handleEditProductDetail}
+                      />
                     )}
                   </Fragment>
                 )
@@ -339,21 +325,25 @@ const ProductList: React.FC<ProductListProps> = ({
       {/* Modal chỉnh sửa sản phẩm */}
       {editProduct && (
         <EditProductModal
+          listCategories={listCategories}
           isOpen={!!editProduct}
           product={editProduct}
           onClose={() => setEditProduct(null)}
-          onSave={onEditProduct}
+          onSave={hanleEditProduct}
         />
       )}
 
       {/* Modal chỉnh sửa chi tiết sản phẩm */}
       {editProductDetail && (
         <EditProductDetailModal
+          sizes={sizes}
+          colors={colors}
+          setProducts={setProducts}
           isOpen={!!editProductDetail}
+          productDetailId={editProductDetail.pdId}
           productId={editProductDetail.pId}
           detail={editProductDetail.detail}
           onClose={() => setEditProductDetail(null)}
-          onSave={onEditProductDetail}
         />
       )}
     </div>

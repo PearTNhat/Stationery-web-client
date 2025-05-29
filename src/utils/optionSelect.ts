@@ -1,4 +1,5 @@
 import { Category } from '~/types/category'
+import { Color, Size } from '~/types/product'
 
 const categoriesToOptions = (categories: Category[]) => {
   return categories.map((category) => {
@@ -8,5 +9,21 @@ const categoriesToOptions = (categories: Category[]) => {
     }
   })
 }
-
-export { categoriesToOptions }
+const colorToOptions = (colors: Color[]) => {
+  return colors.map((color) => {
+    return {
+      label: color.name,
+      value: color.colorId,
+      color: color.hex
+    }
+  })
+}
+const sizeToOptions = (sizes: Size[]) => {
+  return sizes.map((size) => {
+    return {
+      label: size.name,
+      value: size.sizeId
+    }
+  })
+}
+export { categoriesToOptions, colorToOptions, sizeToOptions }

@@ -1,224 +1,358 @@
-import React, { useState } from 'react'
+import React, { Dispatch, SetStateAction, useState } from 'react'
 import Swal from 'sweetalert2'
-import Select from 'react-select'
-import { ProductDetail } from '~/types/product'
-import { colorOptions, sizeOptions } from '~/constance/seed/option'
+import { ListProductDetail, ProductDetailForm } from '~/types/product'
+import { useForm } from 'react-hook-form'
+import { IoTrashOutline } from 'react-icons/io5'
+import InputForm from '~/components/input/InputForm'
+import { convertToSlug } from '~/utils/stringUtils'
+import SelectValidate from '~/components/select/SelectValidate'
+import { useAppDispatch, useAppSelector } from '~/hooks/redux'
+import { modalActions } from '~/store/slices/modal'
+import PacmanLoading from '~/components/loading/PacmanLoading'
+import { apiUpdateDetailProduct } from '~/api/product'
+import { showToastWarning } from '~/utils/alert'
 
 interface EditProductDetailModalProps {
+  sizes: { value: string; label: string }[]
+  colors: { value: string; label: string; color: string }[]
+  setProducts: Dispatch<SetStateAction<ListProductDetail[]>>
   isOpen: boolean
   productId: string
-  detail: ProductDetail
+  productDetailId: string
+  detail: ProductDetailForm
   onClose: () => void
-  onSave: (pId: string, updatedDetail: ProductDetail) => void
+}
+interface ProductDetailUseForm {
+  colorId: string
+  sizeId: string
+  name: string
+  slug: string
+  quantity: number
+  originalPrice: number
+  discountPrice: number
+}
+interface ListImage {
+  file: File
+  url: string
+  imageId?: string
 }
 
 const EditProductDetailModal: React.FC<EditProductDetailModalProps> = ({
   isOpen,
   productId,
+  colors,
+  sizes,
+  productDetailId,
+  setProducts,
   detail,
-  onClose,
-  onSave
+  onClose
 }) => {
-  const [formData, setFormData] = useState({
-    color: detail.color ? colorOptions.find((opt) => opt.colorId === detail.color?.colorId) : null,
-    size: detail.size ? sizeOptions.find((opt) => opt.sizeId === detail.size?.sizeId) : null,
-    stockQuantity: detail.stockQuantity,
-    discountPrice: detail.discountPrice,
-    images: detail.images || []
+  const dispatch = useAppDispatch()
+  const { accessToken } = useAppSelector((state) => state.user)
+  const [listImages, setListImages] = useState<ListImage[]>(detail.images ?? [])
+  const [deleteImageId, setSetDeleteImageId] = useState<string[]>([])
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    formState: { errors: editPdErrors }
+  } = useForm<ProductDetailUseForm>({
+    defaultValues: {
+      colorId: detail.colorId || '',
+      sizeId: detail.sizeId || '',
+      slug: detail.slug || '',
+      name: detail.name || '',
+      quantity: detail.stockQuantity || 0,
+      discountPrice: detail.discountPrice || 0,
+      originalPrice: detail.originalPrice || 0
+    }
   })
-  const [newImages, setNewImages] = useState<File[]>([])
-
+  console.log('detail', detail)
   if (!isOpen) return null
 
-  const hasColors = !!detail.color
-  const hasSizes = !!detail.size
-
-  const handleSubmit = () => {
-    if (hasColors && !formData.color) {
-      Swal.fire('Error', 'Please select a color.', 'error')
-      return
-    }
-    if (hasSizes && !formData.size) {
-      Swal.fire('Error', 'Please select a size.', 'error')
-      return
-    }
-    if (formData.stockQuantity < 0 || formData.discountPrice <= 0) {
-      Swal.fire('Error', 'Invalid quantity or price.', 'error')
-      return
-    }
-
-    const updatedDetail: ProductDetail = {
-      ...detail,
-      color: formData.color
-        ? { colorId: formData.color.colorId, name: formData.color.value, hex: formData.color.hex }
-        : null,
-      size: formData.size
-        ? { sizeId: formData.size.sizeId, name: formData.size.value, priority: formData.size.priority }
-        : null,
-      stockQuantity: formData.stockQuantity,
-      discountPrice: formData.discountPrice,
-      images: [
-        ...formData.images,
-        ...newImages.map((file, idx) => ({
-          imageId: `new-${idx}`,
-          url: URL.createObjectURL(file),
-          priority: formData.images.length + idx + 1
-        }))
-      ]
-    }
-    onSave(productId, updatedDetail)
-    onClose()
-    Swal.fire('Success', 'Product detail updated successfully!', 'success')
-  }
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setNewImages([...newImages, ...Array.from(e.target.files)])
+  const handleDetailImageChange = (index: number, file: File) => {
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const newListImages = [...listImages]
+        const imgId = listImages[index]?.imageId || ''
+        newListImages[index] = {
+          file, // Lưu file gốc để sau này gửi lên server
+          url: e.target?.result as string, // URL base64 để hiển thị preview
+          imageId: imgId // Giữ lại imageId nếu có, để gửi lên server
+        }
+        setListImages(newListImages)
+      }
+      reader.readAsDataURL(file) // Chuyển file thành base64 URL
     }
   }
-
-  const removeImage = (index: number) => {
-    setFormData({
-      ...formData,
-      images: formData.images.filter((_, i) => i !== index)
+  console.log(productDetailId, 'productDetailId')
+  const handleUpdatePd = async (data: ProductDetailUseForm) => {
+    if (!accessToken) {
+      showToastWarning('Please login to continue')
+      return
+    }
+    const formData = new FormData()
+    const imagesWithFile = listImages.filter((img) => img.file instanceof File)
+    const detail: ProductDetailForm = {
+      productDetailId: productDetailId,
+      originalPrice: data.originalPrice,
+      discountPrice: data.discountPrice,
+      slug: data.slug,
+      name: data.name,
+      stockQuantity: data.quantity,
+      sizeId: data.sizeId,
+      colorId: data.colorId,
+      deleteImages: deleteImageId.length > 0 ? deleteImageId : undefined
+    }
+    console.log(detail)
+    formData.append('documents', JSON.stringify(detail))
+    imagesWithFile.forEach((img) => {
+      if (img.file) {
+        formData.append('images', img.file) // hoặc `images[${img.index}]` nếu backend yêu cầu index
+        formData.append('imgIdToUpdate', String(img.imageId)) // nếu muốn gửi index kèm
+      }
     })
+    dispatch(modalActions.toggleModal({ childrenModal: <PacmanLoading />, isOpenModal: true }))
+    const res = await apiUpdateDetailProduct({ data: formData, accessToken })
+    dispatch(modalActions.toggleModal({ childrenModal: null, isOpenModal: false }))
+    if (res.code === 200) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Add product successfully'
+      })
+      setProducts((prev) =>
+        prev.map((p) => {
+          if (p.productId === productId) {
+            return {
+              ...p,
+              productDetails: p.productDetails.map((d) => {
+                if (detail.productDetailId === productDetailId) {
+                  return {
+                    ...d,
+                    colorId: data.colorId,
+                    sizeId: data.sizeId,
+                    name: data.name,
+                    slug: data.slug,
+                    stockQuantity: data.quantity,
+                    originalPrice: data.originalPrice,
+                    discountPrice: data.discountPrice,
+                    images: listImages
+                      .filter((img) => img.url != '')
+                      .map((img, idx) => ({
+                        priority: idx,
+                        url: img.url,
+                        imageId: img.imageId || ''
+                      }))
+                  }
+                } else {
+                  return d
+                }
+              })
+            }
+          }
+          return p
+        })
+      )
+      onClose()
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: res.message
+      })
+    }
   }
-
-  const removeNewImage = (index: number) => {
-    setNewImages(newImages.filter((_, i) => i !== index))
-  }
-
+  console.log('deleteImageId', deleteImageId)
   return (
     <div className='fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4'>
-      <div className='bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl'>
+      <div className='bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl overflow-auto h-full'>
         <h2 className='text-2xl font-bold text-gray-800 mb-6'>Edit Product Detail</h2>
-        <div className='space-y-4'>
-          {hasColors && (
-            <div>
-              <label className='block text-sm font-medium text-gray-700'>Color *</label>
-              <Select
-                options={colorOptions}
-                value={formData.color}
-                onChange={(option) => setFormData({ ...formData, color: option })}
-                className='mt-1'
-                classNamePrefix='select'
-                isClearable
+        <form onSubmit={handleSubmit(handleUpdatePd)} className='space-y-6'>
+          <div className='p-6 bg-gray-50 rounded-xl border border-gray-200'>
+            <div className='space-y-5'>
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                <SelectValidate
+                  name='colorId'
+                  control={control}
+                  options={colors}
+                  label='Color'
+                  isRequired
+                  rules={{ required: 'Color is required' }}
+                  error={editPdErrors.colorId?.message}
+                />
+                <SelectValidate
+                  name='sizeId'
+                  control={control}
+                  options={sizes}
+                  label='Size'
+                  isRequired
+                  error={editPdErrors.sizeId?.message}
+                />
+                <InputForm
+                  id='quantity'
+                  cssInput='pl-10'
+                  placeholder='Enter quantity'
+                  label={'Quantity'}
+                  register={register}
+                  validate={{
+                    required: 'quantity is required',
+                    pattern: {
+                      value: /^[0-9]+$/, // Đảm bảo chỉ chứa số
+                      message: 'quantity must be a number'
+                    },
+                    validate: {
+                      positive: (value: any) => parseFloat(value) > 0 || 'Quantity must be greater than 0'
+                    }
+                  }}
+                  error={editPdErrors}
+                />
+                <InputForm
+                  id='name'
+                  cssInput='pl-10'
+                  placeholder='Enter Name'
+                  label={'Name'}
+                  register={register}
+                  validate={{
+                    required: 'Name is required'
+                  }}
+                  error={editPdErrors}
+                />
+              </div>
+              <InputForm
+                id='slug'
+                cssInput='pl-10'
+                placeholder='Slug'
+                label={'Slug'}
+                register={register}
+                validate={{
+                  required: 'Slug is required',
+                  pattern: {
+                    value: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+                    message: 'Slug must contain only lowercase letters, numbers, and hyphens'
+                  }
+                }}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setValue('slug', convertToSlug(value))
+                }}
+                error={editPdErrors}
               />
-            </div>
-          )}
-          {hasSizes && (
-            <div>
-              <label className='block text-sm font-medium text-gray-700'>Size *</label>
-              <Select
-                options={sizeOptions}
-                value={formData.size}
-                onChange={(option) => setFormData({ ...formData, size: option })}
-                className='mt-1'
-                classNamePrefix='select'
-                isClearable
-              />
-            </div>
-          )}
-          <div>
-            <label className='block text-sm font-medium text-gray-700'>Stock Quantity *</label>
-            <input
-              type='number'
-              value={formData.stockQuantity}
-              onChange={(e) => setFormData({ ...formData, stockQuantity: Number(e.target.value) })}
-              className='mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300'
-              min='0'
-              required
-            />
-          </div>
-          <div>
-            <label className='block text-sm font-medium text-gray-700'>Discount Price (VND) *</label>
-            <input
-              type='number'
-              value={formData.discountPrice}
-              onChange={(e) => setFormData({ ...formData, discountPrice: Number(e.target.value) })}
-              className='mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300'
-              min='0'
-              required
-            />
-          </div>
-        </div>
-        <div>
-          <label className='block text-sm font-medium text-gray-700'>Images</label>
-          <div className='mt-2 grid grid-cols-5 gap-3'>
-            {[
-              ...formData.images,
-              ...newImages.map((file, i) => ({
-                imageId: `new-${i}`,
-                url: URL.createObjectURL(file)
-              }))
-            ]
-              .slice(0, 5)
-              .map((img, idx) => (
-                <div key={img.imageId} className='relative w-32 h-32 border rounded-xl overflow-hidden shadow-sm'>
-                  <img src={img.url} alt={`Image-${idx}`} className='w-full h-full object-cover' />
-                  {/* Xóa ảnh */}
-                  <button
-                    onClick={() => {
-                      if (img.imageId.startsWith('new-')) {
-                        removeNewImage(idx - formData.images.length)
-                      } else {
-                        removeImage(idx)
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                <InputForm
+                  id='originalPrice'
+                  cssInput='pl-10'
+                  label={'Original Price'}
+                  placeholder='Enter original price'
+                  register={register}
+                  validate={{
+                    required: 'Original price is required',
+                    pattern: {
+                      value: /^[0-9]+$/, // Đảm bảo chỉ chứa số
+                      message: 'Original price must be a number'
+                    },
+                    validate: {
+                      positive: (value: any) => parseFloat(value) > 0 || 'Original price must be greater than 0'
+                    }
+                  }}
+                  error={editPdErrors}
+                />
+                <InputForm
+                  id='discountPrice'
+                  label={'Discount Price'}
+                  cssInput='pl-10'
+                  placeholder='Enter original price'
+                  register={register}
+                  validate={{
+                    required: 'Discount price is required',
+                    pattern: {
+                      value: /^[0-9]+$/, // Đảm bảo chỉ chứa số
+                      message: 'Discount price must be a number'
+                    },
+                    validate: {
+                      notGreaterThanOriginal: (value: any, formValues: any) => {
+                        const originalPrice = parseInt(formValues.originalPrice || 0)
+                        const discountPrice = parseInt(value)
+                        return discountPrice <= originalPrice || 'Discount price cannot be greater than original price'
                       }
-                    }}
-                    className='absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs hover:bg-red-700'
-                    title='Remove image'
-                  >
-                    ✕
-                  </button>
-                  {/* Đổi ảnh */}
-                  <label className='absolute bottom-1 right-1 bg-white bg-opacity-80 p-1 rounded-full cursor-pointer shadow'>
-                    📷
-                    <input
-                      type='file'
-                      accept='image/*'
-                      className='hidden'
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          const newFile = e.target.files[0]
-                          if (img.imageId.startsWith('new-')) {
-                            const updatedNewImages = [...newImages]
-                            updatedNewImages[idx - formData.images.length] = newFile
-                            setNewImages(updatedNewImages)
-                          } else {
-                            const updatedImages = [...formData.images]
-                            updatedImages[idx] = {
-                              ...updatedImages[idx],
-                              url: URL.createObjectURL(newFile)
-                            }
-                            setFormData({ ...formData, images: updatedImages })
-                          }
-                        }
-                      }}
-                    />
-                  </label>
-                </div>
-              ))}
-            {/* Thêm khung trống nếu chưa đủ 5 ảnh */}
-            {Array.from({ length: Math.max(0, 5 - formData.images.length - newImages.length) }).map((_, i) => (
-              <label
-                key={`empty-${i}`}
-                className='w-32 h-32 flex items-center justify-center border-2 border-dashed rounded-xl cursor-pointer text-gray-400 hover:border-blue-500 hover:text-blue-500 transition'
-              >
-                📷
-                <input type='file' accept='image/*' className='hidden' onChange={handleImageChange} />
-              </label>
-            ))}
-          </div>
-        </div>
+                    }
+                  }}
+                  error={editPdErrors}
+                />
+              </div>
 
-        <div className='mt-6 flex justify-end gap-4'>
-          <button onClick={onClose} className='px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400'>
-            Cancel
-          </button>
-          <button onClick={handleSubmit} className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'>
-            Save
-          </button>
-        </div>
+              <div>
+                <div>
+                  <label className='block text-sm font-semibold text-gray-700 mb-2'>Image Gallery</label>
+                  <div className='grid grid-cols-5 gap-3'>
+                    {listImages.map((img, index) => {
+                      return (
+                        <div
+                          key={index}
+                          className='relative h-24 border border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-100'
+                        >
+                          {img.url ? (
+                            <div className='relative w-full h-full'>
+                              <img src={img.url} alt={`Preview ${index + 1}`} className='w-full h-full object-cover' />
+                              {img.file && (
+                                <div className='absolute top-1 left-1 bg-black/50 text-white text-xs px-1 py-0.5 rounded'>
+                                  {img.file.name.length > 10 ? `${img.file.name.substring(0, 8)}...` : img.file.name}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className='text-gray-400 text-xs text-center'>Image {index + 1}</span>
+                          )}
+                          <input
+                            type='file'
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                handleDetailImageChange(index, e.target.files[0])
+                              }
+                            }}
+                            className='absolute inset-0 opacity-0 cursor-pointer'
+                          />
+                          <button
+                            type='button'
+                            className='absolute bottom-1 right-1 bg-red-500 opacity-85 text-white p-1 rounded-full hover:bg-red-600 transition-colors'
+                            onClick={() => {
+                              const newList = [...listImages]
+                              const imageId = JSON.parse(JSON.stringify(newList[index].imageId || ''))
+                              if (imageId) {
+                                setSetDeleteImageId((prev) => [...prev, imageId])
+                              }
+                              newList[index] = { file: {} as File, url: '', imageId: '' } // hoặc splice nếu muốn xóa hẳn phần tử
+                              setListImages(newList)
+                            }}
+                          >
+                            <IoTrashOutline />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className='flex gap-4 mt-6'>
+              <button
+                onClick={onClose}
+                className='px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium'
+              >
+                Cancel
+              </button>
+              <button
+                type='submit'
+                className={`px-5 py-2.5 text-white bg-blue-500 rounded-lg transition-colors text-sm font-medium`}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   )

@@ -15,7 +15,7 @@ import { User } from '~/types/user'
 
 export default function LoginForm() {
   const navigate = useNavigate()
-  const location = useLocation() // ✅ FIXED
+  const location = useLocation()
   const [loading, setLoading] = useState(false)
   const dispatch = useAppDispatch()
   const [isShowPassword, setIsShowPassword] = useState(false)
