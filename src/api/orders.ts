@@ -32,9 +32,20 @@ const apiCreateOrderWithPayment = async ({
   }
 }
 
-const apiCheckTransactionStatus = async ({ orderId, accessToken }: { orderId: string; accessToken: string }) => {
+const apiCheckTransactionStatus = async ({
+  orderId,
+  accessToken,
+  status
+}: {
+  orderId: string
+  accessToken: string
+  status?: number // 1: check status from home, 2: check status from order detail
+}) => {
   try {
     const config = {
+      params: {
+        status
+      },
       headers: {
         Authorization: `Bearer ${accessToken}`
       }

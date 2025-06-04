@@ -38,10 +38,6 @@ function Header() {
     }
   }, [theme])
 
-  const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'))
-  }
-
   const handleLogout = async () => {
     try {
       const response = await apiLogout({ token: accessToken })
@@ -64,7 +60,6 @@ function Header() {
       search: createSearchParams(newParams).toString()
     })
   }
-  console.log('ssss')
   useEffect(() => {
     if (isLoggedIn && accessToken && userData?.userId) {
       dispatch(fetchCategories())
@@ -140,71 +135,69 @@ function Header() {
         <SearchWithSuggestions />
       </div>
 
-        {/* Cart */}
-        <div className='relative cursor-pointer' onClick={handleCartToggle}>
-          <ShoppingCart
-            size={24}
-            className='text-gray-700 hover:text-blue-500 transition dark:text-gray-300 dark:hover:text-blue-400'
-          />
-          <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>
-            {myCart.length}
-          </span>
-        </div>
-
-        {/* User Profile */}
-        {isLoggedIn ? (
-          <div className='d-dropdown d-dropdown-hover d-dropdown-end'>
-            <div tabIndex={0} className='w-10 h-10 rounded-full overflow-hidden'>
-              <img src={userData?.avatar} alt={userData?.lastName} className='w-full h-full object-cover' />
-            </div>
-            <ul tabIndex={0} className='d-dropdown-content d-menu bg-base-100 rounded-md z-10 w-52 p-2 shadow-md'>
-              {dropDownProfile.map((item) => {
-                let Comp: React.ElementType = 'button'
-                if (item.to) {
-                  Comp = Link
-                }
-                return (
-                  <li key={item.id} className={`${item.styleParent ? item.styleParent : ''}`}>
-                    <Comp
-                      {...(item.to ? { to: item.to } : {})}
-                      onClick={item?.onClick ? handleLogout : undefined}
-                      className={`flex items-center w-full px-4 py-2 ${
-                        item.style
-                          ? item.style
-                          : 'text-gray-700 hover:bg-gray-100 transition dark:text-gray-300 dark:hover:bg-gray-600'
-                      }`}
-                    >
-                      {item.icon}
-                      {item.name}
-                    </Comp>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
-        ) : (
-          <div className='hidden md:flex space-x-3'>
-            <button
-              onClick={() => navigate('/auth?mode=login')}
-              className='px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-500'
-            >
-              Login
-            </button>
-            <button
-              onClick={() => navigate('/auth?mode=register')}
-              className='px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition dark:bg-blue-500 dark:hover:bg-blue-600'
-            >
-              Register
-            </button>
-          </div>
-        )}
-
-        {/* Mobile Menu Button */}
-        <button className='md:hidden' onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label='Toggle menu'>
-          {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
+      {/* Cart */}
+      <div className='relative cursor-pointer' onClick={handleCartToggle}>
+        <ShoppingCart
+          size={24}
+          className='text-gray-700 hover:text-blue-500 transition dark:text-gray-300 dark:hover:text-blue-400'
+        />
+        <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>
+          {myCart.length}
+        </span>
       </div>
 
+      {/* User Profile */}
+      {isLoggedIn ? (
+        <div className='d-dropdown d-dropdown-hover d-dropdown-end'>
+          <div tabIndex={0} className='w-10 h-10 rounded-full overflow-hidden'>
+            <img src={userData?.avatar} alt={userData?.lastName} className='w-full h-full object-cover' />
+          </div>
+          <ul tabIndex={0} className='d-dropdown-content d-menu bg-base-100 rounded-md z-10 w-52 p-2 shadow-md'>
+            {dropDownProfile.map((item) => {
+              let Comp: React.ElementType = 'button'
+              if (item.to) {
+                Comp = Link
+              }
+              return (
+                <li key={item.id} className={`${item.styleParent ? item.styleParent : ''}`}>
+                  <Comp
+                    {...(item.to ? { to: item.to } : {})}
+                    onClick={item?.onClick ? handleLogout : undefined}
+                    className={`flex items-center w-full px-4 py-2 ${
+                      item.style
+                        ? item.style
+                        : 'text-gray-700 hover:bg-gray-100 transition dark:text-gray-300 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {item.icon}
+                    {item.name}
+                  </Comp>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      ) : (
+        <div className='hidden md:flex space-x-3'>
+          <button
+            onClick={() => navigate('/auth?mode=login')}
+            className='px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-500'
+          >
+            Login
+          </button>
+          <button
+            onClick={() => navigate('/auth?mode=register')}
+            className='px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition dark:bg-blue-500 dark:hover:bg-blue-600'
+          >
+            Register
+          </button>
+        </div>
+      )}
+
+      {/* Mobile Menu Button */}
+      <button className='md:hidden' onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label='Toggle menu'>
+        {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+      </button>
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className='absolute top-16 left-0 w-full bg-white shadow-md md:hidden z-[999999] dark:bg-gray-700'>
@@ -266,22 +259,6 @@ function Header() {
             </NavLink>
 
             <div className='flex items-center space-x-4 border-t pt-4 dark:border-gray-600'>
-              {isLoggedIn && userData?.inOrders && userData.inOrders.length > 0 && (
-                <div
-                  className='relative cursor-pointer'
-                  onClick={() => navigate('/orders/unpaid')}
-                  title='Unpaid Orders'
-                >
-                  <CreditCard
-                    size={24}
-                    className='text-gray-700 hover:text-blue-500 transition dark:text-gray-300 dark:hover:text-blue-400'
-                  />
-                  <span className='absolute -top-2 -right-2 bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full'>
-                    {userData.inOrders?.length}
-                  </span>
-                </div>
-              )}
-
               <div className='relative cursor-pointer' onClick={handleCartToggle}>
                 <ShoppingCart size={24} className='text-gray-700 dark:text-gray-300' />
                 <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>

@@ -58,6 +58,7 @@ const Home: React.FC = () => {
   const { orderId } = useMemo(() => Object.fromEntries([...searchParams]), [searchParams])
   const checkTransactionStatus = async (orderId: string) => {
     try {
+      // số 1 là đang gọi check status từ home nếu order đó có resultCode != 0 thì đó là hủy dơn hàng
       const res = await apiCheckTransactionStatus({ orderId, accessToken: accessToken || '' })
       if (res.result.resultCode === 0) {
         showAlertSucess('Order successfully created')
@@ -76,7 +77,6 @@ const Home: React.FC = () => {
   }
   useEffect(() => {
     if (orderId) {
-      console.log(orderId)
       checkTransactionStatus(orderId)
     }
   }, [orderId])
