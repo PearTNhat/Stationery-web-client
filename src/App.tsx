@@ -33,6 +33,7 @@ import CategoriesProductManagement from './pages/admin/category/CategoriesProduc
 import ColorManagement from './pages/admin/color/ColorManagement'
 import SizeManagement from './pages/admin/size/SizeManagement'
 import OrderManagement from './pages/admin/order/OrderManagement'
+import UnpaidOrders from './pages/public/unpaid/UnpaidOrders'
 
 function App() {
   const { childrenModal, isOpenModal } = useAppSelector((state) => state.modal)

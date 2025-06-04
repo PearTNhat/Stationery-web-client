@@ -1,57 +1,33 @@
-import { useState } from 'react'
-import { useAppDispatch } from '~/hooks/redux'
+import { useEffect, useMemo, useState } from 'react'
+import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { modalActions } from '~/store/slices/modal'
-import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaSearch, FaEye } from 'react-icons/fa'
+import { FaEdit, FaSearch, FaEye, FaLock, FaLockOpen } from 'react-icons/fa'
 import UserModal from './modal/UserModal'
 import { DetailModal } from './modal/DetailModal'
-import { fakeUsers } from '~/constance/seed/user'
-import { ConfirmDeleteModal } from './modal/ConfirmDeleteModal'
 import Select from 'react-select'
-
-type User = {
-  id: number
-  avatar?: string
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  role: string
-  active: boolean
-  dob: string
-}
+import { showToastError, showToastSuccess } from '~/utils/alert'
+import { apiBlockUser, apiGetAllUsers } from '~/api/users'
+import { User, UserSearchParams } from '~/types/user'
+import { AxiosError } from 'axios'
+import { useSearchParams } from 'react-router-dom'
+import Pagination from '~/components/pagination/Pagination'
 
 const roleOptions = [
-  { value: 'All', label: 'All Roles' },
-  { value: 'Admin', label: 'Admin' },
-  { value: 'User', label: 'User' },
-  { value: 'Moderator', label: 'Moderator' }
+  { value: '111', label: 'Admin' },
+  { value: '112', label: 'User' },
+  { value: '113', label: 'Department' }
 ]
 
 const UserManagement = () => {
-  const [users, setUsers] = useState<User[]>(fakeUsers)
+  const [users, setUsers] = useState<User[]>()
+  const [totalPageCount, setTotalPageCount] = useState(0)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as UserSearchParams, [searchParams])
+  const { accessToken, userData } = useAppSelector((state) => state.user)
   const dispatch = useAppDispatch()
 
   const closeModal = () => {
     dispatch(modalActions.toggleModal({ isOpenModal: false, childrenModal: null }))
-  }
-
-  const handleAddUser = () => {
-    dispatch(
-      modalActions.toggleModal({
-        isOpenModal: true,
-        childrenModal: (
-          <UserModal
-            isOpen={true}
-            isEdit={false}
-            onClose={closeModal}
-            onSubmit={(user) => {
-              setUsers((prev) => [...prev, { ...user, id: prev.length + 1 }])
-              closeModal()
-            }}
-          />
-        )
-      })
-    )
   }
 
   const handleEditUser = (user: User) => {
@@ -64,10 +40,8 @@ const UserManagement = () => {
             isEdit={true}
             user={user}
             onClose={closeModal}
-            onSubmit={(updatedUser) => {
-              setUsers((prev) => prev.map((u) => (u.id === updatedUser.id ? updatedUser : u)))
-              closeModal()
-            }}
+            setUsers={setUsers}
+            accessToken={accessToken || ''}
           />
         )
       })
@@ -83,37 +57,78 @@ const UserManagement = () => {
     )
   }
 
-  const handleConfirmDelele = (user: User) => {
-    dispatch(
-      modalActions.toggleModal({
-        isOpenModal: true,
-        childrenModal: (
-          <ConfirmDeleteModal
-            isOpen={true}
-            onClose={closeModal}
-            onConfirm={() => {
-              setUsers((prev) => prev.filter((u) => u.id !== user.id))
-              closeModal()
-            }}
-          />
-        )
+  const getAllUsers = async (currentParams: UserSearchParams) => {
+    try {
+      if (!accessToken) {
+        showToastError('Please login to perform this action.')
+        return
+      }
+      const { page, search, roleId } = currentParams
+      const response = await apiGetAllUsers({
+        page: page || '0',
+        search: search,
+        limit: '10',
+        roleId,
+        accessToken
       })
-    )
+      if (response.code == 200) {
+        setUsers(response.result.content)
+        setTotalPageCount(response.result.page.totalPages)
+      } else {
+        showToastError(response.message || response.error)
+      }
+    } catch (error) {
+      if (error instanceof Error || error instanceof AxiosError) {
+        showToastError(error.message)
+      }
+    }
+  }
+  const updateBlockStatus = async (userId: string) => {
+    if (!accessToken) {
+      showToastError('Please login to perform this action.')
+      return
+    }
+    try {
+      const response = await apiBlockUser({
+        userId,
+        accessToken
+      })
+      if (response.code == 200) {
+        setUsers((prev) => prev?.map((u) => (u.userId === userId ? { ...u, block: !u.block } : u)))
+        showToastSuccess('User status updated successfully.')
+      } else {
+        showToastError(response.message || response.error)
+      }
+    } catch (error) {
+      if (error instanceof Error || error instanceof AxiosError) {
+        showToastError(error.message)
+      }
+    }
   }
 
+  const renderRoleBadge = (role: string) => {
+    const base = 'px-2 py-1 rounded-full text-xs font-semibold'
+    switch (role.toLowerCase()) {
+      case 'admin':
+        return <span className={`${base} bg-red-100 text-red-700`}>ADMIN</span>
+      case 'user':
+        return <span className={`${base} bg-blue-100 text-blue-700`}>USER</span>
+      case 'department':
+        return <span className={`${base} bg-green-100 text-green-700`}>DEPARTMENT</span>
+      default:
+        return <span className={`${base} bg-gray-100 text-gray-700`}>UNKNOWN</span>
+    }
+  }
+
+  useEffect(() => {
+    getAllUsers(currentParams)
+  }, [currentParams])
+  console.log(users)
   return (
     <div className='p-6 w-full mx-auto bg-white shadow-lg rounded-xl'>
       {/* Header Section */}
       <div className='flex justify-between items-center mb-6'>
         <h1 className='text-3xl font-semibold text-blue-800'>User Management</h1>
-        <button
-          className='bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors'
-          onClick={handleAddUser}
-          aria-label='Add new user'
-        >
-          <FaPlus size={16} />
-          Add User
-        </button>
       </div>
 
       {/* Filters */}
@@ -126,6 +141,18 @@ const UserManagement = () => {
             type='text'
             placeholder='Search by name or email...'
             className='pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
+            value={currentParams.search || ''}
+            onChange={(e) => {
+              if (e.target.value.trim().length === 0) {
+                setSearchParams(() => {
+                  const newParams = { ...currentParams }
+                  delete newParams.search
+                  return new URLSearchParams(newParams as Record<string, string>)
+                })
+              } else {
+                setSearchParams(() => ({ ...currentParams, page: '1', search: e.target.value }))
+              }
+            }}
           />
         </div>
 
@@ -135,10 +162,19 @@ const UserManagement = () => {
             defaultValue={roleOptions[0]}
             className='basic-single'
             classNamePrefix='select'
-            isSearchable={false}
-            onChange={(selectedOption) => {
-              // TODO: filter logic nếu cần
-              console.log('Selected role:', selectedOption?.value)
+            isSearchable={true}
+            isClearable={true}
+            value={roleOptions.find((item) => item.value === currentParams.roleId) || null}
+            onChange={(data) => {
+              if (data) {
+                setSearchParams(() => ({ ...currentParams, roleId: data.value }))
+              } else {
+                setSearchParams(() => {
+                  const newParams = { ...currentParams }
+                  delete newParams.roleId
+                  return new URLSearchParams(newParams as Record<string, string>)
+                })
+              }
             }}
           />
         </div>
@@ -156,52 +192,61 @@ const UserManagement = () => {
               <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Dob</th>
               <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Phone</th>
               <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Role</th>
-              <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Active</th>
               <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {users.map((user, index) => (
-              <tr key={user.id} className='border-b border-teal-200 hover:bg-teal-50 transition-colors'>
-                <td className='px-4 py-3'>{index + 1}</td>
-                <td className='px-4 py-3 font-medium'>{user.firstName}</td>
-                <td className='px-4 py-3 font-medium'>{user.lastName}</td>
-                <td className='px-4 py-3'>{user.email}</td>
-                <td className='px-4 py-3'>{user.dob}</td>
-                <td className='px-4 py-3'>{user.phone}</td>
-                <td className='px-4 py-3'>{user.role}</td>
-                <td className='px-4 py-3'>
-                  {user.active ? (
-                    <FaCheckCircle className='text-cyan-500' size={20} aria-label='Active' />
-                  ) : (
-                    <FaTimesCircle className='text-red-500' size={20} aria-label='Inactive' />
-                  )}
-                </td>
-                <td className='px-4 py-3 flex gap-2'>
-                  <button
-                    className='bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-colors'
-                    onClick={() => handleViewUserDetails(user)}
-                  >
-                    <FaEye size={16} />
-                  </button>
-                  <button
-                    className='bg-yellow-400 text-white p-2 rounded-lg hover:bg-yellow-500 transition-colors'
-                    aria-label={`Edit user ${user.firstName} ${user.lastName}`}
-                    onClick={() => handleEditUser(user)}
-                  >
-                    <FaEdit size={16} />
-                  </button>
-                  <button
-                    className='bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors'
-                    onClick={() => handleConfirmDelele(user)}
-                  >
-                    <FaTrash size={16} />
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {users?.map((user, index) => {
+              const isCurrentUser = user.userId === userData?.userId
+              const rowClass = user.block ? 'opacity-50' : ''
+              const highlightClass = isCurrentUser ? 'bg-yellow-50' : ''
+
+              return (
+                <tr
+                  key={user.userId}
+                  className={`border-b border-teal-200 hover:bg-teal-50 transition-colors ${rowClass} ${highlightClass}`}
+                >
+                  <td className='px-4 py-3'>{index + 1}</td>
+                  <td className='px-4 py-3 font-medium'>{user.firstName}</td>
+                  <td className='px-4 py-3 font-medium'>{user.lastName}</td>
+                  <td className='px-4 py-3'>{user.email}</td>
+                  <td className='px-4 py-3'>
+                    {user.dob ? user.dob : <span className='text-gray-400 italic'>Chưa cập nhật</span>}
+                  </td>
+                  <td className='px-4 py-3'>
+                    {user.phone ? user.phone : <span className='text-gray-400 italic'>Chưa cập nhật</span>}
+                  </td>
+                  <td className='px-4 py-3'>{renderRoleBadge(user?.role?.roleName || '')}</td>
+                  <td className='px-4 py-3 flex gap-2'>
+                    <button
+                      className='bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600'
+                      onClick={() => handleViewUserDetails(user)}
+                    >
+                      <FaEye />
+                    </button>
+                    <button
+                      className='bg-yellow-400 text-white p-2 rounded-lg hover:bg-yellow-500'
+                      onClick={() => handleEditUser(user)}
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      className={`p-2 rounded-lg transition-colors ${
+                        user.block
+                          ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                          : 'bg-green-100 text-green-600 hover:bg-green-200'
+                      }`}
+                      onClick={() => updateBlockStatus(user.userId)}
+                    >
+                      {user.block ? <FaLock /> : <FaLockOpen />}
+                    </button>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
+        <Pagination totalPageCount={totalPageCount} />
       </div>
     </div>
   )

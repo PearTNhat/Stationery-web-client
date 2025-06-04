@@ -35,7 +35,7 @@ const SizeModal = ({ isOpen, isEdit, size, onClose, onSubmit }: Props) => {
     >
       <div className='bg-white p-6 rounded-xl w-full max-w-md shadow-lg' onClick={(e) => e.stopPropagation()}>
         <h2 className='text-2xl font-semibold text-blue-600 mb-6 text-center'>{isEdit ? 'Edit' : 'Add'} Size</h2>
-
+        {!isEdit && <TextInput label='Size Name' name='sizeId' value={form.sizeId} onChange={handleChange} />}
         <TextInput label='Size Name' name='name' value={form.name} onChange={handleChange} />
 
         <div className='flex flex-col gap-2 mt-4'>

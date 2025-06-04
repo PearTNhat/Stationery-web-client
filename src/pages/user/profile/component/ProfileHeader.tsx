@@ -42,6 +42,7 @@ const ProfileHeader: React.FC = () => {
       console.warn('No data to update')
       return
     }
+    console.log(updatedData)
     const formData = new FormData()
     if (file) {
       formData.append('file', file)

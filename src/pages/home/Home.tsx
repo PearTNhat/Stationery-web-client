@@ -59,7 +59,7 @@ const Home: React.FC = () => {
   const checkTransactionStatus = async (orderId: string) => {
     try {
       const res = await apiCheckTransactionStatus({ orderId, accessToken: accessToken || '' })
-      if (res.code === 200) {
+      if (res.result.resultCode === 0) {
         showAlertSucess('Order successfully created')
       } else {
         showAlertError(res.message)
@@ -74,9 +74,9 @@ const Home: React.FC = () => {
       navigate('/', { replace: true })
     }
   }
-  console.log('orderId', orderId)
   useEffect(() => {
     if (orderId) {
+      console.log(orderId)
       checkTransactionStatus(orderId)
     }
   }, [orderId])

@@ -42,8 +42,7 @@ export default function PaymentConfirmation() {
       quantity: item.quantity,
       productPromotionId: item.productPromotion?.length > 0 ? item.productPromotion[0].productPromotionId : null
     }))
-    console.log('order', order)
-    console.log('orderDetails', orderDetails)
+
     // return
     try {
       if (!accessToken) {

@@ -32,7 +32,7 @@ const NewProduct = () => {
   }
 
   useEffect(() => {
-    getNewProducts({ currentPage })
+    getNewProducts({ currentPage: currentPage.toString() })
   }, [currentPage])
   return (
     <ProductSection

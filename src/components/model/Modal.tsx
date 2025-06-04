@@ -28,6 +28,7 @@ const Modal: React.FC<ModalProps> = ({ children, isOpen }) => {
     <div
       className='fixed inset-0 z-[9999] overflow-y-auto'
       onClick={() => {
+        // e.stopPropagation()
         onClose()
       }}
     >

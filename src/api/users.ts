@@ -49,5 +49,77 @@ const apiUpdateUserInfo = async ({ formData, accessToken }: { formData: FormData
     return error // Avoid undefined error
   }
 }
+const apiUpdateUserAdmin = async ({
+  formData,
+  userId,
+  accessToken
+}: {
+  formData: FormData
+  userId: string
+  accessToken: string
+}) => {
+  try {
+    const config = { headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'multipart/form-data' } }
+    const response = await http.put(`/users/admin/update-user/${userId}`, formData, config)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data // Return server error response if available
+    }
+    return error // Avoid undefined error
+  }
+}
 
-export { apiGetUserInfo, apiChangePassword, apiUpdateUserInfo }
+const apiGetAllUsers = async ({
+  page,
+  limit,
+  search,
+  roleId,
+  accessToken
+}: {
+  page: string
+  limit: string
+  search?: string
+  roleId?: string
+  accessToken: string
+}) => {
+  try {
+    const params = {
+      page,
+      limit,
+      roleId,
+      search
+    }
+    const config = {
+      params,
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+    const response = await http.get('/users/admin/get-users', config)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data // Return server error response if available
+    }
+    return error // Avoid undefined error
+  }
+}
+const apiBlockUser = async ({ userId, accessToken }: { userId: string; accessToken: string }) => {
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+    const response = await http.put(`/users/admin/block-user/${userId}`, {}, config)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data // Return server error response if available
+    }
+    return error // Avoid undefined error
+  }
+}
+
+export { apiGetUserInfo, apiChangePassword, apiUpdateUserInfo, apiUpdateUserAdmin, apiGetAllUsers, apiBlockUser }

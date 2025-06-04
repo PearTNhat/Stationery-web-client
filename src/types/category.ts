@@ -4,3 +4,9 @@ export interface Category {
   icon?: string
   bgColor?: string
 }
+
+export interface CategorySearchParams {
+  search?: string
+  page?: string
+  limit?: string
+}

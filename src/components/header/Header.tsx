@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ShoppingCart, Menu, X } from 'lucide-react'
+import { ShoppingCart, Menu, X, CreditCard } from 'lucide-react'
 import { useNavigate, NavLink, Link, createSearchParams, useSearchParams } from 'react-router-dom'
 import { publicPaths } from '~/constance/paths'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
@@ -64,7 +64,7 @@ function Header() {
       search: createSearchParams(newParams).toString()
     })
   }
-
+  console.log('ssss')
   useEffect(() => {
     if (isLoggedIn && accessToken && userData?.userId) {
       dispatch(fetchCategories())
@@ -78,11 +78,11 @@ function Header() {
     <nav className='fixed top-0 left-0 right-0 z-50 shadow-md bg-white px-6 py-3 flex items-center justify-between md:px-10 dark:bg-gray-800'>
       {/* Logo */}
       <Link to='/'>
-        <div className='text-2xl font-bold text-blue-600 cursor-pointer dark:text-blue-400'>Stationery's P</div>
+        <div className='text-2xl font-bold text-blue-600 cursor-pointer '>Stationery's P</div>
       </Link>
 
       {/* Desktop Menu */}
-      <div className='hidden md:flex space-x-6 text-gray-700 dark:text-gray-300'>
+      <div className='hidden md:flex space-x-6 text-gray-700 '>
         <NavLink
           to={publicPaths.PUBLIC}
           className={({ isActive }) =>
@@ -140,8 +140,6 @@ function Header() {
         <SearchWithSuggestions />
       </div>
 
-      {/* Icons Section */}
-      <div className='flex items-center space-x-4'>
         {/* Cart */}
         <div className='relative cursor-pointer' onClick={handleCartToggle}>
           <ShoppingCart
@@ -152,15 +150,6 @@ function Header() {
             {myCart.length}
           </span>
         </div>
-
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          className='p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition dark:bg-gray-70'
-          aria-label='Toggle dark mode'
-        >
-          {theme === 'light' ? '🌞' : '🌙'}
-        </button>
 
         {/* User Profile */}
         {isLoggedIn ? (
@@ -275,16 +264,30 @@ function Header() {
             >
               Contact
             </NavLink>
+
             <div className='flex items-center space-x-4 border-t pt-4 dark:border-gray-600'>
+              {isLoggedIn && userData?.inOrders && userData.inOrders.length > 0 && (
+                <div
+                  className='relative cursor-pointer'
+                  onClick={() => navigate('/orders/unpaid')}
+                  title='Unpaid Orders'
+                >
+                  <CreditCard
+                    size={24}
+                    className='text-gray-700 hover:text-blue-500 transition dark:text-gray-300 dark:hover:text-blue-400'
+                  />
+                  <span className='absolute -top-2 -right-2 bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full'>
+                    {userData.inOrders?.length}
+                  </span>
+                </div>
+              )}
+
               <div className='relative cursor-pointer' onClick={handleCartToggle}>
                 <ShoppingCart size={24} className='text-gray-700 dark:text-gray-300' />
                 <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>
                   {myCart.length}
                 </span>
               </div>
-              <button onClick={toggleTheme} className='p-2 rounded-full bg-gray-200 dark:bg-gray-600'>
-                {theme === 'light' ? '🌞' : '🌙'}
-              </button>
             </div>
             {/* Mobile Login/Register */}
             {!isLoggedIn && (
@@ -312,6 +315,7 @@ function Header() {
           </div>
         </div>
       )}
+
       {/* Giỏ hàng Modal */}
       <Cart isOpen={isCartOpen} onClose={handleCartToggle} cartItems={myCart} accessToken={accessToken || ''} />
     </nav>

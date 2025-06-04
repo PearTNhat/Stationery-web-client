@@ -13,7 +13,6 @@ const formatNumber = (number: number | string) => {
 }
 const priceInPromotion = (productDetail: ProductDetail | null): number => {
   if (!productDetail) return 0
-  console.log('productDetail pass')
   if (productDetail?.productPromotions.length == 0) {
     return productDetail?.discountPrice || 0
   }

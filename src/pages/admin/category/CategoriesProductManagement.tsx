@@ -1,20 +1,54 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { AxiosError } from 'axios'
 import { FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa'
-import { useAppDispatch } from '~/hooks/redux'
+import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { modalActions } from '~/store/slices/modal'
 import { fakeCategories } from '~/constance/seed/category'
-import { Category } from '~/types/category'
+import { Category, CategorySearchParams } from '~/types/category'
 import CategoryModal from './modal/CategoryModal'
+import { useSearchParams } from 'react-router-dom'
+import { showToastError, showToastSuccess } from '~/utils/alert'
+import { apiDeleteCategory, apiGetAllCategories, apiUpdateCategory, createCategory } from '~/api/category'
+import Pagination from '~/components/pagination/Pagination'
 import { DeleteModal } from './modal/DeleteModal'
-
+const LIMIT = 10 // Số lượng mục hiển thị trên mỗi trang
 const CategoriesProductManagement = () => {
   const [categories, setCategories] = useState<Category[]>(fakeCategories)
+  const [totalPageCount, setTotalPageCount] = useState(0)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as CategorySearchParams, [searchParams])
+  const { accessToken } = useAppSelector((state) => state.user)
   const dispatch = useAppDispatch()
 
   const closeModal = () => {
     dispatch(modalActions.toggleModal({ isOpenModal: false, childrenModal: null }))
   }
-
+  const handleDeleteCategory = (category: Category) => {
+    dispatch(
+      modalActions.toggleModal({
+        isOpenModal: true,
+        childrenModal: (
+          <DeleteModal
+            isOpen={true}
+            onClose={closeModal}
+            onConfirm={async () => {
+              try {
+                console.log(category)
+                await apiDeleteCategory(category)
+                setCategories((prev) => prev.filter((u) => u.categoryId !== category.categoryId))
+                showToastSuccess('Category deleted successfully!')
+              } catch (error) {
+                if (error instanceof Error || error instanceof AxiosError) {
+                  showToastError(error.message)
+                }
+              }
+              closeModal()
+            }}
+          />
+        )
+      })
+    )
+  }
   const handleAddCategory = () => {
     dispatch(
       modalActions.toggleModal({
@@ -24,8 +58,16 @@ const CategoriesProductManagement = () => {
             isOpen={true}
             isEdit={false}
             onClose={closeModal} // Đảm bảo onClose chỉ được gọi khi nhấn "Cancel"
-            onSubmit={(newCategory) => {
-              setCategories((prev) => [...prev, { ...newCategory, categoryId: Date.now().toString() }])
+            onSubmit={async (newCategory) => {
+              try {
+                await createCategory(newCategory)
+                setCategories((prev) => [...prev, newCategory])
+                showToastSuccess('Category created successfully!')
+              } catch (error) {
+                if (error instanceof Error || error instanceof AxiosError) {
+                  showToastError(error.message)
+                }
+              }
               closeModal() // Đóng modal sau khi submit
             }}
           />
@@ -44,10 +86,17 @@ const CategoriesProductManagement = () => {
             isEdit={true}
             category={category}
             onClose={closeModal} // Đảm bảo onClose chỉ được gọi khi nhấn "Cancel"
-            onSubmit={(updatedCategory) => {
-              setCategories((prev) =>
-                prev.map((c) => (c.categoryId === updatedCategory.categoryId ? updatedCategory : c))
-              )
+            onSubmit={async (updatedCategory) => {
+              try {
+                await apiUpdateCategory(updatedCategory)
+                setCategories((prev) =>
+                  prev.map((c) => (c.categoryId === updatedCategory.categoryId ? updatedCategory : c))
+                )
+              } catch (error) {
+                if (error instanceof Error || error instanceof AxiosError) {
+                  showToastError(error.message)
+                }
+              }
               closeModal() // Đóng modal sau khi submit
             }}
           />
@@ -56,24 +105,34 @@ const CategoriesProductManagement = () => {
     )
   }
 
-  const handleDeleteCategory = (category: Category) => {
-    dispatch(
-      modalActions.toggleModal({
-        isOpenModal: true,
-        childrenModal: (
-          <DeleteModal
-            isOpen={true}
-            onClose={closeModal}
-            onConfirm={() => {
-              setCategories((prev) => prev.filter((u) => u.categoryId !== category.categoryId))
-              closeModal()
-            }}
-          />
-        )
+  const getAllCategories = async (currentParams: CategorySearchParams) => {
+    try {
+      if (!accessToken) {
+        showToastError('Please login to perform this action.')
+        return
+      }
+      const { page, search } = currentParams
+      const response = await apiGetAllCategories({
+        page: page || '0',
+        search: search,
+        limit: LIMIT.toString(),
+        accessToken
       })
-    )
+      if (response.code == 200) {
+        setCategories(response.result.content)
+        setTotalPageCount(response.result.page.totalPages)
+      } else {
+        showToastError(response.message || response.error)
+      }
+    } catch (error) {
+      if (error instanceof Error || error instanceof AxiosError) {
+        showToastError(error.message)
+      }
+    }
   }
-
+  useEffect(() => {
+    getAllCategories(currentParams)
+  }, [currentParams])
   return (
     <div className='p-6 w-full mx-auto bg-white shadow-lg rounded-xl'>
       {/* Header */}
@@ -97,6 +156,18 @@ const CategoriesProductManagement = () => {
           type='text'
           placeholder='Search by category name...'
           className='pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
+          value={currentParams.search || ''}
+          onChange={(e) => {
+            if (e.target.value.trim().length === 0) {
+              setSearchParams(() => {
+                const newParams = { ...currentParams }
+                delete newParams.search
+                return new URLSearchParams(newParams as Record<string, string>)
+              })
+            } else {
+              setSearchParams(() => ({ ...currentParams, page: '1', search: e.target.value }))
+            }
+          }}
         />
       </div>
 
@@ -115,7 +186,7 @@ const CategoriesProductManagement = () => {
           <tbody>
             {categories.map((category, index) => (
               <tr key={category.categoryId} className='border-b border-teal-200 hover:bg-teal-50 transition-colors'>
-                <td className='px-4 py-3'>{index + 1}</td>
+                <td className='px-4 py-3'>{((Number(currentParams.page) || 1) - 1) * LIMIT + index + 1}</td>
                 <td className='px-4 py-3 font-medium'>{category.categoryName}</td>
                 <td className='px-4 py-3 font-medium'>{category.icon}</td>
                 <td className='px-4 py-3'>
@@ -144,6 +215,7 @@ const CategoriesProductManagement = () => {
           </tbody>
         </table>
       </div>
+      <Pagination totalPageCount={totalPageCount} />
     </div>
   )
 }
