@@ -13,7 +13,6 @@ const formatNumber = (number: number | string) => {
 }
 const priceInPromotion = (productDetail: ProductDetail | null): number => {
   if (!productDetail) return 0
-  console.log('productDetail pass')
   if (productDetail?.productPromotions.length == 0) {
     return productDetail?.discountPrice || 0
   }
@@ -59,6 +58,6 @@ const calculatePercent = (price?: number, priceDiscount?: number) => {
   if (price === 0 || !price || priceDiscount === 0 || !priceDiscount) {
     return 0
   }
-  return Math.round(((price - priceDiscount) / price) * 100)
+  return Number((((price - priceDiscount) / price) * 100).toFixed(2))
 }
 export { formatNumber, convertNumberToStar, calculatePercent, priceInPromotion }

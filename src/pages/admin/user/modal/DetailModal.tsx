@@ -1,23 +1,17 @@
 import { TextInput } from '~/components/styles/TextInput'
-
-type User = {
-  id: number
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  role: string
-  active: boolean
-  avatar?: string
-  dob?: string
-}
+import { User } from '~/types/user'
 
 export const DetailModal = ({ isOpen, onClose, user }: { isOpen: boolean; onClose: () => void; user: User | null }) => {
   if (!isOpen || !user) return null
 
   return (
     <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50'>
-      <div className='bg-white p-8 rounded-xl shadow-xl w-[500px] md:w-[600px] max-w-lg'>
+      <div
+        className='bg-white p-8 rounded-xl shadow-xl w-[500px] md:w-[600px] max-w-lg'
+        onClick={(e) => {
+          e.stopPropagation()
+        }}
+      >
         <h2 className='text-3xl font-semibold text-blue-600 mb-6 text-center'>User Details</h2>
 
         {/* Avatar Section */}
@@ -42,8 +36,7 @@ export const DetailModal = ({ isOpen, onClose, user }: { isOpen: boolean; onClos
           <TextInput name='lastName' label='Last Name' value={user.lastName} readOnly />
           <TextInput name='email' label='Email' value={user.email} readOnly />
           <TextInput name='phone' label='Phone' value={user.phone} readOnly />
-          <TextInput name='role' label='Role' value={user.role} readOnly />
-          <TextInput name='status' label='Status' value={user.active ? 'Active' : 'Inactive'} readOnly />
+          <TextInput name='role' label='Role' value={user.role.roleId} readOnly />
           {user.dob && (
             <TextInput name='dob' label='Date of Birth' value={new Date(user.dob).toLocaleDateString()} readOnly />
           )}

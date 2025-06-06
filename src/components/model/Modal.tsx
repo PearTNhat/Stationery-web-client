@@ -26,16 +26,14 @@ const Modal: React.FC<ModalProps> = ({ children, isOpen }) => {
 
   return (
     <div
-      className='fixed inset-0 z-50 overflow-y-auto'
+      className='fixed inset-0 z-[9999] overflow-y-auto'
       onClick={() => {
+        // e.stopPropagation()
         onClose()
       }}
     >
       {/* Overlay */}
-      <div
-        className='fixed  z-[1] inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300'
-        onClick={onClose}
-      />
+      <div className='fixed  z-[1] inset-0 bg-black/30 transition-opacity duration-300' onClick={onClose} />
 
       {/* Modal Content */}
       <div

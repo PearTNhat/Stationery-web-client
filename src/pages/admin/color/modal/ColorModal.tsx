@@ -31,7 +31,7 @@ const ColorModal = ({ isOpen, isEdit, color, onClose, onSubmit }: Props) => {
     >
       <div className='bg-white p-6 rounded-xl w-full max-w-md shadow-lg' onClick={(e) => e.stopPropagation()}>
         <h2 className='text-2xl font-semibold text-blue-600 mb-6 text-center'>{isEdit ? 'Edit' : 'Add'} Color</h2>
-
+        {!isEdit && <TextInput label='Color Id' name='colorId' value={form.colorId} onChange={handleChange} />}
         <TextInput label='Color Name' name='name' value={form.name} onChange={handleChange} />
 
         <div className='flex flex-col gap-2 mt-4'>

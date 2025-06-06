@@ -1,14 +1,27 @@
-import { useState } from 'react'
-import { useAppDispatch } from '~/hooks/redux'
+import { useEffect, useMemo, useState } from 'react'
+import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { modalActions } from '~/store/slices/modal'
 import { FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa'
 import { Color } from '~/types/product'
 import { fakeColors } from '~/constance/seed/mockColors'
 import ColorModal from './modal/ColorModal'
 import Swal from 'sweetalert2'
-
+import { apiCreateColor, apiDeleteColor, apiGetAllColorAdmin, apiUpdateColor } from '~/api/color'
+import { showToastError, showToastSuccess } from '~/utils/alert'
+import { AxiosError } from 'axios'
+import { useSearchParams } from 'react-router-dom'
+import { ColorSearchParams } from '~/types/color'
+import Pagination from '~/components/pagination/Pagination'
+import { useDebounce } from '~/hooks/useDebounce'
+const LIMIT = 10 // Number of items to display per page
 const ColorManagement = () => {
   const [colors, setColors] = useState<Color[]>(fakeColors)
+  const [totalPageCount, setTotalPageCount] = useState(0)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as ColorSearchParams, [searchParams])
+  const { accessToken } = useAppSelector((state) => state.user)
+  const [searchTerm, setSearchTerm] = useState(currentParams.search || '')
+  const debouncedSearchTerm = useDebounce(searchTerm, 500)
   const dispatch = useAppDispatch()
 
   const closeModal = () => {
@@ -24,8 +37,19 @@ const ColorManagement = () => {
             isOpen={true}
             isEdit={false}
             onClose={closeModal}
-            onSubmit={(color) => {
-              setColors((prev) => [...prev, { ...color, id: prev.length + 1 }])
+            onSubmit={async (color) => {
+              try {
+                const res = await apiCreateColor(color)
+                if (res.code !== 200) {
+                  throw new Error(res.message || res.error)
+                }
+                setColors((prev) => [...prev, { ...color, ...res.result }])
+                showToastSuccess('Color created successfully!')
+              } catch (error) {
+                if (error instanceof Error || error instanceof AxiosError) {
+                  showToastError(error.message)
+                }
+              }
               closeModal()
             }}
           />
@@ -44,14 +68,47 @@ const ColorManagement = () => {
             isEdit={true}
             color={color}
             onClose={closeModal}
-            onSubmit={(updatedColor) => {
-              setColors((prev) => prev.map((u) => (u.colorId === updatedColor.colorId ? updatedColor : u)))
+            onSubmit={async (updatedColor) => {
+              try {
+                await apiUpdateColor(updatedColor)
+                setColors((prev) => prev.map((u) => (u.colorId === updatedColor.colorId ? updatedColor : u)))
+                showToastSuccess('Category deleted successfully!')
+              } catch (error) {
+                if (error instanceof Error || error instanceof AxiosError) {
+                  showToastError(error.message)
+                }
+              }
               closeModal()
             }}
           />
         )
       })
     )
+  }
+  const getAllColors = async (currentParams: ColorSearchParams) => {
+    try {
+      if (!accessToken) {
+        showToastError('Please login to perform this action.')
+        return
+      }
+      const { page, search } = currentParams
+      const response = await apiGetAllColorAdmin({
+        page: page || '0',
+        search: search,
+        limit: LIMIT.toString(),
+        accessToken
+      })
+      if (response.code == 200) {
+        setColors(response.result.content)
+        setTotalPageCount(response.result.page.totalPages)
+      } else {
+        showToastError(response.message || response.error)
+      }
+    } catch (error) {
+      if (error instanceof Error || error instanceof AxiosError) {
+        showToastError(error.message)
+      }
+    }
   }
 
   const handleConfirmDeleleColor = async (id: string) => {
@@ -67,10 +124,27 @@ const ColorManagement = () => {
     })
 
     if (result.isConfirmed) {
+      const res = await apiDeleteColor(id)
+      if (res.code !== 200) {
+        showToastError(res.message || res.error)
+        return
+      }
       setColors((prev) => prev.filter((p) => p.colorId !== id))
       Swal.fire('Đã xóa!', 'Sản phẩm đã được xóa.', 'success')
     }
   }
+  useEffect(() => {
+    getAllColors(currentParams)
+  }, [currentParams])
+  useEffect(() => {
+    const newParams = { ...currentParams, page: '1' }
+    if (debouncedSearchTerm.trim()) {
+      newParams.search = debouncedSearchTerm
+    } else {
+      delete newParams.search
+    }
+    setSearchParams(newParams)
+  }, [debouncedSearchTerm])
 
   return (
     <div className='p-6 w-full mx-auto bg-white shadow-lg rounded-xl'>
@@ -97,6 +171,10 @@ const ColorManagement = () => {
             type='text'
             placeholder='Search by color name or color hex...'
             className='pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
+            value={searchTerm || ''}
+            onChange={(e) => {
+              setSearchTerm(e.target.value)
+            }}
           />
         </div>
       </div>
@@ -115,7 +193,7 @@ const ColorManagement = () => {
           <tbody>
             {colors.map((color, index) => (
               <tr key={color.colorId} className='border-b border-teal-200 hover:bg-teal-50 transition-colors'>
-                <td className='px-4 py-3'>{index + 1}</td>
+                <td className='px-4 py-3'>{((Number(currentParams.page) || 1) - 1) * LIMIT + index + 1}</td>
                 <td className='px-4 py-3 font-medium'>{color.name}</td>
                 <td className='px-4 py-3'>
                   <span
@@ -146,6 +224,7 @@ const ColorManagement = () => {
           </tbody>
         </table>
       </div>
+      <Pagination totalPageCount={totalPageCount} />
     </div>
   )
 }

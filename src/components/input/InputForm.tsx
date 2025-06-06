@@ -16,8 +16,8 @@ interface InputFormProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 function InputForm({
-  cssParents,
-  cssInput,
+  cssParents = '',
+  cssInput = '',
   id,
   validate,
   iconRequire,
@@ -28,31 +28,39 @@ function InputForm({
   error,
   ...rest
 }: InputFormProps) {
+  const hasError = error && error[id as keyof FormLogin]
+
   return (
-    <div className={cssParents + ' mt-1 relative'}>
+    <div className={`${cssParents} mt-1 relative`}>
       {label && (
-        <label htmlFor={id}>
+        <label htmlFor={id} className='block mb-1'>
           {iconRequire && <span className='text-red-500'>*</span>}
           {label}
         </label>
       )}
-      {iconLeft}
-      <input
-        type='text'
-        id={id}
-        {...register(id, validate)}
-        className={`${
-          error && error[id as keyof FormLogin] ? '!border-red-500' : ''
-        } ${cssInput} placeholder:text-dark-light border-[1px] border-text-dark-gray rounded-md p-2 w-full outline-none focus:border-primary`}
-        {...rest}
-      />
-      {iconRight}
-      <div className='h-[19px] flex items-center '>
-        {error && error[id as keyof FormLogin] ? (
-          <small className='text-red-500 text-sm'>{error[id as keyof FormLogin]?.message}</small>
-        ) : (
-          ''
-        )}
+
+      <div className='relative flex items-center'>
+        {iconLeft}
+
+        <input
+          type='text'
+          id={id}
+          {...register(id, validate)}
+          className={`
+            ${hasError ? 'border-red-500 ring-1 ring-red-500' : 'border-text-dark-gray'} 
+            ${iconLeft ? 'pl-10' : ''}
+            ${iconRight ? 'pr-10' : ''}
+            ${cssInput}
+            placeholder:text-dark-light border-[1px] rounded-md p-2 w-full outline-none focus:border-primary
+          `}
+          {...rest}
+        />
+
+        {iconRight}
+      </div>
+
+      <div className='h-[19px] flex items-center mt-1'>
+        {hasError ? <small className='text-red-500 text-sm'>{hasError.message}</small> : null}
       </div>
     </div>
   )

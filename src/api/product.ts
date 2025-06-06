@@ -130,11 +130,165 @@ const apiGetSimilarProducts = async (productId: string) => {
   }
 }
 
+const apiCreateProduct = async ({ data, accessToken }: { data: FormData; accessToken: string }) => {
+  try {
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+    const response = await http.post('/products/create-product-and-detail', data, config)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data // Return server error response if available
+    }
+    return error // Avoid undefined error
+  }
+}
+const apiUpdateProduct = async ({
+  data,
+  accessToken
+}: {
+  data: { productId: string; name: string; description: string; categoryId: string }
+  accessToken: string
+}) => {
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+    const response = await http.put('/products/edit/product', data, config)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data // Return server error response if available
+    }
+    return error // Avoid undefined error
+  }
+}
+const apiUpdateDetailProduct = async ({ data, accessToken }: { data: FormData; accessToken: string }) => {
+  try {
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+    const response = await http.put('/product-details/update/product-detail', data, config)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data // Return server error response if available
+    }
+    return error // Avoid undefined error
+  }
+}
+const apiUpdateHiddenProduct = async ({
+  productId,
+  hidden,
+  accessToken
+}: {
+  productId: string
+  hidden: boolean
+  accessToken: string
+}) => {
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+    const response = await http.put(`/products/update-hidden-product/${productId}`, { hidden }, config)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data // Return server error response if available
+    }
+    return error // Avoid undefined error
+  }
+}
+const apiUpdateHiddenPD = async ({
+  productDetailId,
+  hidden,
+  accessToken
+}: {
+  productDetailId: string
+  hidden: boolean
+  accessToken: string
+}) => {
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+    const response = await http.put(`/product-details/update-hidden-pd/${productDetailId}`, { hidden }, config)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data // Return server error response if available
+    }
+    return error // Avoid undefined error
+  }
+}
+const apiGetAllProductsAdmin = async ({
+  page,
+  limit,
+  sortBy,
+  minPrice,
+  maxPrice,
+  categoryId,
+  search,
+  accessToken
+}: {
+  page: string
+  limit: string
+  sortBy?: string
+  minPrice?: string
+  maxPrice?: string
+  categoryId?: string
+  search?: string
+  accessToken: string
+}) => {
+  try {
+    const params = {
+      page,
+      limit,
+      sortBy,
+      minPrice,
+      maxPrice,
+      categoryId,
+      search
+    }
+    const config = {
+      params,
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+    const response = await http.get('/products/admin/get-products', config)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data // Return server error response if available
+    }
+    return error // Avoid undefined error
+  }
+}
 export {
   apiGetAllProductsWithDefaultPD,
   apiGetDetailProduct,
   apiFetchColorSizeProductDetail,
   apiGetAllProducts,
   apiGetProductDetailsByProductId,
-  apiGetSimilarProducts
+  apiGetSimilarProducts,
+  apiCreateProduct,
+  apiUpdateProduct,
+  apiUpdateDetailProduct,
+  apiUpdateHiddenProduct,
+  apiUpdateHiddenPD,
+  apiGetAllProductsAdmin
 }

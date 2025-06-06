@@ -7,4 +7,9 @@ interface ColorSize {
   hex: string
   sizes: SizeSlug[]
 }
-export type { ColorSize, SizeSlug }
+interface ColorSearchParams {
+  page?: string
+  search?: string
+  limit?: string
+}
+export type { ColorSize, SizeSlug, ColorSearchParams }

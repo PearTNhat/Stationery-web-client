@@ -33,7 +33,7 @@ const CategoryModal = ({ isOpen, isEdit, category, onClose, onSubmit }: Props) =
     >
       <div className='bg-white p-6 rounded-xl w-full max-w-md shadow-lg' onClick={(e) => e.stopPropagation()}>
         <h2 className='text-2xl font-semibold text-blue-600 mb-6 text-center'>{isEdit ? 'Edit' : 'Add'} Category</h2>
-
+        {!isEdit && <TextInput label='Category Id' name='categoryId' value={form.categoryId} onChange={handleChange} />}
         {/* Tên danh mục */}
         <TextInput label='Category Name' name='categoryName' value={form.categoryName} onChange={handleChange} />
 

@@ -28,7 +28,6 @@ const ProfileHeader: React.FC = () => {
       phone: userData?.phone || ''
     }
   })
-  console.log(userData)
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -43,6 +42,7 @@ const ProfileHeader: React.FC = () => {
       console.warn('No data to update')
       return
     }
+    console.log(updatedData)
     const formData = new FormData()
     if (file) {
       formData.append('file', file)
@@ -236,29 +236,6 @@ const ProfileHeader: React.FC = () => {
               </p>
             )}
           </div>
-
-          {/* Address */}
-          {/* <div className='md:col-span-2'>
-            <label className='block text-sm font-semibold text-gray-700 mb-2'>Address</label>
-            {isEditing ? (
-              <input
-                type='text'
-                name='address'
-                value={defaultAddress?.addressName || ''}
-                onChange={(e) => {
-                  const updatedAddresses = formData?.addresses?.map((addr) =>
-                    addr.isDefault ? { ...addr, addressName: e.target.value } : addr
-                  )
-                  setFormData((prev) => (prev ? { ...prev, addresses: updatedAddresses || [] } : null))
-                }}
-                className='w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm transition-all text-gray-900'
-              />
-            ) : (
-              <p className='text-gray-900 bg-gray-100 p-3 rounded-lg shadow-inner'>
-                {defaultAddress?.addressName || 'Chưa cập nhật'}
-              </p>
-            )}
-          </div> */}
         </div>
       </form>
     </div>
