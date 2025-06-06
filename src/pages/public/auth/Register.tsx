@@ -2,7 +2,7 @@ import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 import { useForm, SubmitHandler } from 'react-hook-form'
 import { useState, useEffect } from 'react'
-import { showToastSuccess } from '~/utils/alert'
+import { showToastError, showToastSuccess } from '~/utils/alert'
 import { apiRegister, apiVerifyOtp, apiResendOtp } from '~/api/register'
 
 interface FormData {
@@ -62,16 +62,18 @@ export default function RegisterForm() {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
       const response = await apiRegister(data)
-      if (typeof response === 'string') {
-        showToastSuccess(response)
-      } else {
+      console.log('Reponse', response)
+      if (response.success) {
+        showToastSuccess(response.data?.message)
         setEmail(data.email)
         setShowOtpForm(true)
         setTimeLeft(300) // Reset timer
+      } else {
+        showToastError(response.error)
       }
     } catch (error) {
       console.error('Registration failed:', error)
-      showToastSuccess('Registration failed')
+      showToastError('Registration failed')
     }
   }
 

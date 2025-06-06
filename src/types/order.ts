@@ -13,6 +13,7 @@ interface CreateOrderParams {
   addressId: string
   amount: number
   note: string | null
+  expiredTime: string
   accessToken: string
 }
 interface UserInfoOrder {
@@ -35,6 +36,9 @@ export interface PurchaseOrderResponse {
   userPromotionId: string | null
   status: 'PENDING' | 'PROCESSING' | 'SHIPPING' | 'COMPLETED' | 'CANCELED'
   amount: number
+  cancelReason: string | null
+  note: string | null
+  expiredTime: string | null
   orderDetails: Array<{
     productDetailId: string
     quantity: number

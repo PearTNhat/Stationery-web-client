@@ -36,7 +36,7 @@ const statusMap: Record<PurchaseOrderResponse['status'], string> = {
 }
 
 const OrderItem: React.FC<OrderItemProps> = ({ order }) => {
-  const { purchaseOrderId, createdAt, status, amount, orderDetails, userPromotionId } = order
+  const { purchaseOrderId, createdAt, status, amount, orderDetails } = order
   const displayStatus = statusMap[status]
   const [showModal, setShowModal] = useState(false)
   const [productDetails, setProductDetails] = useState<ProductDetail[]>([])
@@ -144,18 +144,6 @@ const OrderItem: React.FC<OrderItemProps> = ({ order }) => {
       [productDetailId]: (prev[productDetailId] + 1) % imageCount
     }))
   }
-
-  // Tính toán tóm tắt thanh toán
-  const subtotal = productDetails.reduce((sum, detail) => {
-    const orderDetail = orderDetails.find((od) => od.productDetailId === detail.productDetailId)
-    return sum + (orderDetail ? detail.discountPrice * orderDetail.quantity : 0)
-  }, 0)
-  const originalTotal = productDetails.reduce((sum, detail) => {
-    const orderDetail = orderDetails.find((od) => od.productDetailId === detail.productDetailId)
-    return sum + (orderDetail ? detail.originalPrice * orderDetail.quantity : 0)
-  }, 0)
-  const savings = originalTotal - subtotal
-  const finalTotal = amount // Tổng tiền từ API
 
   return (
     <>

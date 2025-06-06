@@ -1,5 +1,5 @@
 import { OrderDetails } from '~/types/order'
-import { formatNumber, priceInPromotion } from '~/utils/helper'
+import { formatNumber } from '~/utils/helper'
 
 export default function OrderSummary({ order, discountAmount }: { order: OrderDetails; discountAmount: number }) {
   return (

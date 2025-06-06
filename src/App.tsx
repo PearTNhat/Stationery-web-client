@@ -70,6 +70,7 @@ function App() {
           <Route path={departmentPath.INVOICE} element={<InvoiceAndReport />} />
           <Route path={departmentPath.NOTIFICATION} element={<NotificationPage />} />
           <Route path={departmentPath.SUPPORT} element={<SupportPage />} />
+          <Route path={departmentPath.PRODUCT_DETAIL} element={<ProductDetail />} />
         </Route>
         <Route path={adminPaths.ADMIN} element={<AdminLayout />}>
           <Route index element={<DashBoard />} />

@@ -1,7 +1,7 @@
 // Card.tsx
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { FaShoppingCart } from 'react-icons/fa'
+import { FaPlus, FaShoppingCart } from 'react-icons/fa'
 import Button from '../button/Button'
 import { Link } from 'react-router-dom'
 import { FetchColor, Product, ProductDetail } from '~/types/product'
@@ -19,7 +19,7 @@ interface ProductCardProps {
 }
 
 const Card: React.FC<ProductCardProps> = ({ product }) => {
-  const { accessToken } = useAppSelector((state) => state.user)
+  const { accessToken, userData } = useAppSelector((state) => state.user)
   const [selectedColor, setSelectedColor] = useState<string>(product.productDetail.color?.colorId ?? '')
   const [selectedSize, setSelectedSize] = useState<string>(product.productDetail.size?.sizeId ?? '')
   const [productDetail, setProductDetail] = useState<ProductDetail | null>(null)
@@ -54,6 +54,11 @@ const Card: React.FC<ProductCardProps> = ({ product }) => {
     } catch {
       showToastError('Added to cart failed!')
     }
+  }
+
+  const handleAddRequest = () => {
+    // Xử lý thêm yêu cầu mới tại đây
+    showToastSuccess('Thêm yêu cầu mới thành công!')
   }
 
   return (
@@ -111,18 +116,26 @@ const Card: React.FC<ProductCardProps> = ({ product }) => {
         selectedSize={selectedSize}
         onSizeSelect={(sizeId) => setSelectedSize(sizeId)}
       /> */}
-
       <div className='flex space-x-4 w-full mt-2'>
-        <Link to={`/products/${productDetail?.slug}`} className='w-full'>
+        <Link
+          to={`${userData?.role?.roleId === '113' ? '/department' : ''}/products/${productDetail?.slug}`}
+          className='w-full'
+        >
           <Button className='bg-blue-500 text-white px-4 py-2 w-full rounded-lg shadow-md transition hover:bg-blue-600'>
             View Details
           </Button>
         </Link>
+
         <button
-          className='bg-yellow-400 text-black p-3 rounded-lg shadow-md transition hover:bg-yellow-500'
-          onClick={handleAddToCart}
+          className={`p-3 rounded-lg shadow-md transition ${
+            userData?.role?.roleId === '113'
+              ? 'bg-green-500 text-white hover:bg-green-600'
+              : 'bg-yellow-400 text-black hover:bg-yellow-500'
+          }`}
+          onClick={userData?.role?.roleId === '113' ? handleAddRequest : handleAddToCart}
+          title={userData?.role?.roleId === '113' ? 'Thêm yêu cầu mới' : 'Thêm vào giỏ hàng'}
         >
-          <FaShoppingCart size={20} />
+          {userData?.role?.roleId === '113' ? <FaPlus size={20} /> : <FaShoppingCart size={20} />}
         </button>
       </div>
     </motion.div>

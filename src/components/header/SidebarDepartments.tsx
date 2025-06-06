@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   FaHome,
   FaClipboardList,
@@ -11,17 +11,30 @@ import {
   FaPlusCircle,
   FaHeadset
 } from 'react-icons/fa'
-import { Link, useLocation } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { departmentPath } from '~/constance/paths'
+import { useAppSelector } from '~/hooks/redux'
+import { userActions } from '~/store/slices/user'
 
 const Sidebar: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(true)
+  const [isOpen, setIsOpen] = useState(false)
   const location = useLocation()
   const [hoverItem, setHoverItem] = useState<string | null>(null)
 
-  const partnerInfo = {
-    companyName: 'Học Viện Công Nghệ Bưu Chính Viễn Thông',
-    partnerCode: 'PARTNER123'
+  const navigate = useNavigate()
+  const { accessToken, userData } = useAppSelector((state) => state.user)
+  useEffect(() => {
+    if (!accessToken) {
+      navigate('/auth?mode=login')
+    }
+  }, [accessToken, navigate])
+
+  const dispatch = useDispatch()
+
+  const handleLogout = () => {
+    dispatch(userActions.logout())
+    navigate('/auth?mode=login')
   }
 
   const navItems = [
@@ -47,7 +60,9 @@ const Sidebar: React.FC = () => {
             </div>
             <div>
               <span className='font-bold text-white text-lg tracking-tight'>STATIONERY P</span>
-              <p className='text-xs text-blue-200'>{partnerInfo.companyName}</p>
+              <p className='text-xs text-blue-200'>
+                {userData?.firstName} {userData?.lastName}
+              </p>
             </div>
           </div>
         )}
@@ -71,12 +86,12 @@ const Sidebar: React.FC = () => {
               <Link
                 to={item.path}
                 className={`flex items-center p-3 rounded-lg transition-all duration-200 group
-                ${isOpen ? 'justify-start' : 'justify-center'}
-                ${
-                  location.pathname.includes(item.path)
-                    ? 'bg-blue-700 shadow-inner font-semibold'
-                    : 'hover:bg-blue-700/80 font-medium'
-                }`}
+                  ${isOpen ? 'justify-start' : 'justify-center'}
+                  ${
+                    location.pathname === item.path || location.pathname === `${item.path}/`
+                      ? 'bg-blue-700 shadow-inner font-semibold'
+                      : 'hover:bg-blue-700/80 font-medium'
+                  }`}
                 onMouseEnter={() => setHoverItem(item.text)}
                 onMouseLeave={() => setHoverItem(null)}
               >
@@ -104,10 +119,6 @@ const Sidebar: React.FC = () => {
                     </div>
                   )
                 )}
-
-                {!isOpen && location.pathname.includes(item.path) && (
-                  <div className='absolute left-0 w-1.5 h-6 bg-white rounded-r-full shadow-sm'></div>
-                )}
               </Link>
             </li>
           ))}
@@ -116,14 +127,14 @@ const Sidebar: React.FC = () => {
 
       {/* Footer */}
       <div className='p-4 border-t border-blue-700 bg-blue-800/50'>
-        <Link
-          to='/logout'
-          className={`flex items-center p-3 rounded-lg hover:bg-blue-700 transition-colors
+        <button
+          onClick={handleLogout}
+          className={`w-full flex items-center p-3 rounded-lg hover:bg-blue-700 transition-colors
           ${isOpen ? 'justify-start' : 'justify-center'} font-semibold`}
         >
           <FaSignOutAlt className={`${isOpen ? 'mr-3' : ''} text-blue-200`} size={16} />
           {isOpen && <span className='text-[15px]'>SIGN OUT</span>}
-        </Link>
+        </button>
       </div>
     </div>
   )

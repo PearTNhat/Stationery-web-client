@@ -21,12 +21,13 @@ const userPaths = {
 }
 
 const departmentPath = {
-  DASHBOARD: '/department/dashboard',
-  PRODUCT: 'product',
-  CREATE_REQUEST: 'create-request',
-  INVOICE: 'invoice',
-  NOTIFICATION: 'notification',
-  SUPPORT: 'support'
+  DASHBOARD: '/department',
+  PRODUCT: '/department/product',
+  CREATE_REQUEST: '/department/create-request',
+  INVOICE: '/department/invoice',
+  NOTIFICATION: '/department/notification',
+  SUPPORT: '/department/support',
+  PRODUCT_DETAIL: '/department/products/:slug'
 }
 
 const adminPaths = {

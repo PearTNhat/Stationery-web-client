@@ -51,10 +51,16 @@ const banners: BannerData[] = [
 ]
 
 const Home: React.FC = () => {
-  const { accessToken } = useAppSelector((state) => state.user)
+  const { userData, accessToken } = useAppSelector((state) => state.user)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { orderId } = useMemo(() => Object.fromEntries([...searchParams]), [searchParams])
+
+  useEffect(() => {
+    if (userData?.role.roleId == '113') {
+      navigate('/department', { replace: true })
+    }
+  }, [userData, navigate])
 
   const checkTransactionStatus = async (orderId: string) => {
     try {

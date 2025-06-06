@@ -11,7 +11,7 @@ import { fetchCategories } from '~/store/actions/category'
 import { fetchMyVocher } from '~/store/actions/promotion'
 import { fetchCurrentUser } from '~/store/actions/user'
 import { fetchMyCart } from '~/store/actions/cart'
-import { cartActions } from '~/store/slices/cart' // Import cartActions
+import { cartActions } from '~/store/slices/cart'
 import SearchWithSuggestions from '../search/SearchWithSuggestions'
 import Cart from '~/pages/public/cart/Cart'
 
@@ -23,6 +23,14 @@ function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { isLoggedIn, userData, accessToken } = useAppSelector((state) => state.user)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Lọc danh sách dropdown dựa trên vai trò người dùng
+  const filteredDropDownProfile = dropDownProfile.filter((item) => {
+    if (item.name === 'Admin' && userData?.role.roleId == '112') {
+      return false
+    }
+    return true
+  })
 
   const handleCartToggle = () => {
     dispatch(cartActions.toggleCart()) // Sử dụng action toggleCart
@@ -45,7 +53,7 @@ function Header() {
       if (response.code == 200) {
         dispatch(userActions.logout())
         showToastSuccess('Logout successfully')
-        navigate('/auth?mode=login вы')
+        navigate('/auth?mode=login')
       } else {
         showToastError(response.message || 'Logout failed')
       }
@@ -196,7 +204,7 @@ function Header() {
               <img src={userData?.avatar} alt={userData?.lastName} className='w-full h-full object-cover' />
             </div>
             <ul tabIndex={0} className='d-dropdown-content d-menu bg-base-100 rounded-md z-10 w-52 p-2 shadow-md'>
-              {dropDownProfile.map((item) => {
+              {filteredDropDownProfile.map((item) => {
                 let Comp: React.ElementType = 'button'
                 if (item.to) {
                   Comp = Link

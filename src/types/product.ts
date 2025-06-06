@@ -79,4 +79,19 @@ interface ListProductDetail extends Omit<Product, 'productDetail'> {
   productDetails: ProductDetail[]
 }
 
-export type { Product, Color, ProductColor, ProductDeatilResponse, Image, Size, FetchColor, ListProductDetail }
+interface ProductDetailResponse {
+  code: number
+  result: ProductDetail[]
+}
+
+export type {
+  Product,
+  Color,
+  ProductColor,
+  ProductDeatilResponse,
+  Image,
+  Size,
+  FetchColor,
+  ListProductDetail,
+  ProductDetailResponse
+}

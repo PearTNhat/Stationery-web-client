@@ -1,5 +1,6 @@
 import { AxiosError } from 'axios'
 import { ApiResponse, CreateOrderParams } from '~/types/order'
+import { ProductDetailResponse } from '~/types/product'
 import { http } from '~/utils/http'
 
 const apiCreateOrderWithPayment = async ({
@@ -8,6 +9,7 @@ const apiCreateOrderWithPayment = async ({
   addressId,
   amount,
   note,
+  expiredTime,
   accessToken
 }: CreateOrderParams) => {
   try {
@@ -21,7 +23,8 @@ const apiCreateOrderWithPayment = async ({
       userPromotionId,
       addressId,
       amount,
-      note
+      note,
+      expiredTime
     }
     const response = await http.post('/purchase-orders/payment-momo', body, config)
     return response.data
@@ -51,86 +54,25 @@ const apiCheckTransactionStatus = async ({ orderId, accessToken }: { orderId: st
 }
 
 //Order User
-const apiGetUserPendingOrders = async ({ accessToken }: { accessToken: string }): Promise<ApiResponse> => {
+const apiGetUserOrders = async ({
+  accessToken,
+  status
+}: {
+  accessToken: string
+  status: string
+}): Promise<ApiResponse> => {
   try {
     const config = {
       headers: {
         Authorization: `Bearer ${accessToken}`
-      }
+      },
+      params: { status }
     }
-    const response = await http.get('/purchase-orders/user/pending', config)
-    return response.data as ApiResponse
+    const response = await http.get('/purchase-orders/user/orders', config)
+    return response.data
   } catch (error) {
     if (error instanceof AxiosError && error.response) {
-      return error.response.data as ApiResponse
-    }
-    throw new Error((error as Error).message)
-  }
-}
-
-const apiGetUserProcessingOrders = async ({ accessToken }: { accessToken: string }): Promise<ApiResponse> => {
-  try {
-    const config = {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    }
-    const response = await http.get('/purchase-orders/user/processing', config)
-    return response.data as ApiResponse
-  } catch (error) {
-    if (error instanceof AxiosError && error.response) {
-      return error.response.data as ApiResponse
-    }
-    throw new Error((error as Error).message)
-  }
-}
-
-const apiGetUserShippingOrders = async ({ accessToken }: { accessToken: string }): Promise<ApiResponse> => {
-  try {
-    const config = {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    }
-    const response = await http.get('/purchase-orders/user/shipping', config)
-    return response.data as ApiResponse
-  } catch (error) {
-    if (error instanceof AxiosError && error.response) {
-      return error.response.data as ApiResponse
-    }
-    throw new Error((error as Error).message)
-  }
-}
-
-const apiGetUserCompletedOrders = async ({ accessToken }: { accessToken: string }): Promise<ApiResponse> => {
-  try {
-    const config = {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    }
-    const response = await http.get('/purchase-orders/user/completed', config)
-    return response.data as ApiResponse
-  } catch (error) {
-    if (error instanceof AxiosError && error.response) {
-      return error.response.data as ApiResponse
-    }
-    throw new Error((error as Error).message)
-  }
-}
-
-const apiGetUserCanceledOrders = async ({ accessToken }: { accessToken: string }): Promise<ApiResponse> => {
-  try {
-    const config = {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    }
-    const response = await http.get('/purchase-orders/user/canceled', config)
-    return response.data as ApiResponse
-  } catch (error) {
-    if (error instanceof AxiosError && error.response) {
-      return error.response.data as ApiResponse
+      return error.response.data
     }
     throw new Error((error as Error).message)
   }
@@ -143,7 +85,7 @@ const apiGetProductDetailsByOrder = async ({
 }: {
   purchaseOrderId: string
   accessToken: string
-}): Promise<Promise<ApiResponse>> => {
+}): Promise<Promise<ProductDetailResponse>> => {
   const response = await http.get(`/purchase-orders/${purchaseOrderId}/product-details`, {
     headers: {
       Authorization: `Bearer ${accessToken}`
@@ -152,13 +94,92 @@ const apiGetProductDetailsByOrder = async ({
   return response.data
 }
 
+//Thống kê số đơn hàng theo trạng thái
+const apiGetOrderStatusStatistics = async ({
+  accessToken
+}: {
+  userId: string
+  accessToken: string
+}): Promise<Promise<ApiResponse>> => {
+  const response = await http.get(`/purchase-orders/user/status-statistics`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    }
+  })
+  return response.data
+}
+
+const apiCancelOrder = async ({
+  purchaseOrderId,
+  accessToken,
+  cancelReason
+}: {
+  purchaseOrderId: string
+  accessToken: string
+  cancelReason: string
+}) => {
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+    const body = {
+      cancelReason
+    }
+    const response = await http.post(`/purchase-orders/cancel/${purchaseOrderId}`, body, config)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data
+    }
+    return (error as Error).message
+  }
+}
+
+const apiEditPurchaseOrder = async ({
+  purchaseOrderId,
+  orderDetails,
+  userPromotionId,
+  addressId,
+  note,
+  expiredTime,
+  accessToken
+}: {
+  purchaseOrderId: string
+} & CreateOrderParams) => {
+  try {
+    const response = await http.put(
+      `/purchase-orders/${purchaseOrderId}`,
+      {
+        orderDetails,
+        userPromotionId,
+        addressId,
+        note,
+        expiredTime
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data
+    }
+    return (error as Error).message
+  }
+}
+
 export {
   apiCreateOrderWithPayment,
   apiCheckTransactionStatus,
-  apiGetUserPendingOrders,
-  apiGetUserProcessingOrders,
-  apiGetUserShippingOrders,
-  apiGetUserCompletedOrders,
-  apiGetUserCanceledOrders,
-  apiGetProductDetailsByOrder
+  apiGetUserOrders,
+  apiGetProductDetailsByOrder,
+  apiGetOrderStatusStatistics,
+  apiCancelOrder,
+  apiEditPurchaseOrder
 }

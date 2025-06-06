@@ -3,14 +3,8 @@ import OrderItem from './OrderItem'
 import { FiPackage, FiCheckCircle, FiTruck, FiXCircle, FiInbox } from 'react-icons/fi'
 import { FaBoxOpen } from 'react-icons/fa'
 import { PurchaseOrderResponse } from '~/types/order'
-import {
-  apiGetUserCanceledOrders,
-  apiGetUserCompletedOrders,
-  apiGetUserPendingOrders,
-  apiGetUserProcessingOrders,
-  apiGetUserShippingOrders
-} from '~/api/orders'
 import { useAppSelector } from '~/hooks/redux'
+import { apiGetUserOrders } from '~/api/orders'
 
 const OrderTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Đang chuẩn bị hàng')
@@ -56,24 +50,13 @@ const OrderTabs: React.FC = () => {
     const fetchOrders = async () => {
       setLoading(true)
       setError(null)
+
       try {
-        const [pending, processing, shipping, completed, canceled] = await Promise.all([
-          apiGetUserPendingOrders({ accessToken }),
-          apiGetUserProcessingOrders({ accessToken }),
-          apiGetUserShippingOrders({ accessToken }),
-          apiGetUserCompletedOrders({ accessToken }),
-          apiGetUserCanceledOrders({ accessToken })
-        ])
+        const selectedTab = tabs.find((tab) => tab.name === activeTab)
+        if (!selectedTab) return
 
-        const allOrders = [
-          ...(pending.result || []),
-          ...(processing.result || []),
-          ...(shipping.result || []),
-          ...(completed.result || []),
-          ...(canceled.result || [])
-        ]
-
-        setOrders(allOrders)
+        const response = await apiGetUserOrders({ accessToken, status: selectedTab.apiStatus })
+        setOrders(response.result || [])
       } catch (err) {
         setError('Không thể tải đơn hàng. Vui lòng thử lại.')
       } finally {
@@ -87,17 +70,7 @@ const OrderTabs: React.FC = () => {
       setError('Vui lòng đăng nhập để xem đơn hàng.')
       setLoading(false)
     }
-  }, [accessToken])
-
-  const statusMap: Record<PurchaseOrderResponse['status'], string> = {
-    PENDING: 'Đang chuẩn bị hàng',
-    PROCESSING: 'Đã xác nhận đơn hàng',
-    SHIPPING: 'Đang Giao',
-    COMPLETED: 'Hoàn thành',
-    CANCELED: 'Đã hủy'
-  }
-
-  const filteredOrders = orders.filter((order) => statusMap[order.status] === activeTab)
+  }, [accessToken, activeTab]) // chạy lại khi tab đổi
 
   return (
     <div className='bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-2xl shadow-xl'>
@@ -143,9 +116,9 @@ const OrderTabs: React.FC = () => {
           <h3 className='text-xl font-medium text-gray-600 mb-2'>Lỗi</h3>
           <p className='text-gray-500 max-w-md mx-auto'>{error}</p>
         </div>
-      ) : filteredOrders.length > 0 ? (
+      ) : orders.length > 0 ? (
         <div className='space-y-5'>
-          {filteredOrders.map((order) => (
+          {orders.map((order) => (
             <OrderItem key={order.purchaseOrderId} order={order} />
           ))}
         </div>
