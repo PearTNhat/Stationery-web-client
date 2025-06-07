@@ -267,6 +267,17 @@ const apiGetAllProductsAdmin = async ({
     return error // Avoid undefined error
   }
 }
+const apiGetAllProductDetailSimple = async () => {
+  try {
+    const response = await http.get('/product-details/simple')
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data // Return server error response if available
+    }
+    return error // Avoid undefined error
+  }
+}
 export {
   apiGetAllProductsWithDefaultPD,
   apiGetDetailProduct,
@@ -278,5 +289,6 @@ export {
   apiUpdateDetailProduct,
   apiUpdateHiddenProduct,
   apiUpdateHiddenPD,
-  apiGetAllProductsAdmin
+  apiGetAllProductsAdmin,
+  apiGetAllProductDetailSimple
 }

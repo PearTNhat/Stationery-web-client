@@ -20,6 +20,7 @@ import { ProductSearchParams } from '~/types/filter'
 import { useSearchParams } from 'react-router-dom'
 import ProductDetailTable from './ProductDetailTable'
 import Swal from 'sweetalert2'
+import { useDebounce } from '~/hooks/useDebounce'
 interface ProductListProps {
   sizes: { value: string; label: string }[]
   colors: { value: string; label: string; color: string }[]
@@ -44,6 +45,8 @@ const ProductList: React.FC<ProductListProps> = ({ sizes, colors }) => {
   const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as ProductSearchParams, [searchParams])
   const [selectedProduct, setSelectedProduct] = useState<string[]>([])
   const [editProduct, setEditProduct] = useState<ListProductDetail | null>(null)
+  const [searchTerm, setSearchTerm] = useState(currentParams.search || '')
+  const debouncedSearchTerm = useDebounce(searchTerm, 500)
   const [editProductDetail, setEditProductDetail] = useState<{
     pId: string
     pdId: string
@@ -181,7 +184,15 @@ const ProductList: React.FC<ProductListProps> = ({ sizes, colors }) => {
   useEffect(() => {
     setListCategories(categoriesToOptions(categories))
   }, [categories])
-
+  useEffect(() => {
+    const newParams = { ...currentParams, page: '1' }
+    if (debouncedSearchTerm.trim()) {
+      newParams.search = debouncedSearchTerm
+    } else {
+      delete newParams.search
+    }
+    setSearchParams(newParams)
+  }, [debouncedSearchTerm])
   return (
     <div>
       <div className='flex gap-4 mb-6'>
@@ -191,19 +202,11 @@ const ProductList: React.FC<ProductListProps> = ({ sizes, colors }) => {
           </span>
           <input
             type='text'
-            value={currentParams.search || ''}
             placeholder='Search product...'
             onChange={(e) => {
-              if (e.target.value.trim().length === 0) {
-                setSearchParams(() => {
-                  const newParams = { ...currentParams }
-                  delete newParams.search
-                  return new URLSearchParams(newParams as Record<string, string>)
-                })
-              } else {
-                setSearchParams(() => ({ ...currentParams, search: e.target.value }))
-              }
+              setSearchTerm(e.target.value)
             }}
+            value={searchTerm}
             className='pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
           />
         </div>

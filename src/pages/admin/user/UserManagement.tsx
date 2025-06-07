@@ -25,6 +25,7 @@ const UserManagement = () => {
   const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as UserSearchParams, [searchParams])
   const { accessToken, userData } = useAppSelector((state) => state.user)
   const dispatch = useAppDispatch()
+  console.log(accessToken)
 
   const closeModal = () => {
     dispatch(modalActions.toggleModal({ isOpenModal: false, childrenModal: null }))
