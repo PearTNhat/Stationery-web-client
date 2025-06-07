@@ -236,6 +236,28 @@ const ProfileHeader: React.FC = () => {
               </p>
             )}
           </div>
+          <div>
+            <label className='block text-sm font-semibold text-gray-700 mb-2'>Phone Number</label>
+            {isEditing ? (
+              <InputForm
+                id='phone'
+                placeholder='Phone'
+                register={register}
+                validate={{
+                  required: 'Phone number is required',
+                  pattern: {
+                    value: /^[0-9]{10}$/, // Adjust the regex based on your phone number format
+                    message: 'Please enter a valid phone number 10 digits)'
+                  }
+                }}
+                error={profileErrors}
+              />
+            ) : (
+              <p className='text-gray-900 bg-gray-100 p-3 rounded-lg shadow-inner'>
+                {userData?.phone || 'Chưa cập nhật'}
+              </p>
+            )}
+          </div>
         </div>
       </form>
     </div>

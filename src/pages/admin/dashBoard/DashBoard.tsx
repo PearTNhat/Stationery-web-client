@@ -1,10 +1,12 @@
-import BuyerProfilePieChart from './component/BuyerProfilePieChart'
+import PopularProducts from '~/pages/department/dashboard/PopularProducts'
 import DashBoardStats from './component/DashBoardStats'
-import PopularProducts from './component/PopularProducts'
-import RecentOrders from './component/RecentOrders'
 import TransactionChart from './component/TransactionChart'
+import { useState } from 'react'
+import { Product } from '~/types/product'
+import RequestHistory from '~/pages/department/dashboard/RequestHistory'
 
 function DashBoard() {
+  const [products, setProducts] = useState<Product[]>([])
   return (
     <div className=''>
       <div className='flex flex-col gap-4'>
@@ -14,8 +16,8 @@ function DashBoard() {
           {/* <BuyerProfilePieChart /> */}
         </div>
         <div className='flex flex-row gap-4 w-full'>
-          <RecentOrders />
-          <PopularProducts />
+          <RequestHistory />
+          <PopularProducts setProducts={setProducts} />
         </div>
       </div>
     </div>

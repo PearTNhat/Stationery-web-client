@@ -1,161 +1,187 @@
-import { useState } from 'react'
-import {
-  FaCheck,
-  FaTimes,
-  FaSearch,
-  FaFilter,
-  FaEye,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaFileInvoice
-} from 'react-icons/fa'
-import { FiRefreshCw } from 'react-icons/fi'
+import { useState, useEffect, useMemo } from 'react'
+import { FaTimes, FaFilter, FaEye, FaCheck, FaInfoCircle } from 'react-icons/fa'
 import Select from 'react-select'
 import Swal from 'sweetalert2'
+import {
+  apiConfirmOrder,
+  apiGetNonPendingOrders,
+  apiGetPendingOrders,
+  apiGetProductDetailsByOrder,
+  apiUpdateOrderStatus
+} from '~/api/orders'
+import { apiGetUserById } from '~/api/users'
+import { useAppSelector } from '~/hooks/redux'
+import { ApiResponse, PurchaseOrderResponse } from '~/types/order'
+import { ProductDetailResponse } from '~/types/product'
 
 const OrderManagement = () => {
-  // Mock data for orders with createdAt including time
-  const [orders, setOrders] = useState([
-    {
-      id: '1',
-      userType: 'Department',
-      userName: 'IT Department',
-      createdAt: '2025-04-23 14:30:00',
-      amount: 1500000,
-      status: 'PENDING',
-      details: [
-        {
-          productName: 'Ballpoint Pen',
-          quantity: 100,
-          price: 5000,
-          color: 'Blue',
-          size: 'Medium',
-          image: 'https://via.placeholder.com/50?text=Pen'
-        },
-        {
-          productName: 'Notebook',
-          quantity: 50,
-          price: 20000,
-          color: 'Black',
-          size: 'A5',
-          image: 'https://via.placeholder.com/50?text=Notebook'
-        }
-      ]
-    },
-    {
-      id: '2',
-      userType: 'User',
-      userName: 'John Doe',
-      createdAt: '2025-04-22 09:15:00',
-      amount: 500000,
-      status: 'PENDING',
-      details: [
-        {
-          productName: 'Pencil',
-          quantity: 20,
-          price: 25000,
-          color: 'Yellow',
-          size: 'Standard',
-          image: 'https://via.placeholder.com/50?text=Pencil'
-        }
-      ]
-    },
-    {
-      id: '3',
-      userType: 'Department',
-      userName: 'Economics Department',
-      createdAt: '2025-04-21 16:45:00',
-      amount: 2000000,
-      status: 'PROCESSING',
-      details: [
-        {
-          productName: 'Casio Calculator',
-          quantity: 10,
-          price: 200000,
-          color: 'Silver',
-          size: 'Standard',
-          image: 'https://via.placeholder.com/50?text=Calculator'
-        }
-      ]
-    },
-    {
-      id: '4',
-      userType: 'User',
-      userName: 'Jane Smith',
-      createdAt: '2025-04-20 11:20:00',
-      amount: 300000,
-      status: 'COMPLETED',
-      details: [
-        {
-          productName: 'Ink Pen',
-          quantity: 30,
-          price: 10000,
-          color: 'Black',
-          size: 'Fine',
-          image: 'https://via.placeholder.com/50?text=Ink+Pen'
-        }
-      ]
-    }
-  ])
+  // State for orders, filters, and loading
+  const [pendingOrders, setPendingOrders] = useState<PurchaseOrderResponse[]>([])
+  const [confirmedOrders, setConfirmedOrders] = useState<PurchaseOrderResponse[]>([])
+  const [pendingFilterRole, setPendingFilterRole] = useState<string>('All')
+  const [confirmedFilterRole, setConfirmedFilterRole] = useState<string>('All') // Default: User
+  const [confirmedFilterStatus, setConfirmedFilterStatus] = useState<string>('PROCESSING') // Default: Processing
+  const [pendingPage, setPendingPage] = useState<number>(0)
+  const [confirmedPage, setConfirmedPage] = useState<number>(0)
+  const [pendingTotalPages, setPendingTotalPages] = useState<number>(1)
+  const [confirmedTotalPages, setConfirmedTotalPages] = useState<number>(1)
+  const [userMap, setUserMap] = useState<Record<string, { name: string; roleName: string }>>({})
+  const [isPendingLoading, setIsPendingLoading] = useState<boolean>(true)
+  const [isConfirmedLoading, setIsConfirmedLoading] = useState<boolean>(true)
+  const { userData, accessToken } = useAppSelector((state) => state.user)
 
-  // State for filters of each table
-  const [pendingFilterType, setPendingFilterType] = useState('All')
-  const [pendingSearchTerm, setPendingSearchTerm] = useState('')
-  const [confirmedFilterType, setConfirmedFilterType] = useState('All')
-  const [confirmedSearchTerm, setConfirmedSearchTerm] = useState('')
-  const [confirmedFilterStatus, setConfirmedFilterStatus] = useState('All')
+  // Check if user is admin
+  useEffect(() => {
+    if (!userData || userData.role?.roleId !== '111') {
+      Swal.fire('Error', 'You do not have permission to access the order management page!', 'error').then(() => {
+        window.location.href = '/'
+      })
+    }
+  }, [userData])
+
+  // Fetch user info
+  const fetchUserInfo = async (userIds: string[]) => {
+    try {
+      const uniqueUserIds = [...new Set(userIds)].filter((id) => !userMap[id])
+      if (uniqueUserIds.length === 0) return
+
+      const userPromises = uniqueUserIds.map((userId) =>
+        apiGetUserById({ token: accessToken, userId }).then((res) => ({
+          userId,
+          name: res.result?.name || 'User',
+          roleName: res.result?.role?.roleName || 'Unknown'
+        }))
+      )
+      const users = await Promise.all(userPromises)
+      const newUserMap = users.reduce(
+        (acc, user) => ({
+          ...acc,
+          [user.userId]: { name: user.name, roleName: user.roleName }
+        }),
+        {}
+      )
+      setUserMap((prev) => ({ ...prev, ...newUserMap }))
+    } catch (error) {
+      console.error('Failed to fetch user info:', error)
+    }
+  }
+
+  // Fetch pending orders
+  const fetchPendingOrders = async () => {
+    if (!accessToken) return
+    setIsPendingLoading(true)
+    try {
+      const roleFilter =
+        pendingFilterRole === 'User'
+          ? ['User', 'Admin']
+          : pendingFilterRole === 'Department'
+            ? ['Department']
+            : undefined
+      const response: ApiResponse = await apiGetPendingOrders({
+        accessToken,
+        roleName: roleFilter,
+        page: pendingPage,
+        size: 6
+      })
+      const orders = response.result.content || []
+      setPendingOrders(orders)
+      setPendingTotalPages(response.result.page?.totalPages || 1)
+      const userIds = orders.map((order) => order.userId).filter((id): id is string => !!id)
+      if (userIds.length > 0) {
+        await fetchUserInfo(userIds)
+      }
+    } catch (error) {
+      Swal.fire('Error', 'Failed to fetch pending orders', 'error')
+    } finally {
+      setIsPendingLoading(false)
+    }
+  }
+
+  // Fetch non-pending orders
+  const fetchNonPendingOrders = async () => {
+    if (!accessToken) return
+    setIsConfirmedLoading(true)
+    try {
+      const roleFilter =
+        confirmedFilterRole === 'User'
+          ? ['User', 'Admin']
+          : confirmedFilterRole === 'Department'
+            ? ['Department']
+            : undefined
+      const statusFilter = confirmedFilterStatus === 'All' ? undefined : [confirmedFilterStatus]
+      const response: ApiResponse = await apiGetNonPendingOrders({
+        accessToken,
+        roleName: roleFilter,
+        status: statusFilter,
+        page: confirmedPage,
+        size: 6
+      })
+      const orders = response.result.content || []
+      setConfirmedOrders(orders)
+      setConfirmedTotalPages(response.result.page?.totalPages || 1)
+      const userIds = orders.map((order) => order.userId).filter((id): id is string => !!id)
+      if (userIds.length > 0) {
+        await fetchUserInfo(userIds)
+      }
+    } catch (error) {
+      Swal.fire('Error', 'Failed to fetch confirmed orders', 'error')
+    } finally {
+      setIsConfirmedLoading(false)
+    }
+  }
+
+  // Initial fetch
+  useEffect(() => {
+    if (userData?.role?.roleId === '111' && accessToken) {
+      fetchPendingOrders()
+      fetchNonPendingOrders()
+    }
+  }, [userData, accessToken])
+
+  // Refetch when pending filters change
+  useEffect(() => {
+    if (userData?.role?.roleId === '111') {
+      fetchPendingOrders()
+    }
+  }, [pendingFilterRole, pendingPage])
+
+  // Refetch when confirmed filters change
+  useEffect(() => {
+    if (userData?.role?.roleId === '111') {
+      fetchNonPendingOrders()
+    }
+  }, [confirmedFilterRole, confirmedFilterStatus, confirmedPage])
+
+  // Memoize orders
+  const memoizedPendingOrders = useMemo(() => pendingOrders, [pendingOrders])
+  const memoizedConfirmedOrders = useMemo(() => confirmedOrders, [confirmedOrders])
 
   // Format date-time
-  const formatDateTime = (dateTime) => {
+  const formatDateTime = (dateTime: string | null) => {
+    if (!dateTime) return 'N/A'
     const date = new Date(dateTime)
-    return date
-      .toLocaleString('en-GB', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      })
-      .replace(',', '')
+    return date.toLocaleString('en-GB', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
   }
 
-  // Sort orders by createdAt in descending order
-  const sortOrdersByCreatedAt = (orders) => {
-    return [...orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-  }
-
-  // Filter orders by status and customer type
-  const pendingOrders = sortOrdersByCreatedAt(
-    orders.filter(
-      (order) =>
-        order.status === 'PENDING' &&
-        (pendingFilterType === 'All' || order.userType === pendingFilterType) &&
-        (order.userName.toLowerCase().includes(pendingSearchTerm.toLowerCase()) || order.id.includes(pendingSearchTerm))
-    )
-  )
-
-  const confirmedOrders = sortOrdersByCreatedAt(
-    orders.filter(
-      (order) =>
-        order.status !== 'PENDING' &&
-        (confirmedFilterType === 'All' || order.userType === confirmedFilterType) &&
-        (confirmedFilterStatus === 'All' || order.status === confirmedFilterStatus) &&
-        (order.userName.toLowerCase().includes(confirmedSearchTerm.toLowerCase()) ||
-          order.id.includes(confirmedSearchTerm))
-    )
-  )
-
-  // Status options for react-select with custom colors
+  // Status options for react-select
   const statusOptions = [
-    { value: 'PROCESSING', label: 'Processing', color: '#f59e0b' }, // Yellow
-    { value: 'SHIPPING', label: 'Shipping', color: '#3b82f6' }, // Blue
-    { value: 'COMPLETED', label: 'Completed', color: '#10b981' }, // Green
-    { value: 'CANCELED', label: 'Canceled', color: '#ef4444' } // Red
+    { value: 'PROCESSING', label: 'Processing', color: '#f59e0b' },
+    { value: 'SHIPPING', label: 'Shipping', color: '#3b82f6' },
+    { value: 'COMPLETED', label: 'Completed', color: '#10b981' },
+    { value: 'CANCELED', label: 'Canceled', color: '#ef4444' }
   ]
 
+  // Filter status options
+  const filterStatusOptions = [...statusOptions]
+
   // Handle confirm order
-  const handleConfirmOrder = (id) => {
+  const handleConfirmOrder = async (id: string) => {
     Swal.fire({
       title: 'Confirm Order?',
       text: 'Are you sure you want to confirm this order?',
@@ -165,347 +191,491 @@ const OrderManagement = () => {
       cancelButtonColor: '#d33',
       confirmButtonText: 'Confirm',
       cancelButtonText: 'Cancel'
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        setOrders((prev) => prev.map((order) => (order.id === id ? { ...order, status: 'PROCESSING' } : order)))
-        Swal.fire('Confirmed!', 'The order has been confirmed.', 'success')
+        try {
+          await apiConfirmOrder({ purchaseOrderId: id, accessToken })
+          setPendingOrders((prev) => prev.filter((order) => order.purchaseOrderId !== id))
+          fetchNonPendingOrders()
+          Swal.fire('Confirmed!', 'The order has been confirmed.', 'success')
+        } catch (error) {
+          Swal.fire('Error', 'Failed to confirm order', 'error')
+        }
       }
     })
   }
 
   // Handle cancel order
-  const handleCancelOrder = (id) => {
+  const handleCancelOrder = async (id: string) => {
     Swal.fire({
       title: 'Cancel Order?',
-      text: 'Are you sure you want to cancel this order?',
+      text: 'Please provide the reason for cancellation',
       icon: 'warning',
+      input: 'text',
+      inputPlaceholder: 'Enter cancellation reason',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
       confirmButtonText: 'Cancel Order',
-      cancelButtonText: 'Back'
-    }).then((result) => {
+      cancelButtonText: 'Back',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'You must provide a cancellation reason!'
+        }
+      }
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        setOrders((prev) => prev.map((order) => (order.id === id ? { ...order, status: 'CANCELED' } : order)))
-        Swal.fire('Canceled!', 'The order has been canceled.', 'success')
+        try {
+          await apiUpdateOrderStatus({
+            purchaseOrderId: id,
+            status: 'CANCELED',
+            cancelReason: result.value,
+            accessToken
+          })
+          setPendingOrders((prev) => prev.filter((order) => order.purchaseOrderId !== id))
+          fetchNonPendingOrders()
+          Swal.fire('Canceled!', 'The order has been canceled.', 'success')
+        } catch (error) {
+          Swal.fire('Error', 'Failed to cancel order', 'error')
+        }
       }
     })
   }
 
   // Handle update status
-  const handleUpdateStatus = (id, selectedOption) => {
-    const newStatus = selectedOption.value
-    Swal.fire({
-      title: 'Update Status?',
-      text: `Do you want to update the status to "${selectedOption.label}"?`,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Update',
-      cancelButtonText: 'Cancel'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setOrders((prev) => prev.map((order) => (order.id === id ? { ...order, status: newStatus } : order)))
-        Swal.fire('Updated!', 'The order status has been updated.', 'success')
-      }
-    })
-  }
-
-  const handleViewInvoice = (order) => {
-    // Logic để hiển thị hóa đơn
-    // Bạn có thể tạo URL hoặc nội dung hóa đơn dựa trên order
-    console.log('Viewing invoice for order:', order.id)
-    // Ví dụ: window.open(`/invoices/${order.id}`, '_blank');
-  }
-
-  const handleResendInvoice = (orderId) => {
-    // Logic gửi lại hóa đơn
-    console.log('Resending invoice for order:', orderId)
-    // Gọi API để gửi lại email
-    // api.resendInvoice(orderId).then(...);
+  const handleUpdateStatus = async (id: string, selectedOption: { value: string; label: string } | null) => {
+    if (!selectedOption) return
+    const newStatus = selectedOption.value as 'PROCESSING' | 'SHIPPING' | 'COMPLETED' | 'CANCELED'
+    let cancelReason: string | undefined
+    if (newStatus === 'CANCELED') {
+      const { value, isConfirmed } = await Swal.fire({
+        title: 'Cancel Order?',
+        text: 'Please provide the reason for cancellation',
+        icon: 'warning',
+        input: 'text',
+        inputPlaceholder: 'Enter cancellation reason',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Cancel Order',
+        cancelButtonText: 'Back',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'You must provide a cancellation reason!'
+          }
+        }
+      })
+      if (!isConfirmed) return
+      cancelReason = value
+    } else {
+      const result = await Swal.fire({
+        title: 'Update Status?',
+        text: `Do you want to update the status to "${selectedOption.label}"?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Update',
+        cancelButtonText: 'Cancel'
+      })
+      if (!result.isConfirmed) return
+    }
+    try {
+      await apiUpdateOrderStatus({
+        purchaseOrderId: id,
+        status: newStatus,
+        cancelReason,
+        accessToken
+      })
+      setConfirmedOrders((prev) =>
+        prev.map((order) =>
+          order.purchaseOrderId === id
+            ? { ...order, status: newStatus, cancelReason: cancelReason || order.cancelReason }
+            : order
+        )
+      )
+      Swal.fire('Updated!', 'The order status has been updated.', 'success')
+    } catch (error) {
+      Swal.fire('Error', 'Failed to update order status', 'error')
+    }
   }
 
   // Handle view order details
-  const handleViewDetails = (details) => {
-    const detailContent = details
-      .map(
-        (detail) =>
-          `<tr>
-            <td class="border px-4 py-2"><img src="${detail.image}" alt="${detail.productName}" class="w-12 h-12 object-cover" /></td>
-            <td class="border px-4 py-2">${detail.productName}</td>
-            <td class="border px-4 py-2">${detail.quantity}</td>
-            <td class="border px-4 py-2">${detail.price.toLocaleString('vi-VN')} VND</td>
-            <td class="border px-4 py-2">${detail.color}</td>
-            <td class="border px-4 py-2">${detail.size}</td>
-          </tr>`
-      )
-      .join('')
+  const handleViewDetails = async (purchaseOrderId: string) => {
+    try {
+      const details: ProductDetailResponse = await apiGetProductDetailsByOrder({
+        purchaseOrderId,
+        accessToken
+      })
+      const detailContent = details.result
+        .map(
+          (detail) =>
+            `<tr>
+              <td class="border px-2 py-1"><img src="${detail.images || 'https://via.placeholder.com/40?text=Product'}" alt="${detail.productName}" class="w-10 h-10 object-cover" /></td>
+              <td class="border px-2 py-1">${detail.name}</td>
+              <td class="border px-2 py-1">${detail.soldQuantity}</td>
+              <td class="border px-2 py-1">${detail.originalPrice.toLocaleString('en-GB')} GBP</td>
+              <td class="border px-2 py-1">${detail.color || 'N/A'}</td>
+              <td class="border px-2 py-1">${detail.size || 'N/A'}</td>
+            </tr>`
+        )
+        .join('')
+      Swal.fire({
+        title: 'Order Details',
+        html: `
+          <table class="w-full border-collapse border text-sm">
+            <thead>
+              <tr class="bg-blue-600 text-white">
+                <th class="border px-2 py-1">Image</th>
+                <th class="border px-2 py-1">Product Name</th>
+                <th class="border px-2 py-1">Quantity</th>
+                <th class="border px-2 py-1">Price</th>
+                <th class="border px-2 py-1">Color</th>
+                <th class="border px-2 py-1">Size</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${detailContent}
+            </tbody>
+          </table>
+        `,
+        showConfirmButton: true,
+        confirmButtonText: 'Close',
+        width: '700px'
+      })
+    } catch (error) {
+      Swal.fire('Error', 'Failed to fetch order details', 'error')
+    }
+  }
 
+  // Handle view note or cancel reason
+  const handleViewText = (title: string, text: string | null) => {
     Swal.fire({
-      title: 'Order Details',
-      html: `
-        <table class="w-full border-collapse border">
-          <thead>
-            <tr class="bg-blue-600 text-white">
-              <th class="border px-4 py-2">Image</th>
-              <th class="border px-4 py-2">Product Name</th>
-              <th class="border px-4 py-2">Quantity</th>
-              <th class="border px-4 py-2">Price</th>
-              <th class="border px-4 py-2">Color</th>
-              <th class="border px-4 py-2">Size</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${detailContent}
-          </tbody>
-        </table>
-      `,
-      showConfirmButton: true,
-      confirmButtonText: 'Close',
-      width: '800px'
+      title,
+      text: text || 'No content available',
+      icon: 'info',
+      confirmButtonText: 'Close'
     })
   }
 
   // Custom styles for react-select
   const customStyles = {
-    control: (provided) => ({
+    control: (provided: any) => ({
       ...provided,
       borderRadius: '0.375rem',
       borderColor: '#d1d5db',
       boxShadow: 'none',
+      minHeight: '28px',
+      height: '28px',
+      fontSize: '0.875rem',
       '&:hover': { borderColor: '#2563eb' }
     }),
-    menu: (provided) => ({
+    valueContainer: (provided: any) => ({
       ...provided,
-      zIndex: 99999
+      padding: '0 6px'
     }),
-    menuPortal: (provided) => ({
+    singleValue: (provided: any, state: any) => ({
       ...provided,
-      zIndex: 99999
+      color: state.data.color || '#111827',
+      fontSize: '0.875rem'
     }),
-    option: (provided, state) => ({
+    indicatorsContainer: (provided: any) => ({
       ...provided,
-      backgroundColor: state.isSelected ? state.data.color : state.isFocused ? `${state.data.color}33` : 'white',
+      height: '28px'
+    }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? state.data.color : state.isFocused ? `${state.data.color}20` : 'white',
       color: state.isSelected ? 'white' : 'black',
+      fontSize: '0.875rem',
       '&:hover': {
-        backgroundColor: `${state.data.color}33`
+        backgroundColor: `${state.data.color}20`
       }
     }),
-    singleValue: (provided, state) => ({
+    menu: (provided: any) => ({
       ...provided,
-      color: state.data.color
+      zIndex: 9999,
+      marginTop: '2px',
+      borderRadius: '0.375rem',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+    }),
+    menuPortal: (provided: any) => ({
+      ...provided,
+      zIndex: 9999
     })
   }
 
+  // Skeleton loading component
+  const SkeletonRow = () => (
+    <tr className='border-b border-gray-200'>
+      <td className='px-3 py-2'>
+        <div className='h-3 bg-gray-200 rounded w-20 animate-pulse'></div>
+      </td>
+      <td className='px-3 py-2'>
+        <div className='h-3 bg-gray-200 rounded w-16 animate-pulse'></div>
+      </td>
+      <td className='px-3 py-2'>
+        <div className='h-3 bg-gray-200 rounded w-24 animate-pulse'></div>
+      </td>
+      <td className='px-3 py-2'>
+        <div className='h-3 bg-gray-200 rounded w-28 animate-pulse'></div>
+      </td>
+      <td className='px-3 py-2'>
+        <div className='h-3 bg-gray-200 rounded w-16 animate-pulse'></div>
+      </td>
+      <td className='px-3 py-2'>
+        <div className='h-3 bg-gray-200 rounded w-8 animate-pulse'></div>
+      </td>
+      <td className='px-3 py-2'>
+        <div className='h-3 bg-gray-200 rounded w-8 animate-pulse'></div>
+      </td>
+      <td className='px-3 py-2'>
+        <div className='h-3 bg-gray-200 rounded w-20 animate-pulse'></div>
+      </td>
+    </tr>
+  )
+
   return (
-    <div className='p-6 w-full mx-auto bg-white shadow-lg rounded-xl'>
-      {/* Header Section */}
-      <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-3xl font-semibold text-blue-800'>Order Management</h1>
-      </div>
+    <div className='p-4 max-w-7xl mx-auto bg-gray-50 min-h-screen'>
+      {/* Header */}
+      <h1 className='text-2xl font-bold text-gray-900 mb-6'>Order Management</h1>
 
       {/* Table 1: Pending Orders */}
-      <div className='mb-10'>
-        <h2 className='text-2xl font-semibold text-blue-700 mb-4'>Pending Orders</h2>
-        {/* Filters for Table 1 */}
-        <div className='flex gap-4 mb-6'>
-          <div className='relative w-1/3'>
-            <span className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400'>
-              <FaSearch />
-            </span>
-            <input
-              type='text'
-              placeholder='Search by order ID or customer name...'
-              className='pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
-              value={pendingSearchTerm}
-              onChange={(e) => setPendingSearchTerm(e.target.value)}
-            />
-          </div>
+      <div className='mb-8 bg-white rounded-lg shadow-sm p-4'>
+        <h2 className='text-lg font-semibold text-gray-800 mb-4'>Pending Orders</h2>
+        {/* Filters */}
+        <div className='flex gap-3 mb-4'>
           <div className='flex items-center gap-2'>
-            <FaFilter className='text-gray-400' />
+            <FaFilter className='text-gray-500 text-sm' />
             <select
-              className='px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
-              value={pendingFilterType}
-              onChange={(e) => setPendingFilterType(e.target.value)}
+              className='px-3 py-1 text-sm bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+              value={pendingFilterRole}
+              onChange={(e) => {
+                setPendingFilterRole(e.target.value)
+                setPendingPage(0)
+              }}
             >
               <option value='All'>All</option>
-              <option value='Department'>Department</option>
               <option value='User'>User</option>
+              <option value='Department'>Department</option>
             </select>
           </div>
         </div>
-        <div className='overflow-x-auto rounded-xl shadow-lg'>
-          <table className='w-full border-collapse border border-blue-200'>
+        <div className='overflow-x-auto'>
+          <table className='w-full border-collapse bg-white text-sm'>
             <thead>
               <tr className='bg-blue-600 text-white text-left'>
-                <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Order ID</th>
-                <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Customer Type</th>
-                <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Customer Name</th>
-                <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Created At</th>
-                <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Total Amount</th>
-                <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Actions</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Order ID</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Customer Type</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Customer Name</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Created At</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Total</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Note</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {pendingOrders.map((order) => (
-                <tr key={order.id} className='border-b border-blue-200 hover:bg-blue-50 transition-colors'>
-                  <td className='px-4 py-3'>{order.id}</td>
-                  <td className='px-4 py-3'>{order.userType}</td>
-                  <td className='px-4 py-3 font-medium'>{order.userName}</td>
-                  <td className='px-4 py-3'>{formatDateTime(order.createdAt)}</td>
-                  <td className='px-4 py-3'>{order.amount.toLocaleString('vi-VN')} VND</td>
-                  <td className='px-4 py-3 flex gap-2'>
-                    <button
-                      className='bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition-colors'
-                      onClick={() => handleConfirmOrder(order.id)}
-                      title='Confirm'
-                    >
-                      <FaCheck size={16} />
-                    </button>
-                    <button
-                      className='bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors'
-                      onClick={() => handleCancelOrder(order.id)}
-                      title='Cancel'
-                    >
-                      <FaTimes size={16} />
-                    </button>
-                    <button
-                      className='bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-colors'
-                      onClick={() => handleViewDetails(order.details)}
-                      title='View Details'
-                    >
-                      <FaEye size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {isPendingLoading
+                ? Array.from({ length: 6 }).map((_, index) => <SkeletonRow key={index} />)
+                : memoizedPendingOrders?.map((order) => (
+                    <tr key={order.purchaseOrderId} className='border-b border-gray-200 hover:bg-gray-50 transition'>
+                      <td className='px-3 py-2 font-mono text-xs'>{order.purchaseOrderId?.slice(0, 10)}</td>
+                      <td className='px-3 py-2 text-xs'>
+                        {['User', 'Admin'].includes(userMap[order.userId]?.roleName || '')
+                          ? 'User'
+                          : userMap[order.userId]?.roleName || 'N/A'}
+                      </td>
+                      <td className='px-3 py-2 font-medium text-xs'>{userMap[order.userId]?.name || 'N/A'}</td>
+                      <td className='px-3 py-2 text-xs'>{formatDateTime(order.createdAt)}</td>
+                      <td className='px-3 py-2 text-xs'>{order.amount?.toLocaleString('en-GB')} GBP</td>
+                      <td className='px-3 py-2'>
+                        <button
+                          className='text-blue-600 hover:text-blue-800'
+                          onClick={() => handleViewText('Order Note', order.note)}
+                          title='View Note'
+                        >
+                          <FaInfoCircle size={12} />
+                        </button>
+                      </td>
+                      <td className='px-3 py-2 flex gap-2'>
+                        <button
+                          className='bg-green-600 text-white p-1 rounded-full hover:bg-green-700 transition-colors'
+                          onClick={() => handleConfirmOrder(order.purchaseOrderId)}
+                          title='Confirm'
+                        >
+                          <FaCheck size={10} />
+                        </button>
+                        <button
+                          className='bg-red-600 text-white p-1 rounded-full hover:bg-red-700 transition-colors'
+                          onClick={() => handleCancelOrder(order.purchaseOrderId)}
+                          title='Cancel'
+                        >
+                          <FaTimes size={10} />
+                        </button>
+                        <button
+                          className='bg-blue-600 text-white p-1 rounded-full hover:bg-blue-700 transition-colors'
+                          onClick={() => handleViewDetails(order.purchaseOrderId)}
+                          title='View Details'
+                        >
+                          <FaEye size={10} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
+        </div>
+        {/* Pagination */}
+        <div className='flex justify-between items-center mt-4 text-sm'>
+          <button
+            className='px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 transition-colors'
+            disabled={pendingPage === 0 || isPendingLoading}
+            onClick={() => setPendingPage((prev) => prev - 1)}
+          >
+            Previous
+          </button>
+          <span className='text-gray-600'>
+            Page {pendingPage + 1} of {pendingTotalPages}
+          </span>
+          <button
+            className='px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 transition-colors'
+            disabled={pendingPage >= pendingTotalPages - 1 || isPendingLoading}
+            onClick={() => setPendingPage((prev) => prev + 1)}
+          >
+            Next
+          </button>
         </div>
       </div>
 
       {/* Table 2: Confirmed Orders */}
-      <div>
-        <h2 className='text-2xl font-semibold text-blue-700 mb-4'>Confirmed Orders</h2>
-        {/* Filters for Table 2 */}
-        <div className='flex gap-4 mb-6'>
-          <div className='relative w-1/3'>
-            <span className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400'>
-              <FaSearch />
-            </span>
-            <input
-              type='text'
-              placeholder='Search by order ID or customer name...'
-              className='pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
-              value={confirmedSearchTerm}
-              onChange={(e) => setConfirmedSearchTerm(e.target.value)}
+      <div className='bg-white rounded-lg shadow-sm p-4'>
+        <h2 className='text-lg font-semibold text-gray-800 mb-4'>Finishing Orders</h2>
+        {/* Filters */}
+        <div className='flex gap-3 mb-4'>
+          <div className='flex items-center gap-2'>
+            <FaFilter className='text-gray-500 text-sm' />
+            <select
+              className='px-3 py-1 text-sm bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+              value={confirmedFilterRole}
+              onChange={(e) => {
+                setConfirmedFilterRole(e.target.value)
+                setConfirmedPage(0)
+              }}
+            >
+              <option value='All'>All</option>
+              <option value='User'>User</option>
+              <option value='Department'>Department</option>
+            </select>
+          </div>
+          <div className='flex items-center gap-2'>
+            <FaFilter className='text-gray-500 text-sm' />
+            <Select
+              options={filterStatusOptions}
+              value={filterStatusOptions.find((option) => option.value === confirmedFilterStatus)}
+              onChange={(selected) => {
+                setConfirmedFilterStatus(selected?.value ?? 'All')
+                setConfirmedPage(0)
+              }}
+              className='w-28 text-sm'
+              styles={customStyles}
+              menuPortalTarget={document.body}
             />
           </div>
-          <div className='flex items-center gap-2'>
-            <FaFilter className='text-gray-400' />
-            <select
-              className='px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
-              value={confirmedFilterType}
-              onChange={(e) => setConfirmedFilterType(e.target.value)}
-            >
-              <option value='All'>All</option>
-              <option value='Department'>Department</option>
-              <option value='User'>User</option>
-            </select>
-          </div>
-          <div className='flex items-center gap-2'>
-            <FaFilter className='text-gray-400' />
-            <select
-              className='px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
-              value={confirmedFilterStatus}
-              onChange={(e) => setConfirmedFilterStatus(e.target.value)}
-            >
-              <option value='All'>All</option>
-              <option value='PROCESSING'>Processing</option>
-              <option value='SHIPPING'>Shipping</option>
-              <option value='COMPLETED'>Completed</option>
-              <option value='CANCELED'>Canceled</option>
-            </select>
-          </div>
         </div>
-        <div className='overflow-x-auto rounded-xl shadow-lg'>
-          <table className='w-full border-collapse border border-blue-200'>
+        <div className='overflow-x-auto'>
+          <table className='w-full border-collapse bg-white text-sm'>
             <thead>
               <tr className='bg-blue-600 text-white text-left'>
-                <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Order ID</th>
-                <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Customer Type</th>
-                <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Customer Name</th>
-                <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Created At</th>
-                <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Total Amount</th>
-                <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Details</th>
-                <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Status</th>
-                <th className='px-4 py-3 font-medium text-sm uppercase tracking-wider'>Invoice</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Order ID</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Customer Type</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Customer Name</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Created At</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Total</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Note</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Cancel Reason</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Details</th>
+                <th className='px-3 py-2 font-medium uppercase text-xs'>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {confirmedOrders.map((order) => (
-                <tr key={order.id} className='border-b border-blue-200 hover:bg-blue-50 transition-colors'>
-                  <td className='px-4 py-3'>{order.id}</td>
-                  <td className='px-4 py-3'>{order.userType}</td>
-                  <td className='px-4 py-3 font-medium'>{order.userName}</td>
-                  <td className='px-4 py-3'>{formatDateTime(order.createdAt)}</td>
-                  <td className='px-4 py-3'>{order.amount.toLocaleString('vi-VN')} VND</td>
-                  <td className='px-4 py-3'>
-                    <button
-                      className='bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-colors'
-                      onClick={() => handleViewDetails(order.details)}
-                      title='View Details'
-                    >
-                      <FaEye size={16} />
-                    </button>
-                  </td>
-                  <td className='px-4 py-3'>
-                    <Select
-                      options={statusOptions}
-                      value={statusOptions.find((option) => option.value === order.status)}
-                      onChange={(selectedOption) => handleUpdateStatus(order.id, selectedOption)}
-                      className='w-40'
-                      styles={customStyles}
-                      menuPlacement='auto'
-                      menuPortalTarget={document.body}
-                    />
-                  </td>
-                  <td className='px-4 py-3'>
-                    <div className='flex items-center space-x-2'>
-                      {/* Kiểm tra nếu order.status === 'COMPLETED' thì coi như đã gửi hóa đơn */}
-                      {order.status === 'COMPLETED' ? (
-                        <>
-                          <span className='text-green-600 flex items-center'>
-                            <FaCheckCircle className='mr-1' /> Đã gửi
-                          </span>
+              {isConfirmedLoading
+                ? Array.from({ length: 6 }).map((_, index) => <SkeletonRow key={index} />)
+                : memoizedConfirmedOrders?.map((order) => (
+                    <tr key={order.purchaseOrderId} className='border-b border-gray-200 hover:bg-gray-50 transition'>
+                      <td className='px-3 py-2 font-mono text-xs'>{order.purchaseOrderId?.slice(0, 10)}</td>
+                      <td className='px-3 py-2 text-xs'>
+                        {['User', 'Admin'].includes(userMap[order.userId]?.roleName || '')
+                          ? 'User'
+                          : userMap[order.userId]?.roleName || 'N/A'}
+                      </td>
+                      <td className='px-3 py-2 font-medium text-xs'>{userMap[order.userId].name || 'N/A'}</td>
+                      <td className='px-3 py-2 text-xs'>{formatDateTime(order.createdAt)}</td>
+                      <td className='px-3 py-2 text-xs'>{order.amount?.toLocaleString('en-GB')} GBP</td>
+                      <td className='px-3 py-2'>
+                        <button
+                          className='text-blue-600 hover:text-blue-800'
+                          onClick={() => handleViewText('Order Note', order.note)}
+                          title='View Note'
+                        >
+                          <FaInfoCircle size={12} />
+                        </button>
+                      </td>
+                      <td className='px-3 py-2'>
+                        {order.status === 'CANCELED' ? (
                           <button
-                            className='bg-blue-500 text-white p-1 rounded hover:bg-blue-600 transition-colors'
-                            onClick={() => handleViewInvoice(order)}
-                            title='View Invoice'
+                            className='text-blue-600 hover:text-blue-800'
+                            onClick={() => handleViewText('Cancel Reason', order.cancelReason)}
+                            title='View Cancel Reason'
                           >
-                            <FaFileInvoice size={16} />
+                            <FaInfoCircle size={12} />
                           </button>
-                          {/* Nút gửi lại nếu cần */}
-                          <button
-                            className='bg-gray-500 text-white p-1 rounded hover:bg-gray-600 transition-colors'
-                            onClick={() => handleResendInvoice(order.id)}
-                            title='Resend Invoice'
-                          >
-                            <FiRefreshCw size={16} />
-                          </button>
-                        </>
-                      ) : (
-                        <span className='text-gray-500 flex items-center'>
-                          <FaTimesCircle className='mr-1' /> Chưa gửi
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        ) : (
+                          <span className='text-gray-500 text-xs'>N/A</span>
+                        )}
+                      </td>
+                      <td className='px-3 py-2'>
+                        <button
+                          className='bg-blue-600 text-white p-1 rounded-full hover:bg-blue-700 transition-colors'
+                          onClick={() => handleViewDetails(order.purchaseOrderId)}
+                          title='View Details'
+                        >
+                          <FaEye size={10} />
+                        </button>
+                      </td>
+                      <td className='px-3 py-2'>
+                        <Select
+                          options={statusOptions}
+                          value={statusOptions.find((option) => option.value === order.status)}
+                          onChange={(selected) => handleUpdateStatus(order.purchaseOrderId, selected)}
+                          className='w-28 text-sm'
+                          styles={customStyles}
+                          menuPortalTarget={document.body}
+                        />
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
+        </div>
+        {/* Pagination */}
+        <div className='flex justify-between items-center mt-4 text-sm'>
+          <button
+            className='px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 transition-colors'
+            disabled={confirmedPage === 0 || isConfirmedLoading}
+            onClick={() => setConfirmedPage((prev) => prev - 1)}
+          >
+            Previous
+          </button>
+          <span className='text-gray-600'>
+            Page {confirmedPage + 1} of {confirmedTotalPages}
+          </span>
+          <button
+            className='px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 transition-colors'
+            disabled={confirmedPage >= confirmedTotalPages - 1 || isConfirmedLoading}
+            onClick={() => setConfirmedPage((prev) => prev + 1)}
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>

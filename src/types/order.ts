@@ -39,6 +39,7 @@ export interface PurchaseOrderResponse {
   cancelReason: string | null
   note: string | null
   expiredTime: string | null
+  userId: string
   orderDetails: Array<{
     productDetailId: string
     quantity: number
