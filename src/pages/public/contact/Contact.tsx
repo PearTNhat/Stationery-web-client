@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { FaPhone, FaEnvelope, FaFacebook } from 'react-icons/fa'
+import { sendSupportEmail } from '~/api/email'
+import { showToastError, showToastSuccess } from '~/utils/alert'
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -13,9 +15,22 @@ const Contact: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Form submitted:', formData)
+
+    try {
+      await sendSupportEmail({
+        fullName: formData.name,
+        emailAddress: formData.email,
+        subject: formData.subject,
+        message: formData.message
+      })
+      showToastSuccess('Your message has been sent successfully!')
+      setFormData({ name: '', email: '', subject: '', message: '' })
+    } catch (error) {
+      console.error('Error sending message:', error)
+      showToastError('Failed to send your message. Please try again later!')
+    }
   }
 
   return (

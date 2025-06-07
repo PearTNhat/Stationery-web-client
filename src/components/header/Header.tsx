@@ -1,34 +1,39 @@
-import { useEffect, useMemo, useState } from 'react'
-import { ShoppingCart, Menu, X, CreditCard } from 'lucide-react'
-import { useNavigate, NavLink, Link, createSearchParams, useSearchParams } from 'react-router-dom'
+import { useEffect, useState, useRef } from 'react'
+import { ShoppingCart, Menu, X, Camera } from 'lucide-react'
+import { useNavigate, NavLink, Link, createSearchParams } from 'react-router-dom'
 import { publicPaths } from '~/constance/paths'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
 import { userActions } from '~/store/slices/user'
 import { showToastError, showToastSuccess } from '~/utils/alert'
 import { dropDownProfile } from '~/constance/dropdown'
-import Cart from '~/pages/public/cart/Cart'
 import { apiLogout } from '~/api/authenticate'
 import { fetchCategories } from '~/store/actions/category'
 import { fetchMyVocher } from '~/store/actions/promotion'
 import { fetchCurrentUser } from '~/store/actions/user'
 import { fetchMyCart } from '~/store/actions/cart'
+import { cartActions } from '~/store/slices/cart'
 import SearchWithSuggestions from '../search/SearchWithSuggestions'
-import { ProductSearchParams } from '~/types/filter'
+import Cart from '~/pages/public/cart/Cart'
 
 function Header() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const [searchParams] = useSearchParams()
-  const currentParams = useMemo(() => Object.fromEntries([...searchParams]) as ProductSearchParams, [searchParams])
-  const { myCart } = useAppSelector((state) => state.cart)
-  const [search, setSearch] = useState<string>('')
+  const { myCart, isCartOpen } = useAppSelector((state) => state.cart) // Lấy isCartOpen từ Redux
   const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'light')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { isLoggedIn, userData, accessToken } = useAppSelector((state) => state.user)
-  const [isCartOpen, setIsCartOpen] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Lọc danh sách dropdown dựa trên vai trò người dùng
+  const filteredDropDownProfile = dropDownProfile.filter((item) => {
+    if (item.name === 'Admin' && userData?.role.roleId == '112') {
+      return false
+    }
+    return true
+  })
 
   const handleCartToggle = () => {
-    setIsCartOpen(!isCartOpen)
+    dispatch(cartActions.toggleCart()) // Sử dụng action toggleCart
   }
 
   useEffect(() => {
@@ -37,6 +42,10 @@ function Header() {
       document.documentElement.setAttribute('data-theme', theme)
     }
   }, [theme])
+
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'))
+  }
 
   const handleLogout = async () => {
     try {
@@ -53,13 +62,42 @@ function Header() {
       showToastError('Logout failed. Please try again.')
     }
   }
-  const handleSearchProduct = () => {
-    const newParams = { ...currentParams, search }
-    navigate({
-      pathname: publicPaths.PRODUCT,
-      search: createSearchParams(newParams).toString()
-    })
+
+  const handleImageSearch = async (file: File) => {
+    const formData = new FormData()
+    formData.append('image', file)
+
+    try {
+      const res = await fetch('http://127.0.0.1:5000/predict', {
+        method: 'POST',
+        body: formData
+      })
+      if (!res.ok) throw new Error(`Status ${res.status}`)
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+
+      const newParams = { search: data.label }
+      navigate({
+        pathname: publicPaths.PRODUCT,
+        search: createSearchParams(newParams).toString()
+      })
+    } catch (err: any) {
+      console.error('Image search error:', err)
+      showToastError(`Tìm kiếm bằng ảnh thất bại: ${err.message}`)
+    }
   }
+
+  const handleCameraClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      handleImageSearch(file)
+    }
+  }
+
   useEffect(() => {
     if (isLoggedIn && accessToken && userData?.userId) {
       dispatch(fetchCategories())
@@ -71,13 +109,11 @@ function Header() {
 
   return (
     <nav className='fixed top-0 left-0 right-0 z-50 shadow-md bg-white px-6 py-3 flex items-center justify-between md:px-10 dark:bg-gray-800'>
-      {/* Logo */}
       <Link to='/'>
-        <div className='text-2xl font-bold text-blue-600 cursor-pointer '>Stationery's P</div>
+        <div className='text-2xl font-bold text-blue-600 cursor-pointer dark:text-blue-400'>Stationery's P</div>
       </Link>
 
-      {/* Desktop Menu */}
-      <div className='hidden md:flex space-x-6 text-gray-700 '>
+      <div className='hidden md:flex space-x-6 text-gray-700 dark:text-gray-300'>
         <NavLink
           to={publicPaths.PUBLIC}
           className={({ isActive }) =>
@@ -130,75 +166,90 @@ function Header() {
         </NavLink>
       </div>
 
-      {/* Search Component */}
-      <div className='hidden md:block'>
+      <div className='hidden md:flex items-center space-x-2'>
         <SearchWithSuggestions />
+        <input type='file' accept='image/*' ref={fileInputRef} className='hidden' onChange={handleFileChange} />
+        <button
+          type='button'
+          onClick={handleCameraClick}
+          className='p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400'
+          aria-label='Search by image'
+        >
+          <Camera size={20} />
+        </button>
       </div>
 
-      {/* Cart */}
-      <div className='relative cursor-pointer' onClick={handleCartToggle}>
-        <ShoppingCart
-          size={24}
-          className='text-gray-700 hover:text-blue-500 transition dark:text-gray-300 dark:hover:text-blue-400'
-        />
-        <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>
-          {myCart.length}
-        </span>
-      </div>
+      <div className='flex items-center space-x-4'>
+        <div className='relative cursor-pointer' onClick={handleCartToggle}>
+          <ShoppingCart
+            size={24}
+            className='text-gray-700 hover:text-blue-500 transition dark:text-gray-300 dark:hover:text-blue-400'
+          />
+          <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>
+            {myCart.length}
+          </span>
+        </div>
 
-      {/* User Profile */}
-      {isLoggedIn ? (
-        <div className='d-dropdown d-dropdown-hover d-dropdown-end'>
-          <div tabIndex={0} className='w-10 h-10 rounded-full overflow-hidden'>
-            <img src={userData?.avatar} alt={userData?.lastName} className='w-full h-full object-cover' />
+        <button
+          onClick={toggleTheme}
+          className='p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition dark:bg-gray-70'
+          aria-label='Toggle dark mode'
+        >
+          {theme === 'light' ? '🌞' : '🌙'}
+        </button>
+
+        {isLoggedIn ? (
+          <div className='d-dropdown d-dropdown-hover d-dropdown-end'>
+            <div tabIndex={0} className='w-10 h-10 rounded-full overflow-hidden'>
+              <img src={userData?.avatar} alt={userData?.lastName} className='w-full h-full object-cover' />
+            </div>
+            <ul tabIndex={0} className='d-dropdown-content d-menu bg-base-100 rounded-md z-10 w-52 p-2 shadow-md'>
+              {filteredDropDownProfile.map((item) => {
+                let Comp: React.ElementType = 'button'
+                if (item.to) {
+                  Comp = Link
+                }
+                return (
+                  <li key={item.id} className={`${item.styleParent ? item.styleParent : ''}`}>
+                    <Comp
+                      {...(item.to ? { to: item.to } : {})}
+                      onClick={item?.onClick ? handleLogout : undefined}
+                      className={`flex items-center w-full px-4 py-2 ${
+                        item.style
+                          ? item.style
+                          : 'text-gray-700 hover:bg-gray-100 transition dark:text-gray-300 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      {item.icon}
+                      {item.name}
+                    </Comp>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
-          <ul tabIndex={0} className='d-dropdown-content d-menu bg-base-100 rounded-md z-10 w-52 p-2 shadow-md'>
-            {dropDownProfile.map((item) => {
-              let Comp: React.ElementType = 'button'
-              if (item.to) {
-                Comp = Link
-              }
-              return (
-                <li key={item.id} className={`${item.styleParent ? item.styleParent : ''}`}>
-                  <Comp
-                    {...(item.to ? { to: item.to } : {})}
-                    onClick={item?.onClick ? handleLogout : undefined}
-                    className={`flex items-center w-full px-4 py-2 ${
-                      item.style
-                        ? item.style
-                        : 'text-gray-700 hover:bg-gray-100 transition dark:text-gray-300 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    {item.icon}
-                    {item.name}
-                  </Comp>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      ) : (
-        <div className='hidden md:flex space-x-3'>
-          <button
-            onClick={() => navigate('/auth?mode=login')}
-            className='px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-500'
-          >
-            Login
-          </button>
-          <button
-            onClick={() => navigate('/auth?mode=register')}
-            className='px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition dark:bg-blue-500 dark:hover:bg-blue-600'
-          >
-            Register
-          </button>
-        </div>
-      )}
+        ) : (
+          <div className='hidden md:flex space-x-3'>
+            <button
+              onClick={() => navigate('/auth?mode=login')}
+              className='px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-500'
+            >
+              Login
+            </button>
+            <button
+              onClick={() => navigate('/auth?mode=register')}
+              className='px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition dark:bg-blue-500 dark:hover:bg-blue-600'
+            >
+              Register
+            </button>
+          </div>
+        )}
 
-      {/* Mobile Menu Button */}
-      <button className='md:hidden' onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label='Toggle menu'>
-        {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
-      </button>
-      {/* Mobile Menu */}
+        <button className='md:hidden' onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label='Toggle menu'>
+          {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+        </button>
+      </div>
+
       {isMenuOpen && (
         <div className='absolute top-16 left-0 w-full bg-white shadow-md md:hidden z-[999999] dark:bg-gray-700'>
           <div className='flex flex-col space-y-4 p-4 text-gray-700 dark:text-gray-300'>
@@ -257,7 +308,6 @@ function Header() {
             >
               Contact
             </NavLink>
-
             <div className='flex items-center space-x-4 border-t pt-4 dark:border-gray-600'>
               <div className='relative cursor-pointer' onClick={handleCartToggle}>
                 <ShoppingCart size={24} className='text-gray-700 dark:text-gray-300' />
@@ -265,8 +315,10 @@ function Header() {
                   {myCart.length}
                 </span>
               </div>
+              <button onClick={toggleTheme} className='p-2 rounded-full bg-gray-200 dark:bg-gray-600'>
+                {theme === 'light' ? '🌞' : '🌙'}
+              </button>
             </div>
-            {/* Mobile Login/Register */}
             {!isLoggedIn && (
               <>
                 <button
@@ -292,8 +344,6 @@ function Header() {
           </div>
         </div>
       )}
-
-      {/* Giỏ hàng Modal */}
       <Cart isOpen={isCartOpen} onClose={handleCartToggle} cartItems={myCart} accessToken={accessToken || ''} />
     </nav>
   )

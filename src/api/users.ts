@@ -14,6 +14,18 @@ const apiGetUserInfo = async ({ token }: { token: string | null }) => {
   }
 }
 
+const apiGetUserById = async ({ userId }: { userId: string }) => {
+  try {
+    const response = await http.get(`/users/info/${userId}`)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data
+    }
+    return (error as Error).message
+  }
+}
+
 const apiChangePassword = async ({
   email,
   oldPassword,
@@ -122,4 +134,12 @@ const apiBlockUser = async ({ userId, accessToken }: { userId: string; accessTok
   }
 }
 
-export { apiGetUserInfo, apiChangePassword, apiUpdateUserInfo, apiUpdateUserAdmin, apiGetAllUsers, apiBlockUser }
+export {
+  apiGetUserInfo,
+  apiChangePassword,
+  apiUpdateUserInfo,
+  apiUpdateUserAdmin,
+  apiGetAllUsers,
+  apiBlockUser,
+  apiGetUserById
+}

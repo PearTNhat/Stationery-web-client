@@ -80,6 +80,12 @@ interface ListProductDetail extends Omit<Product, 'productDetail'> {
   categoryId: string
   productDetails: ProductDetail[]
 }
+
+interface ProductDetailResponse {
+  code: number
+  result: ProductDetail[]
+}
+
 interface ProductDetailForm {
   productDetailId?: string
   slug: string
@@ -113,5 +119,6 @@ export type {
   Image,
   Size,
   FetchColor,
-  ListProductDetail
+  ListProductDetail,
+  ProductDetailResponse
 }

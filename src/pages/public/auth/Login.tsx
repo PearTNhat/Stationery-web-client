@@ -51,20 +51,18 @@ export default function LoginForm() {
       setLoading(true)
       apiGetUserInfo({ token })
         .then((response) => {
-          console.log('Response from Google:', response)
           if (response.code == 200) {
             const userData: User = response.result
-            console.log('User data Login with Google:', userData)
             dispatch(userActions.login({ accessToken: token, userData }))
-            showToastSuccess('Login with Google successfully')
-            navigate('/') // Chuyển hướng về trang chủ
+            showToastSuccess('Login successfully')
+            navigate('/')
           } else {
-            showToastError(response.message || 'Failed to login with Google')
-            navigate('/auth') // Chuyển hướng về trang đăng nhập nếu thất bại
+            showToastError(response.message || 'Login failed')
+            navigate('/auth')
           }
         })
         .catch((error) => {
-          showToastError(error.message || 'Failed to fetch user info')
+          showToastError(error.message)
           navigate('/auth') // Chuyển hướng về trang đăng nhập nếu có lỗi
         })
         .finally(() => {
@@ -81,9 +79,14 @@ export default function LoginForm() {
       setLoading(true)
       const response = await apiLogin(data)
       if (typeof response !== 'string' && response.result) {
-        dispatch(userActions.login(response.result))
-        navigate('/')
+        const { accessToken, userData } = response.result
+        dispatch(userActions.login({ accessToken, userData }))
         showToastSuccess('Login successfully')
+        if (userData.role?.roleId == '113') {
+          navigate('/department')
+        } else {
+          navigate('/')
+        }
       } else {
         showToastError(response.message || 'Login failed')
       }

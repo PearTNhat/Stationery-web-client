@@ -5,6 +5,7 @@ import Faq from './Faq'
 import { publicPaths } from '~/constance/paths'
 import FloatingButtons from '~/components/contactnow/FloatingButtons'
 import NewProduct from './component/NewProduct'
+import BestSellingProduct from './component/BestSellingProduct' // Thêm import
 import { useAppSelector } from '~/hooks/redux'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useEffect, useMemo } from 'react'
@@ -25,7 +26,7 @@ interface BannerData {
 const banners: BannerData[] = [
   {
     id: 1,
-    image: 'public/images/banner1.jpg',
+    image: 'public/images/img_banner_1.jpg',
     title: 'New Collection Arrived',
     content: 'Discover unique and creative stationery items!',
     buttonText: 'Shop Now',
@@ -33,7 +34,7 @@ const banners: BannerData[] = [
   },
   {
     id: 2,
-    image: 'public/images/banner2.jpg',
+    image: 'public/images/img_banner_5.jpg',
     title: 'Big April Sale',
     content: 'Up to 50% off on hundreds of stationery products!',
     buttonText: 'Get Deals',
@@ -41,7 +42,7 @@ const banners: BannerData[] = [
   },
   {
     id: 3,
-    image: 'public/images/banner3.jpg',
+    image: 'public/images/img_banner_2.jpg',
     title: 'Free Shipping',
     content: 'Enjoy free shipping on orders over $12!',
     buttonText: 'Learn More',
@@ -49,13 +50,18 @@ const banners: BannerData[] = [
   }
 ]
 
-// Định nghĩa kiểu dữ liệu cho ProductSection
-
 const Home: React.FC = () => {
-  const { accessToken } = useAppSelector((state) => state.user)
+  const { userData, accessToken } = useAppSelector((state) => state.user)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { orderId } = useMemo(() => Object.fromEntries([...searchParams]), [searchParams])
+
+  useEffect(() => {
+    if (userData?.role.roleId == '113') {
+      navigate('/department', { replace: true })
+    }
+  }, [userData, navigate])
+
   const checkTransactionStatus = async (orderId: string) => {
     try {
       // số 1 là đang gọi check status từ home nếu order đó có resultCode != 0 thì đó là hủy dơn hàng
@@ -80,12 +86,13 @@ const Home: React.FC = () => {
       checkTransactionStatus(orderId)
     }
   }, [orderId])
+
   return (
     <div className='flex flex-col min-h-screen bg-gray-100 p-6'>
       <Banner banners={banners} />
       <ProductCategories />
       <NewProduct />
-      {/* <ProductSection title='Featured Products' products={sampleProducts} /> */}
+      <BestSellingProduct />
       <Faq />
       <FloatingButtons />
     </div>

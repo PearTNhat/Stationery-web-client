@@ -21,6 +21,7 @@ const ProductPage: React.FC = () => {
   const [products, setProducts] = useState<Product[] | null>(null)
   const [totalPageCount, setTotalPageCount] = useState<number>(0)
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null)
+  const { accessToken } = useAppSelector((state) => state.user)
 
   const getAllProduct = async (searchParams: ProductSearchParams) => {
     const { minPrice, maxPrice, sortBy, categoryId, search } = searchParams
@@ -36,7 +37,8 @@ const ProductPage: React.FC = () => {
         maxPrice,
         sortBy,
         categoryId,
-        search
+        search,
+        accessToken: accessToken ?? undefined
       })
       if (response.code == 200) {
         setProducts(response.result.content)

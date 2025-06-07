@@ -118,6 +118,17 @@ const apiFetchColorSizeProductDetail = async (slug?: string) => {
     return error // Avoid undefined error
   }
 }
+const apiGetSimilarProducts = async (productId: string) => {
+  try {
+    const response = await http.get(`/products/similar/${productId}`)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data
+    }
+    return error
+  }
+}
 
 const apiCreateProduct = async ({ data, accessToken }: { data: FormData; accessToken: string }) => {
   try {
@@ -284,6 +295,7 @@ export {
   apiFetchColorSizeProductDetail,
   apiGetAllProducts,
   apiGetProductDetailsByProductId,
+  apiGetSimilarProducts,
   apiCreateProduct,
   apiUpdateProduct,
   apiUpdateDetailProduct,

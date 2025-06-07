@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { FaHome, FaCheckCircle, FaRegCircle } from 'react-icons/fa'
-import { FaSquarePhone } from 'react-icons/fa6'
+import { FaHome, FaCheckCircle, FaRegCircle, FaMapMarkerAlt, FaUser, FaPhone } from 'react-icons/fa'
 import { TiDelete } from 'react-icons/ti'
 import { apiAddAddress, apiDeleteAddress, apiSetDefaultAddress } from '~/api/address'
 import { useAppDispatch, useAppSelector } from '~/hooks/redux'
@@ -189,20 +188,18 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({ addresses, set
                 )}
                 <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4'>
                   <div className='flex-1 min-w-0'>
-                    <p className='flex font-medium text-gray-800 break-words'>
-                      <span className='flex items-center justify-center w-6'>📍</span>
-                      {addr.addressName}
-                    </p>
-                    <p className='flex font-medium text-gray-800 break-words'>
-                      <span className='flex items-center justify-center w-6'> 👤</span>
-                      {addr.recipient}
-                    </p>
-                    <p className='flex font-medium text-gray-800 break-words'>
-                      <span className='flex items-center justify-center w-6'>
-                        <FaSquarePhone className='text-base' />
-                      </span>
-                      {addr.phone}
-                    </p>
+                    <div className='flex items-start gap-2 text-gray-800'>
+                      <FaMapMarkerAlt className='mt-1 text-gray-500 shrink-0' />
+                      <p className='font-medium break-words'>{addr.addressName}</p>
+                    </div>
+                    <div className='flex items-start gap-2 text-gray-800 mt-1'>
+                      <FaUser className='mt-1 text-gray-500 shrink-0' />
+                      <p className='font-medium break-words'>{addr.recipient}</p>
+                    </div>
+                    <div className='flex items-start gap-2 text-gray-800 mt-1'>
+                      <FaPhone className='mt-1 text-gray-500 shrink-0' />
+                      <p className='font-medium break-words'>{addr.phone}</p>
+                    </div>
                   </div>
 
                   {!isDeleteMode && (

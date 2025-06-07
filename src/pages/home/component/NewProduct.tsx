@@ -4,11 +4,9 @@ import { apiGetAllProductsWithDefaultPD } from '~/api/product'
 import ProductSection from '~/components/productSection/ProductSection'
 import { showToastError } from '~/utils/alert'
 import { Product } from '~/types/product'
-import { useAppSelector } from '~/hooks/redux'
 
 const NewProduct = () => {
   const [products, setProducts] = useState<Product[]>([])
-  const { accessToken } = useAppSelector((state) => state.user)
   const [totalPageCount, setTotalPageCount] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const getNewProducts = async ({ currentPage }: { currentPage: string }) => {
