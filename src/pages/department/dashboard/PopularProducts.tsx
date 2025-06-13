@@ -182,7 +182,7 @@ const PopularProducts: React.FC<PopularProductsProps> = ({ setProducts }) => {
             <img src={product.img} alt={product.name} className='w-16 h-16 object-cover rounded-md mr-4' />
             <div className='flex-1'>
               <h3 className='text-sm font-semibold text-gray-800'>{product.name}</h3>
-              <p className='text-sm text-red-600'>{product.minPrice.toLocaleString()} VND</p>
+              <p className='text-sm text-red-600'>{product.productDetail.discountPrice.toLocaleString()} VND</p>
             </div>
             <button onClick={() => handleAddProduct(product)} className='btn btn-sm btn-primary flex items-center'>
               <FaPlusCircle className='mr-1 hover:text-blue-600' />

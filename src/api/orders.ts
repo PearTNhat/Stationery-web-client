@@ -35,6 +35,38 @@ const apiCreateOrderWithPayment = async ({
     return (error as Error).message
   }
 }
+const apiCreateOrderWithNoPayment = async ({
+  orderDetails,
+  userPromotionId,
+  addressId,
+  amount,
+  note,
+  expiredTime,
+  accessToken
+}: CreateOrderParams) => {
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+    const body = {
+      orderDetails,
+      userPromotionId,
+      addressId,
+      amount,
+      note,
+      expiredTime
+    }
+    const response = await http.post('/purchase-orders/payment', body, config)
+    return response.data
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return error.response.data
+    }
+    return (error as Error).message
+  }
+}
 
 const apiCheckTransactionStatus = async ({
   orderId,
@@ -334,5 +366,6 @@ export {
   apiGetPendingOrders,
   apiGetNonPendingOrders,
   apiConfirmOrder,
-  apiUpdateOrderStatus
+  apiUpdateOrderStatus,
+  apiCreateOrderWithNoPayment
 }

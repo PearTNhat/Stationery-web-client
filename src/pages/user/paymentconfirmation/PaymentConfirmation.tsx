@@ -9,8 +9,8 @@ import { useAppSelector } from '~/hooks/redux'
 import { ShippingAddress } from './component/ShippingAddress'
 import { OrderDetails, UserInfoOrder } from '~/types/order'
 import { SelectedPromotion } from '~/types/promotion'
-import { apiCreateOrderWithPayment } from '~/api/orders'
-import { showAlertError, showToastError } from '~/utils/alert'
+import { apiCreateOrderWithNoPayment, apiCreateOrderWithPayment } from '~/api/orders'
+import { showAlertError, showAlertSucess, showToastError } from '~/utils/alert'
 import { AxiosError } from 'axios'
 import { Address } from '~/types/address'
 
@@ -55,18 +55,35 @@ export default function PaymentConfirmation() {
         showAlertError('Please fill in all required fields')
         return
       }
-      const res = await apiCreateOrderWithPayment({
-        orderDetails,
-        addressId,
-        note,
-        userPromotionId,
-        amount: order.totalAmount,
-        accessToken
-      })
-      if (res.code === 200) {
-        window.location.href = res.result.payUrl
+      console.log(selectedPayment)
+      if (selectedPayment === 'COD') {
+        const res = await apiCreateOrderWithNoPayment({
+          orderDetails,
+          addressId,
+          note,
+          userPromotionId,
+          amount: order.totalAmount,
+          accessToken
+        })
+        if (res.code === 200) {
+          showAlertSucess('Order created successfully')
+        } else {
+          showToastError(res.message)
+        }
       } else {
-        showToastError(res.message)
+        const res = await apiCreateOrderWithPayment({
+          orderDetails,
+          addressId,
+          note,
+          userPromotionId,
+          amount: order.totalAmount,
+          accessToken
+        })
+        if (res.code === 200) {
+          window.location.href = res.result.payUrl
+        } else {
+          showToastError(res.message)
+        }
       }
     } catch (error) {
       if (error instanceof Error || error instanceof AxiosError) {

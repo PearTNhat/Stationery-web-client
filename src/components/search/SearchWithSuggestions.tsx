@@ -119,7 +119,7 @@ export default function SearchWithSuggestions() {
         <input
           type='text'
           placeholder='Search product...'
-          className='w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white'
+          className='w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500   '
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => {
@@ -127,22 +127,18 @@ export default function SearchWithSuggestions() {
           }}
           onFocus={() => setShowSuggestions(true)}
         />
-        <button
-          type='button'
-          onClick={handleSearchProduct}
-          className='absolute top-2.5 left-3 text-gray-500 dark:text-gray-400'
-        >
+        <button type='button' onClick={handleSearchProduct} className='absolute top-2.5 left-3 text-gray-500 '>
           <Search size={20} />
         </button>
       </div>
 
       {/* Dropdown Suggestions */}
       {showSuggestions && (
-        <div className='absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 dark:bg-gray-800 dark:border-gray-600'>
+        <div className='absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50  '>
           {/* Recent */}
           {recentSearches.length > 0 && (
-            <div className='p-4 border-b border-gray-200 dark:border-gray-600'>
-              <div className='flex items-center text-sm font-semibold text-gray-500 mb-2 dark:text-gray-400'>
+            <div className='p-4 border-b border-gray-200 '>
+              <div className='flex items-center text-sm font-semibold text-gray-500 mb-2 '>
                 <Clock size={16} className='mr-2' />
                 Recent Searches
               </div>
@@ -150,10 +146,10 @@ export default function SearchWithSuggestions() {
                 {recentSearches.map((item, index) => (
                   <div
                     key={`recent-${index}`}
-                    className='px-3 py-2 hover:bg-blue-100 dark:hover:bg-gray-700 rounded-md cursor-pointer transition-all duration-150'
+                    className='px-3 py-2 hover:bg-blue-100  rounded-md cursor-pointer transition-all duration-150'
                     onClick={() => handleSuggestionClick(item)}
                   >
-                    <span className='text-gray-800 dark:text-gray-200'>{item}</span>
+                    <span className='text-gray-800 '>{item}</span>
                   </div>
                 ))}
               </div>
@@ -162,8 +158,8 @@ export default function SearchWithSuggestions() {
 
           {/* Popular */}
           {popularSuggestions?.length > 0 && (
-            <div className='p-4 border-b border-gray-200 dark:border-gray-600'>
-              <div className='flex items-center text-sm font-semibold text-gray-500 mb-2 dark:text-gray-400'>
+            <div className='p-4 border-b border-gray-200 '>
+              <div className='flex items-center text-sm font-semibold text-gray-500 mb-2 '>
                 <Flame size={16} className='mr-2 text-orange-500' />
                 Popular Searches
               </div>
@@ -171,7 +167,7 @@ export default function SearchWithSuggestions() {
                 {popularSuggestions.map((item, index) => (
                   <div
                     key={`popular-${index}`}
-                    className='px-4 py-1.5 bg-gradient-to-r from-blue-100 to-blue-200 hover:from-blue-200 hover:to-blue-300 dark:from-blue-700 dark:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700 rounded-full cursor-pointer text-sm font-medium shadow-sm text-gray-700 dark:text-white transition-all duration-200'
+                    className='px-4 py-1.5 bg-gradient-to-r from-blue-100 to-blue-200 hover:from-blue-200 hover:to-blue-300   rounded-full cursor-pointer text-sm font-medium shadow-sm text-gray-700  transition-all duration-200'
                     onClick={() => handleSuggestionClick(item)}
                   >
                     {item}
@@ -184,7 +180,7 @@ export default function SearchWithSuggestions() {
           {/* Top Categories */}
           {topCategories.length > 0 && (
             <div className='p-4'>
-              <div className='flex items-center text-sm font-semibold text-gray-500 mb-2 dark:text-gray-400'>
+              <div className='flex items-center text-sm font-semibold text-gray-500 mb-2 '>
                 <Folder size={16} className='mr-2' />
                 {userData ? 'Your Top Categories' : 'Top Categories'}
               </div>

@@ -108,18 +108,16 @@ function Header() {
   }, [isLoggedIn, accessToken])
 
   return (
-    <nav className='fixed top-0 left-0 right-0 z-50 shadow-md bg-white px-6 py-3 flex items-center justify-between md:px-10 dark:bg-gray-800'>
+    <nav className='fixed top-0 left-0 right-0 z-50 shadow-md bg-white px-6 py-3 flex items-center justify-between md:px-10'>
       <Link to='/'>
-        <div className='text-2xl font-bold text-blue-600 cursor-pointer dark:text-blue-400'>Stationery's P</div>
+        <div className='text-2xl font-bold text-blue-600 cursor-pointer'>Stationery's P</div>
       </Link>
 
-      <div className='hidden md:flex space-x-6 text-gray-700 dark:text-gray-300'>
+      <div className='hidden md:flex space-x-6 text-gray-700 '>
         <NavLink
           to={publicPaths.PUBLIC}
           className={({ isActive }) =>
-            isActive
-              ? 'text-blue-600 font-bold dark:text-blue-400'
-              : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
+            isActive ? 'text-blue-600 font-bold ' : 'text-gray-700 hover:text-blue-500 transition '
           }
         >
           Home
@@ -127,9 +125,7 @@ function Header() {
         <NavLink
           to={publicPaths.ABOUT}
           className={({ isActive }) =>
-            isActive
-              ? 'text-blue-600 font-bold dark:text-blue-400'
-              : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
+            isActive ? 'text-blue-600 font-bold ' : 'text-gray-700 hover:text-blue-500 transition'
           }
         >
           About
@@ -137,9 +133,7 @@ function Header() {
         <NavLink
           to={publicPaths.PRODUCT}
           className={({ isActive }) =>
-            isActive
-              ? 'text-blue-600 font-bold dark:text-blue-400'
-              : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
+            isActive ? 'text-blue-600 font-bold ' : 'text-gray-700 hover:text-blue-500 transition '
           }
         >
           Product
@@ -147,9 +141,7 @@ function Header() {
         <NavLink
           to={publicPaths.SERVICE}
           className={({ isActive }) =>
-            isActive
-              ? 'text-blue-600 font-bold dark:text-blue-400'
-              : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
+            isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition '
           }
         >
           Service
@@ -157,9 +149,7 @@ function Header() {
         <NavLink
           to={publicPaths.CONTACT}
           className={({ isActive }) =>
-            isActive
-              ? 'text-blue-600 font-bold dark:text-blue-400'
-              : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
+            isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition '
           }
         >
           Contact
@@ -172,7 +162,7 @@ function Header() {
         <button
           type='button'
           onClick={handleCameraClick}
-          className='p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400'
+          className='p-2 text-gray-500 hover:text-blue-500  '
           aria-label='Search by image'
         >
           <Camera size={20} />
@@ -181,10 +171,7 @@ function Header() {
 
       <div className='flex items-center space-x-4'>
         <div className='relative cursor-pointer' onClick={handleCartToggle}>
-          <ShoppingCart
-            size={24}
-            className='text-gray-700 hover:text-blue-500 transition dark:text-gray-300 dark:hover:text-blue-400'
-          />
+          <ShoppingCart size={24} className='text-gray-700 hover:text-blue-500 transition  ' />
           <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>
             {myCart.length}
           </span>
@@ -192,7 +179,7 @@ function Header() {
 
         <button
           onClick={toggleTheme}
-          className='p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition dark:bg-gray-70'
+          className='p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition '
           aria-label='Toggle dark mode'
         >
           {theme === 'light' ? '🌞' : '🌙'}
@@ -215,9 +202,7 @@ function Header() {
                       {...(item.to ? { to: item.to } : {})}
                       onClick={item?.onClick ? handleLogout : undefined}
                       className={`flex items-center w-full px-4 py-2 ${
-                        item.style
-                          ? item.style
-                          : 'text-gray-700 hover:bg-gray-100 transition dark:text-gray-300 dark:hover:bg-gray-600'
+                        item.style ? item.style : 'text-gray-700 hover:bg-gray-100 transition  '
                       }`}
                     >
                       {item.icon}
@@ -232,13 +217,13 @@ function Header() {
           <div className='hidden md:flex space-x-3'>
             <button
               onClick={() => navigate('/auth?mode=login')}
-              className='px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-500'
+              className='px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition  '
             >
               Login
             </button>
             <button
               onClick={() => navigate('/auth?mode=register')}
-              className='px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition dark:bg-blue-500 dark:hover:bg-blue-600'
+              className='px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition  '
             >
               Register
             </button>
@@ -251,14 +236,12 @@ function Header() {
       </div>
 
       {isMenuOpen && (
-        <div className='absolute top-16 left-0 w-full bg-white shadow-md md:hidden z-[999999] dark:bg-gray-700'>
-          <div className='flex flex-col space-y-4 p-4 text-gray-700 dark:text-gray-300'>
+        <div className='absolute top-16 left-0 w-full bg-white shadow-md md:hidden z-[999999] 0'>
+          <div className='flex flex-col space-y-4 p-4 text-gray-700 '>
             <NavLink
               to={publicPaths.PUBLIC}
               className={({ isActive }) =>
-                isActive
-                  ? 'text-blue-600 font-bold dark:text-blue-400'
-                  : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
+                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition '
               }
               onClick={() => setIsMenuOpen(false)}
             >
@@ -267,9 +250,7 @@ function Header() {
             <NavLink
               to={publicPaths.ABOUT}
               className={({ isActive }) =>
-                isActive
-                  ? 'text-blue-600 font-bold dark:text-blue-400'
-                  : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
+                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition '
               }
               onClick={() => setIsMenuOpen(false)}
             >
@@ -278,9 +259,7 @@ function Header() {
             <NavLink
               to={publicPaths.PRODUCT}
               className={({ isActive }) =>
-                isActive
-                  ? 'text-blue-600 font-bold dark:text-blue-400'
-                  : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
+                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition '
               }
               onClick={() => setIsMenuOpen(false)}
             >
@@ -289,9 +268,7 @@ function Header() {
             <NavLink
               to={publicPaths.SERVICE}
               className={({ isActive }) =>
-                isActive
-                  ? 'text-blue-600 font-bold dark:text-blue-400'
-                  : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
+                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition '
               }
               onClick={() => setIsMenuOpen(false)}
             >
@@ -300,22 +277,20 @@ function Header() {
             <NavLink
               to={publicPaths.CONTACT}
               className={({ isActive }) =>
-                isActive
-                  ? 'text-blue-600 font-bold dark:text-blue-400'
-                  : 'text-gray-700 hover:text-blue-500 transition dark:hover:text-blue-400'
+                isActive ? 'text-blue-600 font-bold' : 'text-gray-700 hover:text-blue-500 transition '
               }
               onClick={() => setIsMenuOpen(false)}
             >
               Contact
             </NavLink>
-            <div className='flex items-center space-x-4 border-t pt-4 dark:border-gray-600'>
+            <div className='flex items-center space-x-4 border-t pt-4 '>
               <div className='relative cursor-pointer' onClick={handleCartToggle}>
-                <ShoppingCart size={24} className='text-gray-700 dark:text-gray-300' />
+                <ShoppingCart size={24} className='text-gray-700 ' />
                 <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full'>
                   {myCart.length}
                 </span>
               </div>
-              <button onClick={toggleTheme} className='p-2 rounded-full bg-gray-200 dark:bg-gray-600'>
+              <button onClick={toggleTheme} className='p-2 rounded-full bg-gray-200'>
                 {theme === 'light' ? '🌞' : '🌙'}
               </button>
             </div>
@@ -326,7 +301,7 @@ function Header() {
                     navigate('/auth?mode=login')
                     setIsMenuOpen(false)
                   }}
-                  className='px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-500'
+                  className='px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition  '
                 >
                   Login
                 </button>
@@ -335,7 +310,7 @@ function Header() {
                     navigate('/auth?mode=register')
                     setIsMenuOpen(false)
                   }}
-                  className='px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition dark:bg-blue-500 dark:hover:bg-blue-600'
+                  className='px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition  '
                 >
                   Register
                 </button>
